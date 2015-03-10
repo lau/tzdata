@@ -2,7 +2,6 @@ defmodule Tzdata.TimeZoneDataSource do
   alias Tzdata.BasicData, as: TzData
   alias Tzdata.Periods
   alias Tzdata.ReleaseParser, as: TzReleaseParser
-  @moduledoc false
 
   # Provide lists of zone- and link-names
   # Note that the function names are different from TzData!

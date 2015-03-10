@@ -1,5 +1,4 @@
 defmodule Tzdata.PeriodBuilder do
-  @moduledoc false
   import Tzdata.BasicData
   alias Tzdata.Util, as: TzUtil
   alias Tzdata.BasicData, as: TzData

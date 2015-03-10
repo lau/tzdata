@@ -1,5 +1,4 @@
 defmodule Tzdata.ParserOrganizer do
-  @moduledoc false
   # List of zone names. Canonical zones only. No links.
   def zone_list(from_initial_pass) do
     from_initial_pass
