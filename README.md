@@ -1,6 +1,9 @@
 Tzdata
 ======
 
+[![Build
+Status](https://travis-ci.org/lau/tzdata.svg?branch=master)](https://travis-ci.org/lau/tzdata)
+
 Tzdata. The timezone database in Elixir.
 
 Extracted from the [Kalends](https://github.com/lau/kalends) library.
