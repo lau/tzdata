@@ -1,4 +1,5 @@
 defmodule Tzdata.Periods do
+  @moduledoc false
   alias Tzdata.BasicData, as: TzData
   alias Tzdata.PeriodBuilder
 

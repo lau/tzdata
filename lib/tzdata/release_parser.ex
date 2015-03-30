@@ -1,4 +1,5 @@
 defmodule Tzdata.ReleaseParser do
+  @moduledoc false
   # The purpose of this module is to get release version information. E.g. "2014i".
 
   @file_with_release_version "source_data/RELEASE_LINE_FROM_NEWS"

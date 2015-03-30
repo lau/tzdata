@@ -1,4 +1,6 @@
 defmodule Tzdata.Util do
+  @moduledoc false
+
   @doc """
     Take strings of amounts and convert them to ints of seconds.
     For instance useful for strings from TZ gmt offsets.

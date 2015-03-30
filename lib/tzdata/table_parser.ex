@@ -1,8 +1,7 @@
 defmodule Tzdata.TableParser do
-  @moduledoc """
-  Parsing of the table file zone1970.tab
+  @moduledoc false
+  # Parsing of the table file zone1970.tab
 
-  """
   @file_name "zone1970.tab"
   def read_file(dir_prepend \\ "source_data", file_name \\ @file_name) do
     File.stream!("#{dir_prepend}/#{file_name}")

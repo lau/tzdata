@@ -1,4 +1,6 @@
 defmodule Tzdata.Parser do
+  @moduledoc false
+
   require Tzdata.Util
   import Tzdata.Util
   def read_file(file_name, dir_prepend \\ "source_data") do

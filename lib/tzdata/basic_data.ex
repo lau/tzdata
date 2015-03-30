@@ -1,5 +1,7 @@
 defmodule Tzdata.BasicData do
+  @moduledoc false
   # this module formerly known as TzData
+
   alias Tzdata.Parser
   alias Tzdata.ParserOrganizer, as: Organizer
   file_names = ~w(africa antarctica asia australasia backward etcetera europe northamerica pacificnew southamerica)s
