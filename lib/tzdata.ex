@@ -4,6 +4,29 @@ defmodule Tzdata do
   alias Tzdata.ReleaseParser, as: TzReleaseParser
   alias Tzdata.LeapSecParser
 
+  @moduledoc """
+  The Tzdata module provides data from the IANA tz database. Also known
+  as the Olson/Eggert database, zoneinfo, tzdata and other names.
+
+  The database files from IANA are text files. Tzdata ships with a copy
+  of the newest files. The `dl_latest_data.sh` script downloads the newest
+  files. When a new version of the database is released from IANA you can
+  run that script and recompile this library. Then the library will use the
+  newest version of the database.
+
+  Or you can get an updated version of this `tzdata`
+  Elixir library where the updated database is included.
+
+  A list of time zone names (e.g. `America/Los_Angeles`) are provided.
+  As well as functions for finding out the UTC offset, abbreviation,
+  standard offset (DST) for a specific point in time in a certain
+  timezone.
+
+  There are also functions for leap seconds. In the `Tzdata.TableData`
+  module, data from the table that matches countries with time zones is
+  available.
+  """
+
   # Provide lists of zone- and link-names
   # Note that the function names are different from TzData!
   # The term "alias" is used instead of "link"
