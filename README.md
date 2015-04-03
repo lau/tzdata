@@ -8,13 +8,28 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Kalends](https://github.com/lau/kalends) library.
 
-As of version 0.0.2 the tz release 2015b (from 2015-03-19 23:28:11 -0700)
+As of version 0.1.0 the tz release 2015b (from 2015-03-19 23:28:11 -0700)
 is used. The tz release version can be verified with the following function:
 
 ```elixir
-    iex> Tzdata.TimeZoneDataSource.tzdata_version
+    iex> Tzdata.tzdata_version
     "2015b"
 ```
+
+## Getting started
+
+Use through the [Kalends](https://github.com/lau/kalends) library
+or directly: it is available on hex as `tzdata`.
+
+```elixir
+    defp deps do
+      [  {:tzdata, "~> 0.1.0"},  ]
+    end
+```
+
+## Documentation
+
+Documentation can be found at http://hexdocs.pm/tzdata/
 
 ## When new timezone data is released
 
