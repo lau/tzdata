@@ -41,6 +41,6 @@ defmodule TzParserTest do
 
   test "remove a comment from the end of a line" do
     line = "6:30	-	MMT		   # Myanmar Time\n"
-    assert TzParser.strip_comment(line) == "6:30	-	MMT\n"
+    assert Tzdata.Util.strip_comment(line) == "6:30	-	MMT\n"
   end
 end

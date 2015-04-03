@@ -328,4 +328,12 @@ defmodule Tzdata.Util do
   defp period_abbrevation_h(:no_slash, zone_abbr, _, letter) do
     String.replace(zone_abbr, "%s", letter)
   end
+
+  def strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
+  def filter_comment_lines(input) do
+    Stream.filter(input, fn x -> !Regex.match?(~r/^[\s]*#/, x) end)
+  end
+  def filter_empty_lines(input) do
+    Stream.filter(input, fn x -> !Regex.match?(~r/^\n$/, x) end)
+  end
 end

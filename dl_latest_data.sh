@@ -11,6 +11,6 @@ mkdir -p source_data/       \
   && wget 'https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz' \
   && tar -zxvf tzdata-latest.tar.gz                    \
   && rm tzdata-latest.tar.gz                           \
-  && rm factory leap-seconds.* leapseconds leapseconds.* Makefile iso3166.tab README systemv yearistype.sh zone.tab backzone checktab.awk checklinks.awk CONTRIBUTING Theory zoneinfo2tdf.pl \
+  && rm factory leapseconds.awk leapseconds Makefile iso3166.tab README systemv yearistype.sh zone.tab backzone checktab.awk checklinks.awk CONTRIBUTING Theory zoneinfo2tdf.pl \
   && grep -o 'Release [0-9]\{4\}.*' NEWS | head -1 > RELEASE_LINE_FROM_NEWS \
   && rm NEWS

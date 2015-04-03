@@ -1,6 +1,7 @@
 defmodule Tzdata.TableParser do
   @moduledoc false
   # Parsing of the table file zone1970.tab
+  import Tzdata.Util
 
   @file_name "zone1970.tab"
   def read_file(dir_prepend \\ "source_data", file_name \\ @file_name) do
@@ -25,13 +26,5 @@ defmodule Tzdata.TableParser do
 
   defp split_country_codes(string) do
     String.split(string, ",")
-  end
-
-  defp strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
-  defp filter_comment_lines(input) do
-    Stream.filter(input, fn x -> !Regex.match?(~r/^[\s]*#/, x) end)
-  end
-  defp filter_empty_lines(input) do
-    Stream.filter(input, fn x -> !Regex.match?(~r/^\n$/, x) end)
   end
 end

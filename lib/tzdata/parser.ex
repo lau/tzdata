@@ -12,19 +12,9 @@ defmodule Tzdata.Parser do
     file_stream
     |> filter_comment_lines
     |> filter_empty_lines
+    |> Stream.map(fn string -> strip_comment(string) end) # Strip comments at line end. Like this comment.
     |> Enum.to_list
-    |> Enum.map(fn string -> strip_comment(string) end) # Strip comments at line end. Like this comment.
     |> process_tz_list
-  end
-
-  def strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
-
-  def filter_comment_lines(input) do
-    Stream.filter(input, fn x -> !Regex.match?(~r/^[\s]*#/, x) end)
-  end
-
-  def filter_empty_lines(input) do
-    Stream.filter(input, fn x -> !Regex.match?(~r/^\n$/, x) end)
   end
 
   def process_tz_list([]), do: []
