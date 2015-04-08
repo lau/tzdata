@@ -135,8 +135,8 @@ defmodule Tzdata do
     Periods.periods(zone_name)
   end
 
-  @min_cache_time_point 63555753600 # 2014
-  @max_cache_time_point 64376208000 # 2040
+  @min_cache_time_point :calendar.datetime_to_gregorian_seconds {{2014, 1, 1}, {0, 0, 0}} # 2014
+  @max_cache_time_point :calendar.datetime_to_gregorian_seconds {{2030, 1, 1}, {0, 0, 0}} # 2030
   @doc """
   Get the periods that cover a certain point in time. Usually it will be a list
   with just one period. But in some cases it will be zero or two periods. For
@@ -170,8 +170,8 @@ defmodule Tzdata do
   end
   # For each linked zone, call canonical zone
   Enum.each TzData.links, fn {alias_name, canonical_name} ->
-    def periods_for_time(unquote(alias_name), time_point, :utc) do
-      periods_for_time(unquote(canonical_name), time_point, :utc)
+    def periods_for_time(unquote(alias_name), time_point, time_type) do
+      periods_for_time(unquote(canonical_name), time_point, time_type)
     end
   end
 
