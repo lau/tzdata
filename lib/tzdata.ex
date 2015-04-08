@@ -136,7 +136,8 @@ defmodule Tzdata do
   end
 
   @min_cache_time_point :calendar.datetime_to_gregorian_seconds {{2014, 1, 1}, {0, 0, 0}} # 2014
-  @max_cache_time_point :calendar.datetime_to_gregorian_seconds {{2030, 1, 1}, {0, 0, 0}} # 2030
+  @max_cache_time_point :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 10, 1, 1}, {0, 0, 0}} # 10 years from compile time
+  @wall_time_cache_buffer 3600*24*3 # seconds to stay away from period limits in wall time to avoid problems with overlapping periods
   @doc """
   Get the periods that cover a certain point in time. Usually it will be a list
   with just one period. But in some cases it will be zero or two periods. For
@@ -157,12 +158,32 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Asia/Tokyo", 63587289600, :wall)
       [%{from: %{standard: 61589206800, utc: 61589174400, wall: 61589206800}, std_off: 0,
         until: %{standard: :max, utc: :max, wall: :max}, utc_off: 32400, zone_abbr: "JST"}]
+
+      # 63612960000 seconds is equivalent to 2015-10-25 02:40:00 and is an ambiguous
+      # wall time for the zone. So two possible periods will be returned.
+      iex> Tzdata.periods_for_time("Europe/Copenhagen", 63612960000, :wall)
+      [%{from: %{standard: 63594813600, utc: 63594810000, wall: 63594817200}, std_off: 3600,
+              until: %{standard: 63612957600, utc: 63612954000, wall: 63612961200}, utc_off: 3600, zone_abbr: "CEST"},
+            %{from: %{standard: 63612957600, utc: 63612954000, wall: 63612957600}, std_off: 0,
+              until: %{standard: 63626263200, utc: 63626259600, wall: 63626263200}, utc_off: 3600, zone_abbr: "CET"}]
+
+      # 63594816000 seconds is equivalent to 2015-03-29 02:40:00 and is a
+      # non-existing wall time for the zone. It is spring and the clock skips that hour.
+      iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
+      []
   """
+  # For certain years we generate functions that pattern match on certain time points
+  # to more quickly return the correct periods for most time points in those years
   Enum.each TzData.zone_list, fn (zone_name) ->
     {:ok, periods} = Periods.periods(zone_name)
     Enum.each periods, fn(period) ->
       if period.until.utc > @min_cache_time_point && period.from.utc < @max_cache_time_point do
         def periods_for_time(unquote(zone_name), time_point, :utc) when time_point > unquote(period.from.utc) and time_point < unquote(period.until.utc) do
+          unquote(Macro.escape([period]))
+        end
+        # For the wall time we make sure that the interval is has to match is a bit more
+        # narrow, but using the buffer
+        def periods_for_time(unquote(zone_name), time_point, :wall) when time_point-@wall_time_cache_buffer> unquote(period.from.wall) and time_point+@wall_time_cache_buffer < unquote(period.until.wall) do
           unquote(Macro.escape([period]))
         end
       end
@@ -176,12 +197,27 @@ defmodule Tzdata do
   end
 
   def periods_for_time(zone_name, time_point, time_type) do
-    {:ok, periods} = periods(zone_name)
+    {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
     periods
     |> Enum.filter(fn x ->
-                     ((x[:from][time_type] |>smaller_than_or_equals time_point)
-                     && (x[:until][time_type] |>bigger_than time_point))
+                     ((Map.get(x.from, time_type) |>smaller_than_or_equals time_point)
+                     && (Map.get(x.until, time_type) |>bigger_than time_point))
                    end)
+  end
+
+  # Use dynamic periods for points in time that are about 80 years into the future
+  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 80, 1, 1}, {0, 0, 0}}
+  defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
+    # If period in 30 years from compile time goes to :max, use normal periods
+    if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
+      periods(zone_name)
+    # If not, use dynamic periods
+    else
+      Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
+    end
+  end
+  defp possible_periods_for_zone_and_time(zone_name, _time_point) do
+    periods(zone_name)
   end
 
   leap_seconds_data = LeapSecParser.read_file
@@ -203,7 +239,7 @@ defmodule Tzdata do
   end
 
   just_leap_seconds = leap_seconds_data[:leap_seconds]
-    |> Enum.map &(&1[:date_time])
+    |> Enum.map &(Map.get(&1, :date_time))
   @doc """
   Get a list of known leap seconds. The leap seconds are datetime
   tuples representing the extra leap second to be inserted.

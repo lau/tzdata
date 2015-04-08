@@ -5,7 +5,9 @@ defmodule Tzdata.PeriodBuilder do
   alias Tzdata.Util, as: TzUtil
   alias Tzdata.BasicData, as: TzData
   @min_year 1900 # the first year to use when looking at rules
-  @max_year 2203 # the last year to use when looking at rules
+  # the last year to use when looking at rules
+  # 82 years from compile time
+  @max_year (:calendar.universal_time|>elem(0)|>elem(0)) + 82
 
   def calc_periods(zone_name) do
     calc_periods_h(zone_name) |> Enum.filter(fn(x) -> (x != nil) end)
