@@ -14,15 +14,15 @@ defmodule Tzdata.PeriodBuilder do
   end
   defp calc_periods_h(zone_name) do
     {:ok, zone} = zone(zone_name)
-    calc_periods(zone[:zone_lines], :min, hd(zone[:zone_lines])[:rules], "")
+    calc_periods(zone.zone_lines, :min, Map.get(hd(zone.zone_lines), :rules), "")
   end
 
   def calc_periods([zone_line_hd|zone_line_tl], from, zone_hd_rules, letter) when zone_hd_rules == nil do
     std_off = 0 # since there are no rules, there is no standard offset
-    utc_off = zone_line_hd[:gmtoff]
+    utc_off = zone_line_hd.gmtoff
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(zone_line_hd[:until], utc_off, std_off)
+    until_utc = datetime_to_utc(Map.get(zone_line_hd, :until), utc_off, std_off)
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
     period = %{
@@ -30,16 +30,16 @@ defmodule Tzdata.PeriodBuilder do
         utc_off: utc_off,
         from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
         until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: zone_line_hd[:format]
+        zone_abbr: zone_line_hd.format
       }
     h_calc_periods_no_rules(period, until_utc, zone_line_tl, letter)
   end
 
   def calc_periods([zone_line_hd|zone_line_tl], from, zone_hd_rules, letter) do
     std_off = 0 # we start out by assuming there is no offset. the rules might change this
-    utc_off = zone_line_hd[:gmtoff]
+    utc_off = zone_line_hd.gmtoff
     from_standard_time = standard_time_from_utc(from, utc_off)
-    zone_has_until_limit = zone_line_hd[:until] != nil
+    zone_has_until_limit = Map.get(zone_line_hd, :until) != nil
 
     # Get the year of the "from" time. We use the standard time with utc offset
     # applied. If for instance we are ahead of UTC and the period starts at the
@@ -51,7 +51,7 @@ defmodule Tzdata.PeriodBuilder do
     end
     if zone_has_until_limit do
       # If zone has an until - use that max year.
-      {{{max_year_to_use, _, _}, _}, _} = zone_line_hd[:until]
+      {{{max_year_to_use, _, _}, _}, _} = Map.get(zone_line_hd, :until)
     else
       max_year_to_use = @max_year
     end
@@ -72,16 +72,16 @@ defmodule Tzdata.PeriodBuilder do
   # If there is a zone line tail, we recursively add to the list of periods with that zone line tail
   def h_calc_periods_no_rules(period, until_utc, zone_line_tl, letter) do
     [period
-     |calc_periods(zone_line_tl, until_utc, hd(zone_line_tl)[:rules], letter)
+     |calc_periods(zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
     ]
   end
 
   defp calc_rule_periods_h(:amount, rules_value, [zone_line_hd|zone_line_tl], from, _, _, _, letter) do
     std_off = rules_value
-    utc_off = zone_line_hd[:gmtoff]
+    utc_off = Map.get(zone_line_hd, :gmtoff)
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(zone_line_hd[:until], utc_off, std_off)
+    until_utc = datetime_to_utc(Map.get(zone_line_hd, :until), utc_off, std_off)
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
     period = %{
@@ -89,7 +89,7 @@ defmodule Tzdata.PeriodBuilder do
         utc_off: utc_off,
         from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
         until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: zone_line_hd[:format]
+        zone_abbr: zone_line_hd.format
       }
     h_calc_periods_no_rules(period, until_utc, zone_line_tl, letter)
   end
@@ -111,7 +111,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: :max, wall: :max, utc: :max},
-      zone_abbr: TzUtil.period_abbrevation(zone_line[:format], std_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
     }
     [period]
   end
@@ -119,7 +119,7 @@ defmodule Tzdata.PeriodBuilder do
   def calc_rule_periods([zone_line|zone_line_tl], from, utc_off, std_off, years, _, letter) when years==[] do
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(zone_line[:until], utc_off, std_off)
+    until_utc = datetime_to_utc(Map.get(zone_line, :until), utc_off, std_off)
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
     period =
@@ -128,10 +128,10 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: TzUtil.period_abbrevation(zone_line[:format], std_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
     }
     [ period |
-      calc_periods(zone_line_tl, until_utc, hd(zone_line_tl)[:rules], letter)
+      calc_periods(zone_line_tl, until_utc, Map.get(hd(zone_line_tl), :rules), letter)
     ]
   end
 
@@ -160,22 +160,22 @@ defmodule Tzdata.PeriodBuilder do
         utc_off: utc_off,
         from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
         until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: TzUtil.period_abbrevation(zone_line[:format], std_off, letter)
+        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
       }
 
       # Some times this will calculate periods with zero length.
       # Set period to nil if the length is zero (ie. "until" equals "from")
       # Nil values will be filtered by another function
-      if period[:until][:utc] == period[:from][:utc], do: period = nil
+      if period.until.utc == period.from.utc, do: period = nil
       # If there are more rules for the year, continue with those rules
       if length(rules_tail) > 0 do
         [period|
-         calc_periods_for_year([zone_line|zone_line_tl], until_utc, utc_off, rule[:save], years, zone_rules, rules_tail, rule[:letter])
+         calc_periods_for_year([zone_line|zone_line_tl], until_utc, utc_off, rule.save, years, zone_rules, rules_tail, rule.letter)
         ]
       # Else continue with the next zone line
       else
         [period |
-         calc_rule_periods([zone_line|zone_line_tl], until_utc, utc_off, rule[:save], years|>tl, zone_rules, rule[:letter])
+         calc_rule_periods([zone_line|zone_line_tl], until_utc, utc_off, rule.save, years|>tl, zone_rules, rule.letter)
         ]
       end
   end
@@ -183,7 +183,7 @@ defmodule Tzdata.PeriodBuilder do
   # earliest rule first
   # sort by month!
   def sort_rules_by_time(rules) do
-    Enum.sort(rules, &(&1[:in] < &2[:in]))
+    Enum.sort(rules, &(&1.in < &2.in))
   end
 
   @doc """
