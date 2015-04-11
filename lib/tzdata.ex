@@ -205,8 +205,9 @@ defmodule Tzdata do
                    end)
   end
 
-  # Use dynamic periods for points in time that are about 80 years into the future
-  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 80, 1, 1}, {0, 0, 0}}
+  # Use dynamic periods for points in time that are about 50 years into the future
+  @years_in_the_future_where_precompiled_periods_are_used 40
+  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
   defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
     # If period in 30 years from compile time goes to :max, use normal periods
     if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
