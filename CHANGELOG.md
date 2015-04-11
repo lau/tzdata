@@ -1,5 +1,12 @@
 # Changelog for Tzdata
 
+## [0.1.2] - 2015-04-11
+### Changed
+
+Only precompile timezone period information about 40 years into the future
+instead of 80 years into the future. With 80 years compiling tzdata would fail
+on some machines with 1GB of RAM.
+
 ## [0.1.1] - 2015-04-09
 ### Added
 
