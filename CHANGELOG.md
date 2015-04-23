@@ -1,5 +1,15 @@
 # Changelog for Tzdata
 
+## [0.1.4] - 2015-04-23
+### Changed
+
+Removed redundant files that were present in 0.1.3 release on hex.
+
+## [0.1.3] - 2015-04-14
+### Changed
+
+Use data release 2015c as source data.
+
 ## [0.1.2] - 2015-04-11
 ### Changed
 
