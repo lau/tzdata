@@ -6,7 +6,7 @@ Status](https://travis-ci.org/lau/tzdata.svg?branch=master)](https://travis-ci.o
 
 Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
-Extracted from the [Kalends](https://github.com/lau/kalends) library.
+Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
 As of version 0.1.6 the tz release 2015e (from 2015-06-13 10:56:02 -0700)
 is used. The tz release version can be verified with the following function:
