@@ -8,7 +8,7 @@ defmodule Tzdata.FarFutureDynamicPeriods do
   # cache periods that are close to compile time.
 
   @moduledoc false
-  alias Tzdata.BasicData
+  alias Tzdata.ReleaseReader
   alias Tzdata.Util
   import Tzdata.PeriodBuilder
 
@@ -108,13 +108,13 @@ defmodule Tzdata.FarFutureDynamicPeriods do
   end
 
   defp last_line_for_zone(zone_name) do
-    z=Tzdata.BasicData.zone(zone_name) |> elem(1)
+    z=ReleaseReader.zone(zone_name) |> elem(1)
     last_line = z.zone_lines |> Enum.reverse |> hd
     last_line
   end
 
   defp rules_applying_for_rule_name_and_year(rule_name, year) do
-    {:ok, rules} = BasicData.rules(rule_name)
+    {:ok, rules} = ReleaseReader.rules_for_name(rule_name)
     rules
     |> Util.rules_for_year(year)
     |> Enum.sort &(&1.in < &2.in)
