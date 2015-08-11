@@ -1,6 +1,7 @@
 defmodule Tzdata.DataBuilder do
   alias Tzdata.DataLoader
   alias Tzdata.PeriodBuilder
+  alias Tzdata.LeapSecParser
 
   # download new data releases, then parse them, build
   # periods and save the data in an ETS table
@@ -8,9 +9,8 @@ defmodule Tzdata.DataBuilder do
   def load_and_save_table do
     {:ok, content_length, release_version, tzdata_dir} = DataLoader.download_new
     ets_table_name = ets_table_name_for_release_version(release_version)
-    table = :ets.new(ets_table_name, [:bag, :named_table])
+    table = :ets.new(ets_table_name, [:set, :named_table])
     map = Tzdata.BasicDataMap.from_files_in_dir(tzdata_dir)
-    File.rm_rf(tzdata_dir) # remove temporary tzdata dir
     :ets.insert(table, {:release_version, release_version})
     :ets.insert(table, {:archive_content_length, content_length})
     :ets.insert(table, {:rules, map.rules})
@@ -20,9 +20,11 @@ defmodule Tzdata.DataBuilder do
     :ets.insert(table, {:link_list, map.link_list})
     :ets.insert(table, {:zone_and_link_list, map.zone_and_link_list})
     :ets.insert(table, {:by_group, map.by_group})
+    :ets.insert(table, {:leap_sec_data, leap_sec_data(tzdata_dir)})
     map.zone_list |> Enum.each(fn zone_name ->
       insert_periods_for_zone(table, map, zone_name)
     end)
+    File.rm_rf(tzdata_dir) # remove temporary tzdata dir
     ets_tmp_file_name = "#{@release_dir}#{release_version}.tmp"
     ets_file_name = ets_file_name_for_release_version(release_version)
     File.mkdir_p(@release_dir)
@@ -34,6 +36,8 @@ defmodule Tzdata.DataBuilder do
     :file.rename(String.to_atom(ets_tmp_file_name), String.to_atom(ets_file_name))
     {:ok, content_length, release_version}
   end
+  defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
+
   def ets_file_name_for_release_version(release_version) do
     "#{@release_dir}#{release_version}.ets"
   end
@@ -45,25 +49,22 @@ defmodule Tzdata.DataBuilder do
   defp insert_periods_for_zone(table, map, zone_name) do
     key = String.to_atom(zone_name)
     periods = PeriodBuilder.calc_periods(map, zone_name)
-    periods |> Enum.each(fn period ->
-      :ets.insert(table, period_to_tuple(key, period))
+    tuple_periods = periods |> Enum.map(fn period ->
+      period_to_tuple(key, period)
     end)
+    :ets.insert(table, {key, tuple_periods})
   end
   defp period_to_tuple(key, period) do
     {key,
-     period.from.utc       |> min_max_to_int,
-     period.from.wall      |> min_max_to_int,
-     period.from.standard  |> min_max_to_int,
-     period.until.utc      |> min_max_to_int,
-     period.until.wall     |> min_max_to_int,
-     period.until.standard |> min_max_to_int,
+     period.from.utc,
+     period.from.wall,
+     period.from.standard,
+     period.until.utc,
+     period.until.wall,
+     period.until.standard,
      period.utc_off,
      period.std_off,
      period.zone_abbr,
     }
   end
-  @high_number_to_represent_max 500_000_000_000 # high number equivalent to sometime in the year 15844
-  defp min_max_to_int(:min), do: 0
-  defp min_max_to_int(:max), do: @high_number_to_represent_max
-  defp min_max_to_int(val), do: val
 end
