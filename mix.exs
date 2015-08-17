@@ -19,9 +19,9 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:earmark, "~> 0.1", only: :dev},
-      {:ex_doc, "~> 0.7", only: :dev},
       {:httpoison, "~> 0.7"},
+      {:earmark, "~> 0.1.17", only: :dev},
+      {:ex_doc, "~> 0.8", only: :dev},
     ]
   end
 
