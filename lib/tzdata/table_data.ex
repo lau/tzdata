@@ -1,4 +1,5 @@
 defmodule Tzdata.TableData do
+  @moduledoc false
 #  @moduledoc """
 #  Provides data about which timezones to use for which area. This is based
 #  on the information in the zone1970.tab part of the IANA tz database.
