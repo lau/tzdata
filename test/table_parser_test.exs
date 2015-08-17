@@ -1,9 +1,10 @@
 defmodule TableParserTest do
   use ExUnit.Case, async: true
   alias Tzdata.TableParser
+  @source_data_dir "test/tzdata_fixtures/source_data"
 
   test "should process file and return list of elements with comments, timezone, country codes, latlong" do
-    processed = TableParser.read_file |> Enum.to_list
+    processed = TableParser.read_file(@source_data_dir) |> Enum.to_list
     assert hd(processed)["comments"] != nil
     assert hd(processed)["timezone"] != nil
     assert length(hd(processed)["country_codes"]) >= 1

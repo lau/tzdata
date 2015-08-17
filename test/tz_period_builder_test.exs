@@ -2,8 +2,10 @@ defmodule TzPeriodBuilderTest do
   use ExUnit.Case, async: true
   alias Tzdata.PeriodBuilder, as: TzPeriodBuilder
 
+  @source_data_dir "test/tzdata_fixtures/source_data/"
   test "get periods for a zone" do
-    prds = TzPeriodBuilder.calc_periods("Europe/Copenhagen")
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
+    prds = TzPeriodBuilder.calc_periods(map, "Europe/Copenhagen")
     # First period. Based on Copenhagen 1st zone line
     assert hd(prds) == %{std_off: 0,
        from: %{utc: :min, wall: :min, standard: :min},
@@ -56,7 +58,7 @@ defmodule TzPeriodBuilderTest do
        until: %{standard: 62569072800, wall: 62569076400, utc: 62569069200},
        utc_off: 3600, zone_abbr: "CEST"}
 
-    prds = TzPeriodBuilder.calc_periods("Europe/Paris")
+    prds = TzPeriodBuilder.calc_periods(map, "Europe/Paris")
     assert hd(prds) == %{std_off: 0,
       from: %{utc: :min, wall: :min, standard: :min},
       until: %{standard: 59680540860, wall: 59680540860, utc: 59680540299},
@@ -64,24 +66,28 @@ defmodule TzPeriodBuilderTest do
   end
 
   test "get periods for a zone with just one zone line" do
-    prds = TzPeriodBuilder.calc_periods("Etc/UTC")
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
+    prds = TzPeriodBuilder.calc_periods(map, "Etc/UTC")
     assert hd(prds) == %{std_off: 0, from: %{utc: :min, standard: :min, wall: :min}, until: %{utc: :max, standard: :max, wall: :max}, utc_off: 0, zone_abbr: "UTC"}
-    prds = TzPeriodBuilder.calc_periods("Etc/GMT-10")
+    prds = TzPeriodBuilder.calc_periods(map, "Etc/GMT-10")
     assert hd(prds) == %{std_off: 0, from: %{utc: :min, standard: :min, wall: :min}, until: %{utc: :max, standard: :max, wall: :max}, utc_off: 36000, zone_abbr: "GMT-10"}
   end
 
   test "calculate periods for zone where last line has no rules" do
-    periods = TzPeriodBuilder.calc_periods("Africa/Abidjan")
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
+    periods = TzPeriodBuilder.calc_periods(map, "Africa/Abidjan")
     assert length(periods) == 2
   end
 
   test "calculate periods for zone where last line has rules, but the rules do not continue forever" do
-    periods = TzPeriodBuilder.calc_periods("Asia/Tokyo")
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
+    periods = TzPeriodBuilder.calc_periods(map, "Asia/Tokyo")
     assert periods|>Enum.at(11) == %{from: %{standard: 61589206800, utc: 61589174400, wall: 61589206800}, std_off: 0, until: %{standard: :max, utc: :max, wall: :max}, utc_off: 32400, zone_abbr: "JST"}
   end
 
   test "calculate periods for zone where in a zone line there is a rule which is an amount of time" do
-    periods = TzPeriodBuilder.calc_periods("Africa/Ceuta")
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
+    periods = TzPeriodBuilder.calc_periods(map, "Africa/Ceuta")
     assert periods |> Enum.at(5) == %{from: %{standard: 60724767600, utc: 60724767600, wall: 60724771200}, std_off: 3600,
              until: %{standard: 60739542000, utc: 60739542000, wall: 60739545600}, utc_off: 0, zone_abbr: "WEST"}
   end

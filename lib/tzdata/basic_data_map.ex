@@ -21,13 +21,15 @@ defmodule Tzdata.BasicDataMap do
     by_group = all_files_read
     |> Enum.map(fn {name, file_read} -> {name, Organizer.zone_and_link_list(file_read)} end)
     |> Enum.into Map.new
-    %{rules: rules,
+    {:ok,
+      %{rules: rules,
       zones: zones,
       links: links,
       zone_list: zone_list,
       link_list: link_list,
       zone_and_link_list: zone_and_link_list,
       by_group: by_group,
+      }
     }
   end
 end

@@ -254,7 +254,16 @@ defmodule Tzdata do
 #  end
   @point_from_which_to_use_dynamic_periods 64881043200 # 2055 Dec 31
   defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
-    Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
+    if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
+      periods(zone_name)
+    else
+      link_status = Tzdata.ReleaseReader.links |> Map.get(zone_name)
+      if link_status == nil do
+        Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
+      else
+        possible_periods_for_zone_and_time(link_status, time_point)
+      end
+    end
   end
   defp possible_periods_for_zone_and_time(zone_name, _time_point) do
     periods(zone_name)

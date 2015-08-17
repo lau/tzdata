@@ -10,7 +10,7 @@ defmodule Tzdata.DataBuilder do
     {:ok, content_length, release_version, tzdata_dir} = DataLoader.download_new
     ets_table_name = ets_table_name_for_release_version(release_version)
     table = :ets.new(ets_table_name, [:set, :named_table])
-    map = Tzdata.BasicDataMap.from_files_in_dir(tzdata_dir)
+    {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(tzdata_dir)
     :ets.insert(table, {:release_version, release_version})
     :ets.insert(table, {:archive_content_length, content_length})
     :ets.insert(table, {:rules, map.rules})

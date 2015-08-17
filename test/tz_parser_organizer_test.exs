@@ -2,6 +2,7 @@ defmodule TzParserOrganizerTest do
   use ExUnit.Case, async: true
   alias Tzdata.Parser, as: TzParser
   alias Tzdata.ParserOrganizer, as: Organizer
+  @source_data_dir "test/tzdata_fixtures/source_data"
 
   test "Zone map" do
     europe = TzParser.read_file("europe_shortened", "test/tzdata_fixtures")
@@ -10,13 +11,13 @@ defmodule TzParserOrganizerTest do
   end
 
   test "Rule map" do
-    europe = TzParser.read_file("europe")
+    europe = TzParser.read_file("europe", @source_data_dir)
     rules = Organizer.rules(europe)
     assert hd(rules["Denmark"]) == %{at: {{23, 0, 0}, :wall}, from: 1916, in: 5, letter: "S", name: "Denmark", on: "14", record_type: :rule, save: 3600, to: :only, type: "-"}
   end
 
   test "Link map. Should have alias name as key. And canonical zone as value" do
-    backward = TzParser.read_file("backward")
+    backward = TzParser.read_file("backward", @source_data_dir)
     links = Organizer.links(backward)
     assert links["Iceland"] == "Atlantic/Reykjavik"
   end

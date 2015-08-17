@@ -4,7 +4,7 @@ defmodule Tzdata.TableParser do
   import Tzdata.Util
 
   @file_name "zone1970.tab"
-  def read_file(dir_prepend \\ "source_data", file_name \\ @file_name) do
+  def read_file(dir_prepend, file_name \\ @file_name) do
     File.stream!("#{dir_prepend}/#{file_name}")
     |> process_file
   end

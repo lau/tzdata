@@ -3,7 +3,7 @@ defmodule Tzdata.Parser do
 
   require Tzdata.Util
   import Tzdata.Util
-  def read_file(file_name, dir_prepend \\ "source_data") do
+  def read_file(file_name, dir_prepend) do
     File.stream!("#{dir_prepend}/#{file_name}")
     |> process_file
   end

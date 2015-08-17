@@ -1,7 +1,7 @@
 defmodule UtilTest do
   use ExUnit.Case, async: true
   alias Tzdata.Util, as: TzUtil
-  alias Tzdata.BasicData, as: TzData
+  alias Tzdata.BasicDataMap
   import TzUtil
   doctest TzUtil
 
@@ -31,7 +31,8 @@ defmodule UtilTest do
   end
 
   test "rules that apply for a certain year" do
-    {:ok, rules} = TzData.rules("Denmark")
+    {:ok, map} = BasicDataMap.from_files_in_dir("test/tzdata_fixtures/source_data")
+    rules = map[:rules]["Denmark"]
     assert TzUtil.rules_for_year(rules, 1800) == []
     assert TzUtil.rules_for_year(rules, 1915) |> length == 0
     assert TzUtil.rules_for_year(rules, 1916) |> length == 2
