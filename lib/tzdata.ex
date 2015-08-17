@@ -20,7 +20,7 @@ defmodule Tzdata do
 #  A list of time zone names (e.g. `America/Los_Angeles`) are provided.
 #  As well as functions for finding out the UTC offset, abbreviation,
 #  standard offset (DST) for a specific point in time in a certain
-#  timezone.
+#  timezone.-dev
 #
 #  There are also functions for leap seconds. In the `Tzdata.TableData`
 #  module, data from the table that matches countries with time zones is
@@ -126,10 +126,12 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
-      [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
-        until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
-        utc_off: -884, zone_abbr: "LMT"}]
+     iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
+     [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
+       until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
+       utc_off: -884, zone_abbr: "LMT"}]
+     iex> Tzdata.periods("Not existing")
+     {:error, :not_found}
   """
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)

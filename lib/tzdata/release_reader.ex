@@ -24,7 +24,7 @@ defmodule Tzdata.ReleaseReader do
     else
       case Enum.member?(link_list, zone) do
         true -> periods_for_zone_or_link(links[zone])
-        _ -> {:error, nil}
+        _ -> {:error, :not_found}
       end
     end
   end
@@ -32,8 +32,6 @@ defmodule Tzdata.ReleaseReader do
     periods = lookup_periods_for_zone(zone)
     if length(periods) > 0 do
       periods |> hd |> elem(1)
-      #    else # try links if no periods were found when looking at canonical names
-      #      lookup_periods_for_zone(links[zone])
     end
   end
   defp lookup_periods_for_zone(zone) when is_binary(zone), do: simple_lookup(String.to_atom zone)
