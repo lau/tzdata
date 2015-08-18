@@ -1,5 +1,41 @@
 # Changelog for Tzdata
 
+## [0.5.1] - 2015-08-18
+### Fixed
+
+Now looks for and stores files in its own dir, even when a dependency.
+
+## [0.5.0] - 2015-08-17
+### Changed
+
+Changes the structure from using macros to using ETS tables
+for storing the data.
+
+This adds httpoison as a dependency.
+
+### Added
+
+Automatic updates of the timezone data runtime over the internet.
+
+### Fixed
+
+The ~2GB RAM limit for compilation is no longer in place.
+
+## [0.1.7] - 2015-08-11
+### Changed
+
+Use data release 2015f as source data.
+
+## [0.1.6] - 2015-06-14
+### Changed
+
+Use data release 2015e as source data.
+
+## [0.1.5] - 2015-04-24
+### Changed
+
+Use data release 2015d as source data.
+
 ## [0.1.4] - 2015-04-23
 ### Changed
 
