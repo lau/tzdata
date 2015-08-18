@@ -49,7 +49,7 @@ defmodule Tzdata.DataLoader do
     {tag, size}
   end
 
-  @remote_poll_file_name "priv/latest_remote_poll.txt"
+  @remote_poll_file_name Path.join(__DIR__, "../../priv/latest_remote_poll.txt")
   def set_latest_remote_poll_date do
     {y, m, d} = current_date_utc
     File.write(@remote_poll_file_name, "#{y}-#{m}-#{d}")

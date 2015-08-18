@@ -5,7 +5,7 @@ defmodule Tzdata.DataBuilder do
 
   # download new data releases, then parse them, build
   # periods and save the data in an ETS table
-  @release_dir  "priv/release_ets/"
+  @release_dir Path.join(__DIR__, "../../priv/release_ets")
   def load_and_save_table do
     {:ok, content_length, release_version, tzdata_dir} = DataLoader.download_new
     ets_table_name = ets_table_name_for_release_version(release_version)
@@ -33,13 +33,13 @@ defmodule Tzdata.DataBuilder do
     :ets.tab2file(table, :erlang.binary_to_list(ets_tmp_file_name))
     :ets.delete(table)
     # Then rename it, which should be an atomic operation.
-    :file.rename(String.to_atom(ets_tmp_file_name), String.to_atom(ets_file_name))
+    :file.rename(ets_tmp_file_name, ets_file_name)
     {:ok, content_length, release_version}
   end
   defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
 
   def ets_file_name_for_release_version(release_version) do
-    "#{@release_dir}#{release_version}.ets"
+    "#{@release_dir}/#{release_version}.ets"
   end
 
   def ets_table_name_for_release_version(release_version) do
