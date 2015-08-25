@@ -23,9 +23,29 @@ or directly: it is available on hex as `tzdata`.
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.1.7"},  ]
+  [  {:tzdata, "~> 0.5.1"},  ]
 end
 ```
+
+The Tzdata app must be started. This can be done by adding :tzdata to
+the applications list in your mix.exs file. An example:
+
+```elixir
+  def application do
+    [applications: [:logger, :tzdata],
+    ]
+  end
+```
+
+## Changes from 0.1.x
+
+The 0.5.1+ version uses ETS tables and automatically polls the IANA
+servers for updated data. When a new version of the timezone database
+is available, it is automatically downloaded and used.
+
+For use with [Calendar](https://github.com/lau/calendar) you can still
+specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
+using version ~> 0.5.1.
 
 ## Documentation
 
