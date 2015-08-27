@@ -59,7 +59,7 @@ Documentation can be found at http://hexdocs.pm/tzdata/
 
 IANA releases new versions of the [timezone database](https://www.iana.org/time-zones) frequently.
 
-For users of Tzdata version ~> 0.5.x+ the new database will automatically
+For users of Tzdata version 0.5.x+ the new database will automatically
 be downloaded, parsed, saved and used in place of the old data.
 
 ## License
