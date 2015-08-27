@@ -57,15 +57,10 @@ Documentation can be found at http://hexdocs.pm/tzdata/
 
 ## When new timezone data is released
 
-IANA releases new versions of the [timezone database](https://www.iana.org/time-zones) frequently. When that
-happens, hopefully this library will be updated within 24 hours with the new
-data and a new version of the tzdata Elixir package will be released.
+IANA releases new versions of the [timezone database](https://www.iana.org/time-zones) frequently.
 
-As an alternative to getting a new version of tzdata, users of this library
-can simply run the `dl_latest_data.sh` script and then recompile tzdata. Running
-that script will update the data in the `source_data` directory. The files in the
-`source_data` directory contains all the information about the timezones
-and is used by the tzdata library at compile time.
+For users of Tzdata version ~> 0.5.x+ the new database will automatically
+be downloaded, parsed, saved and used in place of the old data.
 
 ## License
 
