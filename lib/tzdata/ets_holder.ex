@@ -43,7 +43,7 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp load_ets_table(release_name) do
-    file_name = Path.join(__DIR__, "../../priv/release_ets/#{release_name}.ets")
+    file_name = Application.app_dir(:tzdata, "priv/release_ets/#{release_name}.ets")
     {:ok, _table} = :ets.file2tab(String.to_char_list(file_name))
   end
 
@@ -66,9 +66,9 @@ defmodule Tzdata.EtsHolder do
     |> List.last
     |> String.replace ".ets", ""
   end
-  @release_ets_dir Path.join(__DIR__, "../../priv/release_ets")
+
   defp release_files do
-    File.ls!(@release_ets_dir)
+    File.ls!(Application.app_dir(:tzdata, "priv/release_ets"))
     |> Enum.filter(&( Regex.match?(~r/^2\d{3}[a-z]\.ets/, &1) ))
     |> Enum.sort
   end
