@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+## [0.5.2] - 2015-09-08
+### Fixed
+
+Hardcoded paths would cause problems if moving tzdata
+to another location after compilation (Saša Jurić).
+
 ## [0.5.1] - 2015-08-18
 ### Fixed
 
