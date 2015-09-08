@@ -5,7 +5,6 @@ defmodule Tzdata.DataBuilder do
 
   # download new data releases, then parse them, build
   # periods and save the data in an ETS table
-  @release_dir Path.join(__DIR__, "../../priv/release_ets")
   def load_and_save_table do
     {:ok, content_length, release_version, tzdata_dir} = DataLoader.download_new
     ets_table_name = ets_table_name_for_release_version(release_version)
@@ -25,9 +24,9 @@ defmodule Tzdata.DataBuilder do
       insert_periods_for_zone(table, map, zone_name)
     end)
     File.rm_rf(tzdata_dir) # remove temporary tzdata dir
-    ets_tmp_file_name = "#{@release_dir}#{release_version}.tmp"
+    ets_tmp_file_name = "#{release_dir}#{release_version}.tmp"
     ets_file_name = ets_file_name_for_release_version(release_version)
-    File.mkdir_p(@release_dir)
+    File.mkdir_p(release_dir)
     # Create file using a .tmp line ending to avoid it being
     # recognized as a complete file before writing to it is complete.
     :ets.tab2file(table, :erlang.binary_to_list(ets_tmp_file_name))
@@ -39,7 +38,7 @@ defmodule Tzdata.DataBuilder do
   defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
 
   def ets_file_name_for_release_version(release_version) do
-    "#{@release_dir}/#{release_version}.ets"
+    "#{release_dir}/#{release_version}.ets"
   end
 
   def ets_table_name_for_release_version(release_version) do
@@ -66,5 +65,9 @@ defmodule Tzdata.DataBuilder do
      period.std_off,
      period.zone_abbr,
     }
+  end
+
+  defp release_dir do
+    Application.app_dir(:tzdata, "priv/release_ets")
   end
 end

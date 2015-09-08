@@ -49,23 +49,22 @@ defmodule Tzdata.DataLoader do
     {tag, size}
   end
 
-  @remote_poll_file_name Path.join(__DIR__, "../../priv/latest_remote_poll.txt")
   def set_latest_remote_poll_date do
     {y, m, d} = current_date_utc
-    File.write(@remote_poll_file_name, "#{y}-#{m}-#{d}")
+    File.write(remote_poll_file_name, "#{y}-#{m}-#{d}")
   end
   def latest_remote_poll_date do
     latest_remote_poll_file_exists? |> do_latest_remote_poll_date
   end
   defp do_latest_remote_poll_date(_file_exists = true) do
-    date = File.stream!(@remote_poll_file_name) |> Enum.to_list |> hd
+    date = File.stream!(remote_poll_file_name) |> Enum.to_list |> hd
     |> String.split("-")
     |> Enum.map(&(Integer.parse(&1)|>elem(0)))
     |> List.to_tuple
     {:ok, date}
   end
   defp do_latest_remote_poll_date(_file_exists = false), do: {:unknown, nil}
-  defp latest_remote_poll_file_exists?, do: File.exists? @remote_poll_file_name
+  defp latest_remote_poll_file_exists?, do: File.exists? remote_poll_file_name
 
   defp current_date_utc, do: :calendar.universal_time |> elem(0)
 
@@ -78,5 +77,9 @@ defmodule Tzdata.DataLoader do
         {:ok, days_today - days_latest}
       _ -> {tag, date}
     end
+  end
+
+  def remote_poll_file_name do
+    Application.app_dir(:tzdata, "priv/latest_remote_poll.txt")
   end
 end
