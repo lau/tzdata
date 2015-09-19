@@ -5,7 +5,8 @@ defmodule Tzdata.DataLoader do
   #@download_url "https://www.iana.org/time-zones/repository/releases/tzdata2015a.tar.gz"
   def download_new(url\\@download_url) do
     set_latest_remote_poll_date
-    %HTTPoison.Response{body: body, headers: headers} = HTTPoison.get!(url)
+    {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
+    {:ok, body} = :hackney.body(client_ref)
     content_length = content_length_from_headers(headers)
     new_dir_name ="priv/tmp_downloads/#{content_length}/"
     File.mkdir_p(new_dir_name)
@@ -37,15 +38,14 @@ defmodule Tzdata.DataLoader do
     captured["version"]
   end
 
-  @file_size_poll_timeout 5000
   def latest_file_size(url\\@download_url) do
     set_latest_remote_poll_date
-    url |> HTTPoison.head([], timeout: @file_size_poll_timeout)
+    :hackney.head(url, [], "", [])
     |> do_latest_file_size
   end
   defp do_latest_file_size({tag = :error, error}), do: {tag, error}
-  defp do_latest_file_size({tag, resp}) do
-    size = resp.headers |> content_length_from_headers
+  defp do_latest_file_size({tag, _resp_code, headers}) do
+    size = headers |> content_length_from_headers
     {tag, size}
   end
 
