@@ -1,9 +1,11 @@
 defmodule Tzdata.DataLoader do
+  require Logger
   # Can poll for newest version of tz data and can download
   # and extract it.
   @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
   #@download_url "https://www.iana.org/time-zones/repository/releases/tzdata2015a.tar.gz"
   def download_new(url\\@download_url) do
+    Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date
     {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
@@ -14,6 +16,7 @@ defmodule Tzdata.DataLoader do
     File.write!(target_filename, body)
     extract(target_filename, new_dir_name)
     release_version = release_version_for_dir(new_dir_name)
+    Logger.debug "Tzdata data downloaded. Release version #{release_version}."
     {:ok, content_length, release_version, new_dir_name}
   end
   defp extract(filename, target_dir) do

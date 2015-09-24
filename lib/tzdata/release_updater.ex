@@ -1,4 +1,5 @@
 defmodule Tzdata.ReleaseUpdater do
+  require Logger
   use GenServer
   alias Tzdata.DataLoader
 
@@ -26,8 +27,11 @@ defmodule Tzdata.ReleaseUpdater do
   end
 
   def poll_for_update do
+    Logger.debug "Tzdata polling for update."
     case loaded_tzdata_matches_iana_file_size? do
-      {:ok, true} -> :do_nothing
+      {:ok, true} ->
+        Logger.debug "Tzdata polling shows the loaded tz database is up to date."
+        :do_nothing
       {:ok, false} ->
         Tzdata.DataBuilder.load_and_save_table
         Tzdata.EtsHolder.new_release_has_been_downloaded
