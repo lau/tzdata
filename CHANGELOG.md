@@ -1,5 +1,14 @@
 # Changelog for Tzdata
 
+## [0.5.3] - 2015-09-24
+### Added
+
+- Logging of events related to updating the database
+
+### Changed
+
+- Get rid of HTTPoison dependency in favour of using Hackney directly.
+
 ## [0.5.2] - 2015-09-08
 ### Fixed
 
