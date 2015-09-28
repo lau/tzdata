@@ -51,6 +51,12 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.2.
 
+You can also disable the automatic downloading of new timezone databases:
+
+```elixir
+config :tzdata, :autoupdate, :disabled
+```
+
 ## Documentation
 
 Documentation can be found at http://hexdocs.pm/tzdata/

@@ -12,8 +12,10 @@ defmodule Tzdata.Mixfile do
   end
 
   def application do
-    [applications: [:hackney, :logger],
-    mod: {Tzdata.App, []}
+    [
+      applications: [:hackney, :logger],
+      env: env,
+      mod: {Tzdata.App, []}
     ]
   end
 
@@ -23,6 +25,10 @@ defmodule Tzdata.Mixfile do
       {:earmark, "~> 0.1.17", only: :dev},
       {:ex_doc, "~> 0.8", only: :dev},
     ]
+  end
+
+  defp env do
+    [autoupdate: :enabled]
   end
 
   defp description do

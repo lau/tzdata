@@ -2,11 +2,11 @@ defmodule Tzdata.EtsHolder do
   require Logger
   use GenServer
   alias Tzdata.DataBuilder
-  def start_link(_) do
+  def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
-  def init(_) do
+  def init([]) do
     make_sure_a_release_is_on_file
     create_current_release_ets_table
     {:ok, release_name} = load_release
