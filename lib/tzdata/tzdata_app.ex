@@ -2,7 +2,16 @@ defmodule Tzdata.App do
   use Application
 
   def start(_type, _args) do
-    Tzdata.EtsHolderSupervisor.start_link
-    Tzdata.ReleaseUpdaterSupervisor.start_link
+    import Supervisor.Spec
+
+    children = [
+      worker(Tzdata.EtsHolder, [])
+    ]
+    children = case Application.fetch_env(:tzdata, :autoupdate) do
+      {:ok, :enabled} -> children ++ [worker(Tzdata.ReleaseUpdater, [])]
+      {:ok, :disabled} -> children
+    end
+
+    {:ok, _} = Supervisor.start_link(children, strategy: :one_for_one)
   end
 end

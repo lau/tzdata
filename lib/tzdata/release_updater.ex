@@ -3,11 +3,11 @@ defmodule Tzdata.ReleaseUpdater do
   use GenServer
   alias Tzdata.DataLoader
 
-  def start_link(_) do
+  def start_link() do
     GenServer.start_link(__MODULE__, [], name: :tzdata_release_updater)
   end
 
-  def init(_) do
+  def init([]) do
     Task.async(fn -> :timer.sleep(3000); Tzdata.ReleaseUpdater.check_if_time_to_update end)
     {:ok, []}
   end
