@@ -41,6 +41,17 @@ the applications list in your mix.exs file. An example:
   end
 ```
 
+## Automatic data updates
+
+By default Tzdata will poll for timezone database updates every day.
+In case new data is available, Tzdata will download it and use it.
+
+This feature can be disabled with the following configuration:
+
+```elixir
+config :tzdata, :autoupdate, :disabled
+```
+
 ## Changes from 0.1.x
 
 The 0.5.1+ versions uses ETS tables and automatically polls the IANA
@@ -50,12 +61,6 @@ is available, it is automatically downloaded and used.
 For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.2.
-
-You can also disable the automatic downloading of new timezone databases:
-
-```elixir
-config :tzdata, :autoupdate, :disabled
-```
 
 ## Documentation
 
