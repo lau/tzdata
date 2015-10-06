@@ -126,12 +126,12 @@ defmodule Tzdata do
 
   ## Example
 
-     iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
-     [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
-       until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
-       utc_off: -884, zone_abbr: "LMT"}]
-     iex> Tzdata.periods("Not existing")
-     {:error, :not_found}
+      iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
+      [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
+        until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
+        utc_off: -884, zone_abbr: "LMT"}]
+      iex> Tzdata.periods("Not existing")
+      {:error, :not_found}
   """
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
