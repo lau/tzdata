@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.1.8] - 2015-10-07
+### Changed
+
+Use data release 2015g as source data.
+
 ## [0.1.4] - 2015-04-23
 ### Changed
 
