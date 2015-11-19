@@ -3,14 +3,13 @@ defmodule Tzdata.DataLoader do
   # Can poll for newest version of tz data and can download
   # and extract it.
   @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
-  #@download_url "https://www.iana.org/time-zones/repository/releases/tzdata2015a.tar.gz"
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date
     {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
     content_length = content_length_from_headers(headers)
-    new_dir_name ="priv/tmp_downloads/#{content_length}/"
+    new_dir_name ="#{data_dir}/tmp_downloads/#{content_length}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
@@ -31,7 +30,7 @@ defmodule Tzdata.DataLoader do
   end
 
   def release_version_for_dir(dir_name) do
-    release_string = "#{dir_name}NEWS"
+    release_string = "#{dir_name}/NEWS"
     |> File.stream!
     |> Stream.filter(fn(string) -> Regex.match?(~r/Release/, string) end)
     |> Enum.take(100) # 100 lines should be more than enough to get the first Release line
@@ -83,6 +82,7 @@ defmodule Tzdata.DataLoader do
   end
 
   def remote_poll_file_name do
-    Application.app_dir(:tzdata, "priv/latest_remote_poll.txt")
+    data_dir <> "/latest_remote_poll.txt"
   end
+  defp data_dir, do: Tzdata.Util.data_dir
 end

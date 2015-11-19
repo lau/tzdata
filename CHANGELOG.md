@@ -1,5 +1,9 @@
 # Changelog for Tzdata
 
+### Added
+- Configurable location for data directory.
+  e.g. `config :tzdata, :data_dir, "/etc/elixir_tzdata_data"`
+
 ## [0.5.4] - 2015-10-06
 ### Added
 

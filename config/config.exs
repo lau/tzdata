@@ -3,3 +3,4 @@
 use Mix.Config
 
 config :tzdata, :autoupdate, :enabled
+#config :tzdata, :data_dir, "/etc/elixir_tzdata_storage"

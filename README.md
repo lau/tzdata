@@ -41,6 +41,22 @@ the applications list in your mix.exs file. An example:
   end
 ```
 
+## Data directory and releases
+
+The library uses a file directory to store data. By default this directory
+is `priv`. In some cases you might want to use a different directory. For
+instance when using releases.  If so create the directory, make sure Elixir
+can read and write to it. Then use elixir config files like this to tell
+Tzdata to use that directory:
+
+```elixir
+config :tzdata, :data_dir, "/etc/elixir_tzdata_data"
+```
+
+You can choose to add the `release_ets` directory from `priv` to that directory
+containing the `20xxx.ets` file that ships with this library.
+If not, Tzdata will try to download data from iana.org at startup.
+
 ## Automatic data updates
 
 By default Tzdata will poll for timezone database updates every day.

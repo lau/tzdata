@@ -47,7 +47,7 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp load_ets_table(release_name) do
-    file_name = Application.app_dir(:tzdata, "priv/release_ets/#{release_name}.ets")
+    file_name = "#{release_dir}/#{release_name}.ets"
     {:ok, _table} = :ets.file2tab(String.to_char_list(file_name))
   end
 
@@ -61,20 +61,28 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp make_sure_a_release_is_on_file do
+    make_sure_a_release_dir_exists
     if length(release_files) == 0 do
       Tzdata.DataBuilder.load_and_save_table
     end
+  end
+  defp make_sure_a_release_dir_exists do
+    File.mkdir(release_dir)
   end
 
   defp newest_release_on_file do
     release_files
     |> List.last
-    |> String.replace ".ets", ""
+    |> String.replace(".ets", "")
   end
 
   defp release_files do
-    File.ls!(Application.app_dir(:tzdata, "priv/release_ets"))
+    File.ls!(release_dir)
     |> Enum.filter(&( Regex.match?(~r/^2\d{3}[a-z]\.ets/, &1) ))
     |> Enum.sort
+  end
+
+  defp release_dir do
+    Tzdata.Util.data_dir <> "/release_ets"
   end
 end

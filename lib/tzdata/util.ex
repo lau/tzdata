@@ -336,4 +336,12 @@ defmodule Tzdata.Util do
   def filter_empty_lines(input) do
     Stream.filter(input, fn x -> !Regex.match?(~r/^\n$/, x) end)
   end
+
+  def data_dir do
+    case Application.fetch_env(:tzdata, :data_dir) do
+      {:ok, nil} -> Application.app_dir(:tzdata, "priv")
+      {:ok, dir} -> dir
+      _          -> Application.app_dir(:tzdata, "priv")
+    end
+  end
 end

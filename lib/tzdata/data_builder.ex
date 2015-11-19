@@ -24,7 +24,7 @@ defmodule Tzdata.DataBuilder do
       insert_periods_for_zone(table, map, zone_name)
     end)
     File.rm_rf(tzdata_dir) # remove temporary tzdata dir
-    ets_tmp_file_name = "#{release_dir}#{release_version}.tmp"
+    ets_tmp_file_name = "#{release_dir}/#{release_version}.tmp"
     ets_file_name = ets_file_name_for_release_version(release_version)
     File.mkdir_p(release_dir)
     # Create file using a .tmp line ending to avoid it being
@@ -68,6 +68,6 @@ defmodule Tzdata.DataBuilder do
   end
 
   defp release_dir do
-    Application.app_dir(:tzdata, "priv/release_ets")
+    Tzdata.Util.data_dir <> "/release_ets"
   end
 end
