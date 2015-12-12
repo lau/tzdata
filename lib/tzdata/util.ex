@@ -277,7 +277,7 @@ defmodule Tzdata.Util do
   for the year.
   """
   def rules_for_year(rules, year) do
-    rules |> Enum.filter fn(rule) -> rule_applies_for_year(rule, year) end
+    rules |> Enum.filter(fn(rule) -> rule_applies_for_year(rule, year) end)
   end
 
   @doc """

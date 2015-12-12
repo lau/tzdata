@@ -29,11 +29,11 @@ defmodule BasicDataMapTest do
   test "Should provide list of zone names and link names" do
     {:ok, map} = BasicDataMap.from_files_in_dir("test/tzdata_fixtures/source_data")
     # London is cononical zone. Jersey is a link
-    assert map[:zone_list] |> Enum.member? "Europe/London"
+    assert map[:zone_list] |> Enum.member?("Europe/London")
     assert map[:zone_list] |> Enum.member?("Europe/Jersey") != true
     assert map[:link_list] |> Enum.member?("Europe/London") != true
-    assert map[:link_list] |> Enum.member? "Europe/Jersey"
-    assert map[:zone_and_link_list] |> Enum.member? "Europe/London"
-    assert map[:zone_and_link_list] |> Enum.member? "Europe/Jersey"
+    assert map[:link_list] |> Enum.member?("Europe/Jersey")
+    assert map[:zone_and_link_list] |> Enum.member?("Europe/London")
+    assert map[:zone_and_link_list] |> Enum.member?("Europe/Jersey")
   end
 end

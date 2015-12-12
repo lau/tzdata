@@ -216,8 +216,8 @@ defmodule Tzdata do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
     periods
     |> consecutive_matching(fn x ->
-                     ((Map.get(x.from, time_type) |>smaller_than_or_equals time_point)
-                     && (Map.get(x.until, time_type) |>bigger_than time_point))
+                     ((Map.get(x.from, time_type) |>smaller_than_or_equals(time_point))
+                     && (Map.get(x.until, time_type) |>bigger_than(time_point)))
                    end)
   end
 
@@ -279,7 +279,7 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take 3
+      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take(3)
       [%{date_time: {{1971, 12, 31}, {23, 59, 60}}, tai_diff: 10},
        %{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
        %{date_time: {{1972, 12, 31}, {23, 59, 60}}, tai_diff: 12}]
@@ -298,7 +298,7 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds |> Enum.take 3
+      iex> Tzdata.leap_seconds |> Enum.take(3)
       [{{1971, 12, 31}, {23, 59, 60}},
        {{1972,  6, 30}, {23, 59, 60}},
        {{1972, 12, 31}, {23, 59, 60}}]
@@ -306,7 +306,7 @@ defmodule Tzdata do
   def leap_seconds do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
     just_leap_seconds = leap_seconds_data[:leap_seconds]
-      |> Enum.map &(Map.get(&1, :date_time))
+      |> Enum.map(&(Map.get(&1, :date_time)))
     just_leap_seconds
   end
 

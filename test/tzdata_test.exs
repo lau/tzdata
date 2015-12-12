@@ -6,7 +6,7 @@ defmodule TzdataTest do
     # roughly 150 years from now
     point_in_time = :calendar.universal_time |> :calendar.datetime_to_gregorian_seconds |> + (3600*24*365*150)
     # This should not raise any exceptions
-    Tzdata.zone_list |> Enum.map &( Tzdata.periods_for_time(&1, point_in_time, :wall) )
+    Tzdata.zone_list |> Enum.map(&(Tzdata.periods_for_time(&1, point_in_time, :wall)))
   end
 
   test "time for going on DST should be the same in the far future for zones without changes" do
