@@ -1,5 +1,9 @@
 # Changelog for Tzdata
 
+## [0.5.6] - 2015-12-23
+### Fixed
+- Get rid of Elixir warnings
+
 ## [0.5.5] - 2015-11-19
 ### Added
 - Configurable location for data directory.
