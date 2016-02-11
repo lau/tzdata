@@ -32,15 +32,15 @@ defmodule Tzdata.Util do
   defp _string_amount_to_secs(list) when length(list) == 1 or length(list) == 2 do
     list ++ ["00"] |> _string_amount_to_secs
   end
+  # maybe the hours are negative, so multiply the result by -1
+  defp _string_amount_to_secs([<<?- :: utf8>> <> hours | rest]) when length(rest) == 2 do
+    -1 * _string_amount_to_secs([hours | rest])
+  end
   defp _string_amount_to_secs(list) when length(list) == 3 do
     {hours, ""} = Integer.parse(hd(list))
     {mins, ""} = Integer.parse(list|>Enum.at(1))
     {secs, ""} = Integer.parse(list|>Enum.at(2))
-    # maybe the hours are negative, so use the absolute value in this calculation
-    result = abs(hours)*3600+mins*60+secs
-    # if hours are negative, the whole result should be negative: multiply by -1
-    if Regex.match?(~r/-/, hd(list)), do: result = -1*result
-    result
+    hours*3600+mins*60+secs
   end
 
   @doc """

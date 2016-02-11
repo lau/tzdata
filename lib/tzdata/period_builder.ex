@@ -152,38 +152,38 @@ defmodule Tzdata.PeriodBuilder do
   end
 
   def calc_periods_for_year(btz_data, [zone_line|zone_line_tl], from, utc_off, std_off, years, zone_rules, rules_for_year, letter) do
-      year = years |> hd
-      rule = rules_for_year |> hd
-      rules_tail = rules_for_year |> tl
-      from_standard_time = standard_time_from_utc(from, utc_off)
-      from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-      until_utc = datetime_to_utc(TzUtil.time_for_rule(rule, year), utc_off, std_off)
-      until_standard_time = standard_time_from_utc(until_utc, utc_off)
-      until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-      period =
-      %{
-        std_off: std_off,
-        utc_off: utc_off,
-        from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-        until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
-      }
+    year = years |> hd
+    rule = rules_for_year |> hd
+    rules_tail = rules_for_year |> tl
+    from_standard_time = standard_time_from_utc(from, utc_off)
+    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
+    until_utc = datetime_to_utc(TzUtil.time_for_rule(rule, year), utc_off, std_off)
+    until_standard_time = standard_time_from_utc(until_utc, utc_off)
+    until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
 
-      # Some times this will calculate periods with zero length.
-      # Set period to nil if the length is zero (ie. "until" equals "from")
-      # Nil values will be filtered by another function
-      if period.until.utc == period.from.utc, do: period = nil
-      # If there are more rules for the year, continue with those rules
-      if length(rules_tail) > 0 do
-        [period|
-         calc_periods_for_year(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years, zone_rules, rules_tail, rule.letter)
-        ]
-      # Else continue with the next zone line
-      else
-        [period |
-         calc_rule_periods(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years|>tl, zone_rules, rule.letter)
-        ]
-      end
+    # Some times this will calculate periods with zero length.
+    # Set period to nil if the length is zero (ie. "until" equals "from")
+    # Nil values will be filtered by another function
+    period =
+      if until_utc == from, do: nil,
+        else: %{
+                std_off: std_off,
+                utc_off: utc_off,
+                from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
+                until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
+                zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+              }
+    # If there are more rules for the year, continue with those rules
+    if length(rules_tail) > 0 do
+      [period|
+       calc_periods_for_year(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years, zone_rules, rules_tail, rule.letter)
+      ]
+    # Else continue with the next zone line
+    else
+      [period |
+       calc_rule_periods(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years|>tl, zone_rules, rule.letter)
+      ]
+    end
   end
 
   # earliest rule first

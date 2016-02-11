@@ -136,12 +136,10 @@ defmodule Tzdata.Parser do
   # Converts keys to atoms. Discards "name"
   defp captured_zone_map_clean_up(captured) do
     until = transform_until_datetime(captured["until"])
-    map = %{gmtoff: string_amount_to_secs(captured["gmtoff"]),
-    rules: transform_zone_line_rules(captured["rules"]),
-    format: captured["format"],
-    until: until}
-    # remove until key if it is nil
-    if (map[:until]==nil) do map = Map.delete(map,:until) end
-    map
+    Map.merge %{gmtoff: string_amount_to_secs(captured["gmtoff"]),
+      rules: transform_zone_line_rules(captured["rules"]),
+      format: captured["format"]},
+        # remove until key if it is nil
+        if(until == nil, do: %{}, else: %{until: until})
   end
 end
