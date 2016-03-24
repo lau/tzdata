@@ -1,5 +1,14 @@
 # Changelog for Tzdata
 
+## [0.5.7] - 2016-03-23
+### Changed
+
+- Ship with tz data version 2016c
+
+### Fixed
+
+- Get rid of Elixir warnings in Elixir 1.3.0-dev
+
 ## [0.5.6] - 2015-12-23
 ### Fixed
 - Get rid of Elixir warnings
