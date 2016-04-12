@@ -6,8 +6,7 @@ defmodule Tzdata.DataLoader do
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date
-    {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
-    {:ok, body} = :hackney.body(client_ref)
+    {:ok, {{_, 200, _}, headers, body}} = :httpc.request(String.to_char_list(@download_url))
     content_length = content_length_from_headers(headers)
     new_dir_name ="#{data_dir}/tmp_downloads/#{content_length}/"
     File.mkdir_p(new_dir_name)
@@ -23,10 +22,8 @@ defmodule Tzdata.DataLoader do
     File.rm(filename) # remove tar.gz file after extraction
   end
   defp content_length_from_headers(headers) do
-    headers
-    |> Enum.filter(fn {k, _v} -> k == "Content-Length" end)
-    |> hd |> elem(1)
-    |> String.to_integer
+    {_, content_length_charlist} = List.keyfind(headers, 'content-length', 0)
+    List.to_integer(content_length_charlist)
   end
 
   def release_version_for_dir(dir_name) do
@@ -42,13 +39,12 @@ defmodule Tzdata.DataLoader do
 
   def latest_file_size(url\\@download_url) do
     set_latest_remote_poll_date
-    :hackney.head(url, [], "", [])
+    :httpc.request(:head, {String.to_char_list(url), []}, [], [])
     |> do_latest_file_size
   end
-  defp do_latest_file_size({tag = :error, error}), do: {tag, error}
-  defp do_latest_file_size({tag, _resp_code, headers}) do
-    size = headers |> content_length_from_headers
-    {tag, size}
+  defp do_latest_file_size({:error, error}), do: {:error, error}
+  defp do_latest_file_size({:ok, {_status, headers, _body}}) do
+    {:ok, content_length_from_headers(headers)}
   end
 
   def set_latest_remote_poll_date do
