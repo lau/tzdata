@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.5.8] - 2016-06-05
+### Changed
+
+- Improve error handling for malformated contents of the "latest_remote_poll.txt" file
+
 ## [0.5.7] - 2016-03-23
 ### Changed
 
