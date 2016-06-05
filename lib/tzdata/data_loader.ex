@@ -9,7 +9,7 @@ defmodule Tzdata.DataLoader do
     {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
     content_length = content_length_from_headers(headers)
-    new_dir_name ="#{data_dir}/tmp_downloads/#{content_length}/"
+    new_dir_name ="#{data_dir}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
@@ -59,13 +59,23 @@ defmodule Tzdata.DataLoader do
     latest_remote_poll_file_exists? |> do_latest_remote_poll_date
   end
   defp do_latest_remote_poll_date(_file_exists = true) do
-    date = File.stream!(remote_poll_file_name) |> Enum.to_list |> hd
+    File.stream!(remote_poll_file_name)
+    |> Enum.to_list
+    |> return_value_for_file_list
+  end
+  defp do_latest_remote_poll_date(_file_exists = false), do: {:unknown, nil}
+  defp return_value_for_file_list([]), do: {:unknown, nil}
+  defp return_value_for_file_list([one_line]) do
+    date = one_line
     |> String.split("-")
     |> Enum.map(&(Integer.parse(&1)|>elem(0)))
     |> List.to_tuple
     {:ok, date}
   end
-  defp do_latest_remote_poll_date(_file_exists = false), do: {:unknown, nil}
+  defp return_value_for_file_list(_) do
+    raise "latest_remote_poll.txt contains more than 1 line. It should contain exactly 1 line. Remove the file latest_remote_poll.txt in order to resolve the problem."
+  end
+
   defp latest_remote_poll_file_exists?, do: File.exists? remote_poll_file_name
 
   defp current_date_utc, do: :calendar.universal_time |> elem(0)
