@@ -19,16 +19,16 @@ defmodule Tzdata.ReleaseUpdater do
     case tag do
       :ok ->
         if days >= @days_between_remote_poll do
-          poll_for_update
+          poll_for_update()
         end
-      _ -> poll_for_update
+      _ -> poll_for_update()
     end
     Task.async(fn -> :timer.sleep(@msecs_between_checking_date); Tzdata.ReleaseUpdater.check_if_time_to_update end)
   end
 
   def poll_for_update do
     Logger.debug "Tzdata polling for update."
-    case loaded_tzdata_matches_iana_file_size? do
+    case loaded_tzdata_matches_iana_file_size?() do
       {:ok, true} ->
         Logger.debug "Tzdata polling shows the loaded tz database is up to date."
         :do_nothing

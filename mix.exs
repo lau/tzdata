@@ -6,15 +6,15 @@ defmodule Tzdata.Mixfile do
      name: "tzdata",
      version: "0.5.8",
      elixir: "~> 1.0",
-     package: package,
-     description: description,
-     deps: deps]
+     package: package(),
+     description: description(),
+     deps: deps()]
   end
 
   def application do
     [
       applications: [:hackney, :logger],
-      env: env,
+      env: env(),
       mod: {Tzdata.App, []}
     ]
   end

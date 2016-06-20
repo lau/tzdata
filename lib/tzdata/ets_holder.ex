@@ -7,9 +7,9 @@ defmodule Tzdata.EtsHolder do
   end
 
   def init([]) do
-    make_sure_a_release_is_on_file
-    create_current_release_ets_table
-    {:ok, release_name} = load_release
+    make_sure_a_release_is_on_file()
+    create_current_release_ets_table()
+    {:ok, release_name} = load_release()
     {:ok, release_name}
   end
 
@@ -18,7 +18,7 @@ defmodule Tzdata.EtsHolder do
   end
 
   def handle_cast(:new_release_has_been_downloaded, state) do
-    {:ok, new_release_name} = load_release
+    {:ok, new_release_name} = load_release()
     if state != new_release_name do
       Logger.info "Tzdata has updated the release from #{state} to #{new_release_name}"
       delete_ets_table_for_version(state)
@@ -40,14 +40,14 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp load_release do
-    release_name = newest_release_on_file
+    release_name = newest_release_on_file()
     load_ets_table(release_name)
     set_current_release(release_name)
     {:ok, release_name}
   end
 
   defp load_ets_table(release_name) do
-    file_name = "#{release_dir}/#{release_name}.ets"
+    file_name = "#{release_dir()}/#{release_name}.ets"
     {:ok, _table} = :ets.file2tab(String.to_char_list(file_name))
   end
 
@@ -61,23 +61,23 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp make_sure_a_release_is_on_file do
-    make_sure_a_release_dir_exists
-    if length(release_files) == 0 do
+    make_sure_a_release_dir_exists()
+    if length(release_files()) == 0 do
       Tzdata.DataBuilder.load_and_save_table
     end
   end
   defp make_sure_a_release_dir_exists do
-    File.mkdir(release_dir)
+    File.mkdir(release_dir())
   end
 
   defp newest_release_on_file do
-    release_files
+    release_files()
     |> List.last
     |> String.replace(".ets", "")
   end
 
   defp release_files do
-    File.ls!(release_dir)
+    File.ls!(release_dir())
     |> Enum.filter(&( Regex.match?(~r/^2\d{3}[a-z]\.ets/, &1) ))
     |> Enum.sort
   end
