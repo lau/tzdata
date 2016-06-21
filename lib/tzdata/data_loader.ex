@@ -5,11 +5,11 @@ defmodule Tzdata.DataLoader do
   @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
-    set_latest_remote_poll_date
+    set_latest_remote_poll_date()
     {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
     content_length = content_length_from_headers(headers)
-    new_dir_name ="#{data_dir}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
+    new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
@@ -41,7 +41,7 @@ defmodule Tzdata.DataLoader do
   end
 
   def latest_file_size(url\\@download_url) do
-    set_latest_remote_poll_date
+    set_latest_remote_poll_date()
     :hackney.head(url, [], "", [])
     |> do_latest_file_size
   end
@@ -52,14 +52,14 @@ defmodule Tzdata.DataLoader do
   end
 
   def set_latest_remote_poll_date do
-    {y, m, d} = current_date_utc
-    File.write(remote_poll_file_name, "#{y}-#{m}-#{d}")
+    {y, m, d} = current_date_utc()
+    File.write(remote_poll_file_name(), "#{y}-#{m}-#{d}")
   end
   def latest_remote_poll_date do
-    latest_remote_poll_file_exists? |> do_latest_remote_poll_date
+    latest_remote_poll_file_exists?() |> do_latest_remote_poll_date
   end
   defp do_latest_remote_poll_date(_file_exists = true) do
-    File.stream!(remote_poll_file_name)
+    File.stream!(remote_poll_file_name())
     |> Enum.to_list
     |> return_value_for_file_list
   end
@@ -76,15 +76,15 @@ defmodule Tzdata.DataLoader do
     raise "latest_remote_poll.txt contains more than 1 line. It should contain exactly 1 line. Remove the file latest_remote_poll.txt in order to resolve the problem."
   end
 
-  defp latest_remote_poll_file_exists?, do: File.exists? remote_poll_file_name
+  defp latest_remote_poll_file_exists?, do: File.exists? remote_poll_file_name()
 
   defp current_date_utc, do: :calendar.universal_time |> elem(0)
 
   def days_since_last_remote_poll do
-    {tag, date} = latest_remote_poll_date
+    {tag, date} = latest_remote_poll_date()
     case tag do
       :ok ->
-        days_today = :calendar.date_to_gregorian_days(current_date_utc)
+        days_today = :calendar.date_to_gregorian_days(current_date_utc())
         days_latest = :calendar.date_to_gregorian_days(date)
         {:ok, days_today - days_latest}
       _ -> {tag, date}
@@ -92,7 +92,7 @@ defmodule Tzdata.DataLoader do
   end
 
   def remote_poll_file_name do
-    data_dir <> "/latest_remote_poll.txt"
+    data_dir() <> "/latest_remote_poll.txt"
   end
   defp data_dir, do: Tzdata.Util.data_dir
 end
