@@ -3,11 +3,11 @@ defmodule TableDataTest do
   alias Tzdata.TableData
 
   test "list of timezones" do
-    assert TableData.timezones |> Enum.member? "Europe/London"
+    assert TableData.timezones |> Enum.member?("Europe/London")
   end
 
   test "list of country codes" do
-    assert TableData.country_codes |> Enum.member? "UY"
+    assert TableData.country_codes |> Enum.member?("UY")
   end
 
   test "timezone entries for country code" do
