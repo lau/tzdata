@@ -1309,7 +1309,7 @@ Zone Pacific/Easter	-7:17:28 -	LMT	1890
 # Palmer used to be supplied from Argentina.
 #
 # Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
-Zone Antarctica/Palmer	0	-	zzz	1965
+Zone Antarctica/Palmer	0	-	-00	1965
 			-4:00	Arg	AR%sT	1969 Oct  5
 			-3:00	Arg	AR%sT	1982 May
 			-4:00	Chile	CL%sT
@@ -1755,9 +1755,25 @@ Zone America/Montevideo	-3:44:44 -	LMT	1898 Jun 28
 # resolution publication)
 # http://www.globovision.com/news.php?nid=72208
 
+# From Alexander Krivenyshev (2016-04-15):
+# https://actualidad.rt.com/actualidad/204758-venezuela-modificar-huso-horario-sequia-elnino
+#
+# From Paul Eggert (2016-04-15):
+# Clocks advance 30 minutes on 2016-05-01 at 02:30....
+# "'Venezuela's new time-zone: hours without light, hours without water,
+# hours of presidential broadcasts, hours of lines,' quipped comedian
+# Jean Mary Curró ...". See: Cawthorne A, Kai D. Venezuela scraps
+# half-hour time difference set by Chavez. Reuters 2016-04-15 14:50 -0400
+# http://www.reuters.com/article/us-venezuela-timezone-idUSKCN0XC2BE
+#
+# From Matt Johnson (2016-04-20):
+# ... published in the official Gazette [2016-04-18], here:
+# http://historico.tsj.gob.ve/gaceta_ext/abril/1842016/E-1842016-4551.pdf
+
 # Zone	NAME		GMTOFF	RULES	FORMAT	[UNTIL]
 Zone	America/Caracas	-4:27:44 -	LMT	1890
 			-4:27:40 -	CMT	1912 Feb 12 # Caracas Mean Time?
 			-4:30	-	VET	1965 Jan  1  0:00 # Venezuela T.
 			-4:00	-	VET	2007 Dec  9  3:00
-			-4:30	-	VET
+			-4:30	-	VET	2016 May  1  2:30
+			-4:00	-	VET
