@@ -1,5 +1,14 @@
 # Changelog for Tzdata
 
+## [0.1.201605] - 2016-06-26
+### Changed
+
+- Use data release 2016e as source data.
+
+### Fixed
+
+- Compiler warnings in Elixir 1.3
+
 ## [0.1.201603] - 2016-03-23
 ### Changed
 
