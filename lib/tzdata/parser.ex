@@ -141,7 +141,10 @@ defmodule Tzdata.Parser do
     format: captured["format"],
     until: until}
     # remove until key if it is nil
-    if (map[:until]==nil) do map = Map.delete(map,:until) end
-    map
+    if (map[:until]==nil) do
+      Map.delete(map,:until)
+    else
+      map
+    end
   end
 end
