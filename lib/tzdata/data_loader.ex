@@ -9,7 +9,7 @@ defmodule Tzdata.DataLoader do
     {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
     content_length = content_length_from_headers(headers)
-    new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
+    new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:rand.uniform(100000000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
