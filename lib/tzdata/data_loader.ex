@@ -1,5 +1,6 @@
 defmodule Tzdata.DataLoader do
   require Logger
+  @compile :nowarn_deprecated_function
   # Can poll for newest version of tz data and can download
   # and extract it.
   @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
