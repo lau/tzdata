@@ -4,9 +4,8 @@ defmodule Tzdata.PeriodBuilder do
   alias Tzdata.Util, as: TzUtil
   @min_year 1900 # the first year to use when looking at rules
   # the last year to use when looking at rules
-  # 82 years from compile time
   @years_in_the_future_where_precompiled_periods_are_used 40
-  @extra_years_to_precompile 2
+  @extra_years_to_precompile 4
   @max_year (:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used + @extra_years_to_precompile
 
   def calc_periods(btz_data, zone_name) do
