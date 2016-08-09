@@ -188,30 +188,6 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
       []
   """
-#  # For certain years we generate functions that pattern match on certain time points
-#  # to more quickly return the correct periods for most time points in those years
-#  Enum.each TzData.zone_list, fn (zone_name) ->
-#    {:ok, periods} = Periods.periods(zone_name)
-#    Enum.each periods, fn(period) ->
-#      if period.until.utc > @min_cache_time_point && period.from.utc < @max_cache_time_point do
-#        def periods_for_time(unquote(zone_name), time_point, :utc) when time_point > unquote(period.from.utc) and time_point < unquote(period.until.utc) do
-#          unquote(Macro.escape([period]))
-#        end
-#        # For the wall time we make sure that the interval is has to match is a bit more
-#        # narrow, but using the buffer
-#        def periods_for_time(unquote(zone_name), time_point, :wall) when time_point-@wall_time_cache_buffer> unquote(period.from.wall) and time_point+@wall_time_cache_buffer < unquote(period.until.wall) do
-#          unquote(Macro.escape([period]))
-#        end
-#      end
-#    end
-#  end
-#  # For each linked zone, call canonical zone
-#  Enum.each TzData.links, fn {alias_name, canonical_name} ->
-#    def periods_for_time(unquote(alias_name), time_point, time_type) do
-#      periods_for_time(unquote(canonical_name), time_point, time_type)
-#    end
-#  end
-#
   def periods_for_time(zone_name, time_point, time_type) do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
     periods
@@ -241,20 +217,10 @@ defmodule Tzdata do
       do_consecutive_matching(t, fun, matched, false)
     end
   end
-#
-#  # Use dynamic periods for points in time that are about 50 years into the future
-#  @years_in_the_future_where_precompiled_periods_are_used 40
-#  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
-#  defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
-#    # If period in 30 years from compile time goes to :max, use normal periods
-#    if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
-#      periods(zone_name)
-#    # If not, use dynamic periods
-#    else
-#      Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
-#    end
-#  end
-  @point_from_which_to_use_dynamic_periods 64881043200 # 2055 Dec 31
+
+  # Use dynamic periods for points in time that are about 40 years into the future
+  @years_in_the_future_where_precompiled_periods_are_used 40
+  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
   defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
     if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
       periods(zone_name)
