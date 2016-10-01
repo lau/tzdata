@@ -3,14 +3,13 @@ defmodule Tzdata.DataLoader do
   @compile :nowarn_deprecated_function
   # Can poll for newest version of tz data and can download
   # and extract it.
-  @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
+  @download_url 'https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz'
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date()
-    {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
-    {:ok, body} = :hackney.body(client_ref)
+    {:ok, {{_http_version, 200, 'OK'}, headers, body}} = :httpc.request(url)
     content_length = content_length_from_headers(headers)
-    new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
+    new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100_000_000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
@@ -25,9 +24,9 @@ defmodule Tzdata.DataLoader do
   end
   defp content_length_from_headers(headers) do
     headers
-    |> Enum.filter(fn {k, _v} -> k == "Content-Length" end)
+    |> Enum.filter(fn {k, _v} -> k == 'content-length' end)
     |> hd |> elem(1)
-    |> String.to_integer
+    |> List.to_integer
   end
 
   def release_version_for_dir(dir_name) do
@@ -43,13 +42,12 @@ defmodule Tzdata.DataLoader do
 
   def latest_file_size(url\\@download_url) do
     set_latest_remote_poll_date()
-    :hackney.head(url, [], "", [])
+    :httpc.request(:head, {url, []}, [], [])
     |> do_latest_file_size
   end
-  defp do_latest_file_size({tag = :error, error}), do: {tag, error}
-  defp do_latest_file_size({tag, _resp_code, headers}) do
-    size = headers |> content_length_from_headers
-    {tag, size}
+  defp do_latest_file_size({:error, reason}), do: {:error, reason}
+  defp do_latest_file_size({:ok, {{_http, 200, 'OK'}, headers, _body}}) do
+    {:ok, content_length_from_headers(headers)}
   end
 
   def set_latest_remote_poll_date do
