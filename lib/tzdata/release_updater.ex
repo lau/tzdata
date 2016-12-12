@@ -8,11 +8,17 @@ defmodule Tzdata.ReleaseUpdater do
   end
 
   def init([]) do
-    Task.async(fn -> :timer.sleep(3000); Tzdata.ReleaseUpdater.check_if_time_to_update end)
+    Process.send_after(self(), :check_if_time_to_update, 3000)
     {:ok, []}
   end
 
   @msecs_between_checking_date 18_000_000
+  def handle_info(:check_if_time_to_update, state) do
+    check_if_time_to_update()
+    Process.send_after(self(), :check_if_time_to_update, @msecs_between_checking_date)
+    {:noreply, state}
+  end
+
   @days_between_remote_poll 1
   def check_if_time_to_update do
     {tag, days} = DataLoader.days_since_last_remote_poll
@@ -23,7 +29,6 @@ defmodule Tzdata.ReleaseUpdater do
         end
       _ -> poll_for_update()
     end
-    Task.async(fn -> :timer.sleep(@msecs_between_checking_date); Tzdata.ReleaseUpdater.check_if_time_to_update end)
   end
 
   def poll_for_update do
