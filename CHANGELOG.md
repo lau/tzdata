@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.5.10] - 2016-12-24
+### Fixed
+
+- Avoid handle_info errors in Elixir 1.4.0-rc.1 by using send_after and handle_info instead of Task in ReleaseUpdater. (Josh Bodah)
+
 ## [0.5.9] - 2016-08-12
 ### Changed
 
@@ -7,7 +12,7 @@
 
 ### Fixed
 
-- Supress :random deprecated warning. We want to preserve compatability with older warnings of Elixir and Erlang.
+- Supress :random deprecated warning. We want to preserve compatability with older versions of Elixir and Erlang.
 
 ## [0.5.8] - 2016-06-05
 ### Changed
