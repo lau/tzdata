@@ -4,7 +4,7 @@ defmodule Tzdata.Mixfile do
   def project do
     [app: :tzdata,
      name: "tzdata",
-     version: "0.5.10",
+     version: "0.5.11",
      elixir: "~> 1.0",
      package: package(),
      description: description(),
@@ -42,6 +42,6 @@ defmodule Tzdata.Mixfile do
        maintainers: ["Lau Taarnskov"],
        links: %{ "GitHub" => "https://github.com/lau/tzdata"},
        files: ~w(lib priv mix.exs README* LICENSE*
-                 license* CHANGELOG* changelog* src source_data) }
+                 CHANGELOG*) }
   end
 end

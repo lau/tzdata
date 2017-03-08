@@ -7,9 +7,9 @@ defmodule Tzdata.DataLoader do
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date()
-    {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
+    {:ok, 200, _headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
-    content_length = content_length_from_headers(headers)
+    content_length = byte_size(body)
     new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
@@ -19,15 +19,10 @@ defmodule Tzdata.DataLoader do
     Logger.debug "Tzdata data downloaded. Release version #{release_version}."
     {:ok, content_length, release_version, new_dir_name}
   end
+
   defp extract(filename, target_dir) do
     :erl_tar.extract(filename, [:compressed, {:cwd, target_dir}])
     File.rm(filename) # remove tar.gz file after extraction
-  end
-  defp content_length_from_headers(headers) do
-    headers
-    |> Enum.filter(fn {k, _v} -> k == "Content-Length" end)
-    |> hd |> elem(1)
-    |> String.to_integer
   end
 
   def release_version_for_dir(dir_name) do
@@ -43,13 +38,45 @@ defmodule Tzdata.DataLoader do
 
   def latest_file_size(url\\@download_url) do
     set_latest_remote_poll_date()
-    :hackney.head(url, [], "", [])
-    |> do_latest_file_size
+    case latest_file_size_by_head(url) do
+      {:ok, size} -> {:ok, size}
+      _           ->
+        Logger.debug("Could not get latest tzdata file size by HEAD request. Trying GET request.")
+        latest_file_size_by_get(url)
+    end
   end
-  defp do_latest_file_size({tag = :error, error}), do: {tag, error}
-  defp do_latest_file_size({tag, _resp_code, headers}) do
-    size = headers |> content_length_from_headers
-    {tag, size}
+
+  defp latest_file_size_by_get(url) do
+    case :hackney.get(url, [], "", []) do
+      {:ok, 200, _headers, client_ref} ->
+        {:ok, body} = :hackney.body(client_ref)
+        {:ok, byte_size(body)}
+      _ ->
+        {:error, :did_not_get_ok_response}
+    end
+  end
+
+  defp latest_file_size_by_head(url) do
+    :hackney.head(url, [], "", [])
+    |> do_latest_file_size_by_head
+  end
+
+  defp do_latest_file_size_by_head({:error, error}), do: {:error, error}
+  defp do_latest_file_size_by_head({_tag, resp_code, _headers}) when resp_code != 200, do: {:error, :did_not_get_ok_response}
+  defp do_latest_file_size_by_head({_tag, _resp_code, headers}) do
+    headers
+    |> content_length_from_headers
+  end
+
+  defp content_length_from_headers(headers) do
+    content_length_header = headers
+      |> Enum.filter(fn {k, _v} -> k == "Content-Length" end)
+      |> List.first
+    case content_length_header do
+      nil                  -> {:error, :not_found}
+      {_, content_length}  -> {:ok, content_length |> String.to_integer}
+      _                    -> {:error, :unexpected_headers}
+    end
   end
 
   def set_latest_remote_poll_date do
@@ -59,12 +86,14 @@ defmodule Tzdata.DataLoader do
   def latest_remote_poll_date do
     latest_remote_poll_file_exists?() |> do_latest_remote_poll_date
   end
+
   defp do_latest_remote_poll_date(_file_exists = true) do
     File.stream!(remote_poll_file_name())
     |> Enum.to_list
     |> return_value_for_file_list
   end
   defp do_latest_remote_poll_date(_file_exists = false), do: {:unknown, nil}
+
   defp return_value_for_file_list([]), do: {:unknown, nil}
   defp return_value_for_file_list([one_line]) do
     date = one_line
@@ -95,5 +124,6 @@ defmodule Tzdata.DataLoader do
   def remote_poll_file_name do
     data_dir() <> "/latest_remote_poll.txt"
   end
+
   defp data_dir, do: Tzdata.Util.data_dir
 end
