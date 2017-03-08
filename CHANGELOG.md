@@ -1,4 +1,7 @@
 # Changelog for Tzdata
+## [0.5.11] - 2017-03-07
+### Changed
+- For auto update use GET to find the file size if the headers do not have a Content-Length
 
 ## [0.5.10] - 2016-12-24
 ### Fixed
