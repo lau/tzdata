@@ -27,7 +27,7 @@ or directly: it is available on hex as `tzdata`.
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.5.8"},  ]
+  [  {:tzdata, "~> 0.5.11"},  ]
 end
 ```
 
@@ -45,9 +45,9 @@ the applications list in your mix.exs file. An example:
 
 The library uses a file directory to store data. By default this directory
 is `priv`. In some cases you might want to use a different directory. For
-instance when using releases.  If so create the directory, make sure Elixir
-can read and write to it. Then use elixir config files like this to tell
-Tzdata to use that directory:
+instance when using releases this is recommended. If so create the directory and
+make sure Elixir can read and write to it. Then use elixir config files like this
+to tell Tzdata to use that directory:
 
 ```elixir
 config :tzdata, :data_dir, "/etc/elixir_tzdata_data"
