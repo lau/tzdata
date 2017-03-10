@@ -1,9 +1,4 @@
 defmodule Tzdata do
-#  alias Tzdata.BasicData, as: TzData
-#  alias Tzdata.Periods
-#  alias Tzdata.ReleaseParser, as: TzReleaseParser
-#  alias Tzdata.LeapSecParser
-#
 #  @moduledoc """
 #  The Tzdata module provides data from the IANA tz database. Also known
 #  as the Olson/Eggert database, zoneinfo, tzdata and other names.
@@ -21,10 +16,6 @@ defmodule Tzdata do
 #  As well as functions for finding out the UTC offset, abbreviation,
 #  standard offset (DST) for a specific point in time in a certain
 #  timezone.-dev
-#
-#  There are also functions for leap seconds. In the `Tzdata.TableData`
-#  module, data from the table that matches countries with time zones is
-#  available.
 #  """
 #
 #  # Provide lists of zone- and link-names
