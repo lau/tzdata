@@ -23,7 +23,7 @@ defmodule Tzdata.Util do
   def string_amount_to_secs("0"), do: 0
   def string_amount_to_secs(string) do
     string
-    |> String.strip
+    |> String.replace(~r/\s/, "")
     |> String.split(":")
     |> _string_amount_to_secs
   end

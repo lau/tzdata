@@ -31,7 +31,7 @@ defmodule Tzdata.DataLoader do
     |> Stream.filter(fn(string) -> Regex.match?(~r/Release/, string) end)
     |> Enum.take(100) # 100 lines should be more than enough to get the first Release line
     |> hd
-    |> String.rstrip
+    |> String.replace(~r/\s*$/, "")
     captured = Regex.named_captures( ~r/Release[\s]+(?<version>[^\s]+)[\s]+-[\s]+(?<timestamp>.+)/m, release_string)
     captured["version"]
   end
