@@ -67,7 +67,7 @@ defmodule Tzdata.EtsHolder do
     end
   end
   defp make_sure_a_release_dir_exists do
-    File.mkdir(release_dir())
+    File.mkdir_p(release_dir())
   end
 
   defp newest_release_on_file do
