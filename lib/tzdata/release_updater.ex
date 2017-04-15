@@ -33,7 +33,7 @@ defmodule Tzdata.ReleaseUpdater do
 
   def poll_for_update do
     Logger.debug "Tzdata polling for update."
-    case loaded_tzdata_matches_iana_file_size?() do
+    case loaded_tzdata_matches_newest_one?() do
       {:ok, true} ->
         Logger.debug "Tzdata polling shows the loaded tz database is up to date."
         :do_nothing
@@ -44,11 +44,27 @@ defmodule Tzdata.ReleaseUpdater do
     end
   end
 
+  defp loaded_tzdata_matches_newest_one? do
+    case Tzdata.ReleaseReader.has_modified_at? do
+      true  -> loaded_tzdata_matches_remote_last_modified?()
+      false -> loaded_tzdata_matches_iana_file_size?()
+    end
+  end
+
   defp loaded_tzdata_matches_iana_file_size? do
     {tag, filesize} = Tzdata.DataLoader.latest_file_size
     case tag do
       :ok ->
         {:ok, filesize == Tzdata.ReleaseReader.archive_content_length}
+      _ -> {tag, nil}
+    end
+  end
+
+  defp loaded_tzdata_matches_remote_last_modified? do
+    {tag, last_modified} = Tzdata.DataLoader.last_modified_of_latest_available
+    case tag do
+      :ok ->
+        {:ok, last_modified == Tzdata.ReleaseReader.modified_at}
       _ -> {tag, nil}
     end
   end

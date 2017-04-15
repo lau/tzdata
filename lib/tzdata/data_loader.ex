@@ -7,9 +7,10 @@ defmodule Tzdata.DataLoader do
   def download_new(url\\@download_url) do
     Logger.debug "Tzdata downloading new data from #{url}"
     set_latest_remote_poll_date()
-    {:ok, 200, _headers, client_ref}=:hackney.get(url, [], "", [])
+    {:ok, 200, headers, client_ref}=:hackney.get(url, [], "", [])
     {:ok, body} = :hackney.body(client_ref)
     content_length = byte_size(body)
+    {:ok, last_modified} = last_modified_from_headers(headers)
     new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
     File.mkdir_p(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
@@ -17,7 +18,7 @@ defmodule Tzdata.DataLoader do
     extract(target_filename, new_dir_name)
     release_version = release_version_for_dir(new_dir_name)
     Logger.debug "Tzdata data downloaded. Release version #{release_version}."
-    {:ok, content_length, release_version, new_dir_name}
+    {:ok, content_length, release_version, new_dir_name, last_modified}
   end
 
   defp extract(filename, target_dir) do
@@ -34,6 +35,16 @@ defmodule Tzdata.DataLoader do
     |> String.rstrip
     captured = Regex.named_captures( ~r/Release[\s]+(?<version>[^\s]+)[\s]+-[\s]+(?<timestamp>.+)/m, release_string)
     captured["version"]
+  end
+
+  def last_modified_of_latest_available(url\\@download_url) do
+    set_latest_remote_poll_date()
+    case :hackney.head(url, [], "", []) do
+      {:ok, 200, headers} ->
+        last_modified_from_headers(headers)
+      _ ->
+        {:error, :did_not_get_ok_response}
+    end
   end
 
   def latest_file_size(url\\@download_url) do
@@ -69,12 +80,23 @@ defmodule Tzdata.DataLoader do
   end
 
   defp content_length_from_headers(headers) do
-    content_length_header = headers
-      |> Enum.filter(fn {k, _v} -> k == "Content-Length" end)
+    case value_from_headers(headers, "Content-Length") do
+      {:ok, content_length} -> {:ok, content_length |> String.to_integer}
+      {:error, reason}      -> {:error, reason}
+    end
+  end
+
+  defp last_modified_from_headers(headers) do
+    value_from_headers(headers, "Last-Modified")
+  end
+
+  defp value_from_headers(headers, key) do
+    header = headers
+      |> Enum.filter(fn {k, _v} -> k == key end)
       |> List.first
-    case content_length_header do
+    case header do
       nil                  -> {:error, :not_found}
-      {_, content_length}  -> {:ok, content_length |> String.to_integer}
+      {_, value}           -> {:ok, value}
       _                    -> {:error, :unexpected_headers}
     end
   end
