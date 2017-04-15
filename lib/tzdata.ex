@@ -107,7 +107,7 @@ defmodule Tzdata do
 
       iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
       [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
-        until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
+        until: %{standard: 59989763760, utc: 59989764644, wall: 59989763760},
         utc_off: -884, zone_abbr: "LMT"}]
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
