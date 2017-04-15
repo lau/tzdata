@@ -48,7 +48,7 @@ defmodule Tzdata.EtsHolder do
 
   defp load_ets_table(release_name) do
     file_name = "#{release_dir()}/#{release_name}.ets"
-    {:ok, _table} = :ets.file2tab(String.to_char_list(file_name))
+    {:ok, _table} = :ets.file2tab(:erlang.binary_to_list(file_name))
   end
 
   defp create_current_release_ets_table do
