@@ -9,6 +9,7 @@ defmodule Tzdata.ReleaseReader do
   def release_version,        do: simple_lookup(:release_version) |> hd |> elem(1)
   def leap_sec_data,          do: simple_lookup(:leap_sec_data) |> hd |> elem(1)
   def by_group,               do: simple_lookup(:by_group) |> hd |> elem(1)
+  def modified_at,            do: simple_lookup(:modified_at) |> hd |> elem(1)
   defp simple_lookup(key) do
     :ets.lookup(current_release_from_table() |> table_name_for_release_name, key)
   end
@@ -28,6 +29,11 @@ defmodule Tzdata.ReleaseReader do
       end
     end
   end
+
+  def has_modified_at? do
+    simple_lookup(:modified_at) != []
+  end
+
   defp do_periods_for_zone(zone) do
     periods = lookup_periods_for_zone(zone)
     if length(periods) > 0 do

@@ -1,35 +1,14 @@
 defmodule Tzdata do
-#  alias Tzdata.BasicData, as: TzData
-#  alias Tzdata.Periods
-#  alias Tzdata.ReleaseParser, as: TzReleaseParser
-#  alias Tzdata.LeapSecParser
-#
-#  @moduledoc """
-#  The Tzdata module provides data from the IANA tz database. Also known
-#  as the Olson/Eggert database, zoneinfo, tzdata and other names.
-#
-#  The database files from IANA are text files. Tzdata ships with a copy
-#  of the newest files. The `dl_latest_data.sh` script downloads the newest
-#  files. When a new version of the database is released from IANA you can
-#  run that script and recompile this library. Then the library will use the
-#  newest version of the database.
-#
-#  Or you can get an updated version of this `tzdata`
-#  Elixir library where the updated database is included.
-#
-#  A list of time zone names (e.g. `America/Los_Angeles`) are provided.
-#  As well as functions for finding out the UTC offset, abbreviation,
-#  standard offset (DST) for a specific point in time in a certain
-#  timezone.-dev
-#
-#  There are also functions for leap seconds. In the `Tzdata.TableData`
-#  module, data from the table that matches countries with time zones is
-#  available.
-#  """
-#
-#  # Provide lists of zone- and link-names
-#  # Note that the function names are different from TzData!
-#  # The term "alias" is used instead of "link"
+  @moduledoc """
+  The Tzdata module provides data from the IANA tz database. Also known
+  as the Olson/Eggert database, zoneinfo, tzdata and other names.
+
+  A list of time zone names (e.g. `America/Los_Angeles`) are provided.
+  As well as functions for finding out the UTC offset, abbreviation,
+  standard offset (DST) for a specific point in time in a certain
+  timezone.
+  """
+
   @doc """
   zone_list provides a list of all the zone names that can be used with
   DateTime. This includes aliases.
@@ -40,7 +19,7 @@ defmodule Tzdata do
   Like zone_list, but excludes aliases for zones.
   """
   def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list
-#
+
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
@@ -59,7 +38,7 @@ defmodule Tzdata do
       true
   """
   def zone_exists?(name), do: Enum.member?(zone_list(), name)
-#
+
   @doc """
   Takes the name of a zone. Returns true if zone exists and is canonical.
   Otherwise false.
@@ -70,7 +49,7 @@ defmodule Tzdata do
       false
   """
   def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
-#
+
   @doc """
   Takes the name of a zone. Returns true if zone exists and is an alias.
   Otherwise false.
@@ -128,7 +107,7 @@ defmodule Tzdata do
 
       iex> Tzdata.periods("Europe/Madrid") |> elem(1) |> Enum.take(1)
       [%{from: %{standard: :min, utc: :min, wall: :min}, std_off: 0,
-        until: %{standard: 59989766400, utc: 59989767284, wall: 59989766400},
+        until: %{standard: 59989763760, utc: 59989764644, wall: 59989763760},
         utc_off: -884, zone_abbr: "LMT"}]
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
@@ -150,10 +129,7 @@ defmodule Tzdata do
       _ -> {:error, p}
     end
   end
-#
-#  @min_cache_time_point :calendar.datetime_to_gregorian_seconds {{2014, 1, 1}, {0, 0, 0}} # 2014
-#  @max_cache_time_point :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 10, 1, 1}, {0, 0, 0}} # 10 years from compile time
-#  @wall_time_cache_buffer 3600*24*3 # seconds to stay away from period limits in wall time to avoid problems with overlapping periods
+
   @doc """
   Get the periods that cover a certain point in time. Usually it will be a list
   with just one period. But in some cases it will be zero or two periods. For
@@ -254,7 +230,7 @@ defmodule Tzdata do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
     leap_seconds_data[:leap_seconds]
   end
-#
+
   @doc """
   Get a list of known leap seconds. The leap seconds are datetime
   tuples representing the extra leap second to be inserted.
