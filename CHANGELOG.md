@@ -1,4 +1,14 @@
 # Changelog for Tzdata
+
+## [0.5.12] - 2017-04-16
+### Changed
+- Ships with tz data version 2017b instead of 2016c
+- When checking for updated tz data, use Last Modified header
+
+### Fixed
+- Fix Elixir 1.5 warnings (Gal Tsubery)
+- Fix issue with missing directories (Fabien Henon)
+
 ## [0.5.11] - 2017-03-07
 ### Changed
 - For auto update use GET to find the file size if the headers do not have a Content-Length
