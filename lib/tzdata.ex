@@ -181,7 +181,7 @@ defmodule Tzdata do
   end
   defp do_consecutive_matching([], _fun, [], _did_last_match), do: []
   defp do_consecutive_matching([], _fun, matched, _did_last_match), do: matched
-  defp do_consecutive_matching(_list, _fun, matched, false) when length(matched) > 0 do
+  defp do_consecutive_matching(_list, _fun, matched, false) when matched != [] do
     # If there are matches and previous did not match then the matches are no
     # long consecutive. So we return the result.
     matched |> Enum.reverse
