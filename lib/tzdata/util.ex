@@ -254,7 +254,7 @@ defmodule Tzdata.Util do
       false
   """
   def rule_applies_for_year(rule, year) do
-    rule_applies_for_year_h(rule[:from], rule[:to], year)
+    rule_applies_for_year_h(rule.from, rule.to, year)
   end
   defp rule_applies_for_year_h(rule_from, :only, year) do
     rule_from == year
@@ -288,9 +288,9 @@ defmodule Tzdata.Util do
   Returns the date and time of when the rule goes into effect.
   """
   def time_for_rule(rule, year) do
-    {time, modifier} = rule[:at]
-    month = rule[:in]
-    day = tz_day_to_int year, month, rule[:on]
+    {time, modifier} = rule.at
+    month = rule.in
+    day = tz_day_to_int year, month, rule.on
     {{{year, month, day}, time}, modifier}
   end
 

@@ -225,7 +225,7 @@ defmodule Tzdata do
   """
   def leap_seconds_with_tai_diff do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    leap_seconds_data[:leap_seconds]
+    leap_seconds_data.leap_seconds
   end
 
   @doc """
@@ -243,10 +243,9 @@ defmodule Tzdata do
        {{1972, 12, 31}, {23, 59, 60}}]
   """
   def leap_seconds do
-    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    just_leap_seconds = leap_seconds_data[:leap_seconds]
-      |> Enum.map(&(Map.get(&1, :date_time)))
-    just_leap_seconds
+    for %{date_time: date_time} <- leap_seconds_with_tai_diff() do
+      date_time
+    end
   end
 
   @doc """
@@ -260,7 +259,7 @@ defmodule Tzdata do
   """
   def leap_second_data_valid_until do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    leap_seconds_data[:valid_until]
+    leap_seconds_data.valid_until
   end
 
   defp smaller_than_or_equals(:min, _), do: true
