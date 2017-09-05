@@ -116,15 +116,15 @@ defmodule Tzdata do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
       :ok ->
-        mapped_p = p |> Enum.map(fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr}->
-          %{
-            std_off: std_off,
-            utc_off: utc_off,
-            from: %{utc: f_utc, wall: f_wall, standard: f_std},
-            until: %{utc: u_utc, standard: u_std, wall: u_wall},
-            zone_abbr: zone_abbr
-          }
-          end)
+        mapped_p = for {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} <- p do
+            %{
+              std_off: std_off,
+              utc_off: utc_off,
+              from: %{utc: f_utc, wall: f_wall, standard: f_std},
+              until: %{utc: u_utc, standard: u_std, wall: u_wall},
+              zone_abbr: zone_abbr
+            }
+          end
         {:ok, mapped_p}
       _ -> {:error, p}
     end
@@ -166,19 +166,16 @@ defmodule Tzdata do
   """
   def periods_for_time(zone_name, time_point, time_type) do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
-    periods
-    |> consecutive_matching(fn x ->
-                     ((Map.get(x.from, time_type) |>smaller_than_or_equals(time_point))
-                     && (Map.get(x.until, time_type) |>bigger_than(time_point)))
-                   end)
+    match_fn = fn %{from: %{^time_type => from}, until: %{^time_type => until}} ->
+      smaller_than_or_equals(from, time_point) &&
+        bigger_than(until, time_point)
+    end
+    do_consecutive_matching(periods, match_fn, [], false)
   end
 
   # Like Enum.filter, but returns the first consecutive result.
   # If we have found consecutive matches we do not need to look at the
   # remaining list.
-  defp consecutive_matching(list, fun) do
-    do_consecutive_matching(list, fun, [], false)
-  end
   defp do_consecutive_matching([], _fun, [], _did_last_match), do: []
   defp do_consecutive_matching([], _fun, matched, _did_last_match), do: matched
   defp do_consecutive_matching(_list, _fun, matched, false) when matched != [] do
