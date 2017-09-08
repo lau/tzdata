@@ -166,9 +166,9 @@ defmodule Tzdata do
   """
   def periods_for_time(zone_name, time_point, time_type) do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
-    match_fn = fn %{from: %{^time_type => from}, until: %{^time_type => until}} ->
-      smaller_than_or_equals(from, time_point) &&
-        bigger_than(until, time_point)
+    match_fn = fn %{from: from, until: until} ->
+      smaller_than_or_equals(Map.get(from, time_type), time_point) &&
+        bigger_than(Map.get(until, time_type), time_point)
     end
     do_consecutive_matching(periods, match_fn, [], false)
   end
