@@ -27,7 +27,7 @@ defmodule Tzdata.ParserOrganizer do
   end
   defp add_links_to_map(map, []), do: map
   defp add_links_to_map(map, [head|tail]) do
-    map = Map.put(map, head[:to], head[:from])
+    map = Map.put(map, head.to, head.from)
     add_links_to_map(map, tail)
   end
 
@@ -41,9 +41,9 @@ defmodule Tzdata.ParserOrganizer do
   defp add_rules_to_map(map, []), do: map
   defp add_rules_to_map(map, [rule|tail]) do
     # add rule to rule list
-    new_rule_list = map[rule[:name]] ++ [rule]
+    new_rule_list = map[rule.name] ++ [rule]
     # update map with new rule list for rule name
-    map = Map.put(map, rule[:name], new_rule_list)
+    map = Map.put(map, rule.name, new_rule_list)
     add_rules_to_map(map, tail)
   end
 
@@ -59,15 +59,15 @@ defmodule Tzdata.ParserOrganizer do
   end
 
   defp list_of_single_value_from_map_list(list, key), do: Enum.map(list, fn elem -> elem[key] end)
-  defp filter_for_record_type(list, record_type), do: Enum.filter(list, fn x -> (x[:record_type] == record_type) end)
+  defp filter_for_record_type(list, record_type), do: Enum.filter(list, fn x -> (x.record_type == record_type) end)
 
   # Takes a list of maps. Returns map with keys that are :name of
   # the map, and values being the map
   def map_with_name_key(from_initial_pass, record_type) do
     from_initial_pass
-    |> Enum.filter(fn x -> (x[:record_type] == record_type) end)
+    |> Enum.filter(fn x -> (x.record_type == record_type) end)
     # Build list of maps with zone name as key
-    |> Enum.map(fn x -> Map.put(%{}, x[:name], x) end)
+    |> Enum.map(fn x -> Map.put(%{}, x.name, x) end)
     # Merge all the maps together to one map with all the zones
     |> merge_maps_in_list
   end

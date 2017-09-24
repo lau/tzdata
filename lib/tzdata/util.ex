@@ -29,17 +29,20 @@ defmodule Tzdata.Util do
   end
   # If there is only one or two elements, add 00 minutes or 00 seconds
   # until we have a 3 element list
-  defp _string_amount_to_secs(list) when length(list) == 1 or length(list) == 2 do
-    list ++ ["00"] |> _string_amount_to_secs
+  defp _string_amount_to_secs([h]) do
+    _string_amount_to_secs([h, "0", "0"])
+  end
+  defp _string_amount_to_secs([h, m]) do
+    _string_amount_to_secs([h, m, "0"])
   end
   # maybe the hours are negative, so multiply the result by -1
-  defp _string_amount_to_secs([<<?- :: utf8>> <> hours | rest]) when length(rest) == 2 do
-    -1 * _string_amount_to_secs([hours | rest])
+  defp _string_amount_to_secs([<<?- :: utf8>> <> hours, m, s]) do
+    -1 * _string_amount_to_secs([hours, m, s])
   end
-  defp _string_amount_to_secs(list) when length(list) == 3 do
-    {hours, ""} = Integer.parse(hd(list))
-    {mins, ""} = Integer.parse(list|>Enum.at(1))
-    {secs, ""} = Integer.parse(list|>Enum.at(2))
+  defp _string_amount_to_secs([h, m, s]) do
+    {hours, ""} = Integer.parse(h)
+    {mins, ""} = Integer.parse(m)
+    {secs, ""} = Integer.parse(s)
     hours*3600+mins*60+secs
   end
 
@@ -251,7 +254,7 @@ defmodule Tzdata.Util do
       false
   """
   def rule_applies_for_year(rule, year) do
-    rule_applies_for_year_h(rule[:from], rule[:to], year)
+    rule_applies_for_year_h(rule.from, rule.to, year)
   end
   defp rule_applies_for_year_h(rule_from, :only, year) do
     rule_from == year
@@ -285,9 +288,9 @@ defmodule Tzdata.Util do
   Returns the date and time of when the rule goes into effect.
   """
   def time_for_rule(rule, year) do
-    {time, modifier} = rule[:at]
-    month = rule[:in]
-    day = tz_day_to_int year, month, rule[:on]
+    {time, modifier} = rule.at
+    month = rule.in
+    day = tz_day_to_int year, month, rule.on
     {{{year, month, day}, time}, modifier}
   end
 

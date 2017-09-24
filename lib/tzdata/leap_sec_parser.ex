@@ -76,7 +76,7 @@ defmodule Tzdata.LeapSecParser do
 
   # We assume that the head of the list is the element with the expiry timestamp
   defp organize_into_map([expiry_element = %{expires_at: _} | tail]) do
-    %{valid_until: expiry_element[:expires_at],
+    %{valid_until: expiry_element.expires_at,
       leap_seconds: tail
      }
   end

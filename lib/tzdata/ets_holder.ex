@@ -62,7 +62,7 @@ defmodule Tzdata.EtsHolder do
 
   defp make_sure_a_release_is_on_file do
     make_sure_a_release_dir_exists()
-    if length(release_files()) == 0 do
+    if release_files() == [] do
       Tzdata.DataBuilder.load_and_save_table
     end
   end

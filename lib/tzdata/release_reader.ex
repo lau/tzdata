@@ -35,9 +35,9 @@ defmodule Tzdata.ReleaseReader do
   end
 
   defp do_periods_for_zone(zone) do
-    periods = lookup_periods_for_zone(zone)
-    if length(periods) > 0 do
-      periods |> hd |> elem(1)
+    case lookup_periods_for_zone(zone) do
+      [{_, period} | _] -> period
+      _ -> nil
     end
   end
   defp lookup_periods_for_zone(zone) when is_binary(zone), do: simple_lookup(String.to_atom zone)

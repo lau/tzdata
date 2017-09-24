@@ -116,15 +116,15 @@ defmodule Tzdata do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
       :ok ->
-        mapped_p = p |> Enum.map(fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr}->
-          %{
-            std_off: std_off,
-            utc_off: utc_off,
-            from: %{utc: f_utc, wall: f_wall, standard: f_std},
-            until: %{utc: u_utc, standard: u_std, wall: u_wall},
-            zone_abbr: zone_abbr
-          }
-          end)
+        mapped_p = for {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} <- p do
+            %{
+              std_off: std_off,
+              utc_off: utc_off,
+              from: %{utc: f_utc, wall: f_wall, standard: f_std},
+              until: %{utc: u_utc, standard: u_std, wall: u_wall},
+              zone_abbr: zone_abbr
+            }
+          end
         {:ok, mapped_p}
       _ -> {:error, p}
     end
@@ -166,22 +166,19 @@ defmodule Tzdata do
   """
   def periods_for_time(zone_name, time_point, time_type) do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
-    periods
-    |> consecutive_matching(fn x ->
-                     ((Map.get(x.from, time_type) |>smaller_than_or_equals(time_point))
-                     && (Map.get(x.until, time_type) |>bigger_than(time_point)))
-                   end)
+    match_fn = fn %{from: from, until: until} ->
+      smaller_than_or_equals(Map.get(from, time_type), time_point) &&
+        bigger_than(Map.get(until, time_type), time_point)
+    end
+    do_consecutive_matching(periods, match_fn, [], false)
   end
 
   # Like Enum.filter, but returns the first consecutive result.
   # If we have found consecutive matches we do not need to look at the
   # remaining list.
-  defp consecutive_matching(list, fun) do
-    do_consecutive_matching(list, fun, [], false)
-  end
   defp do_consecutive_matching([], _fun, [], _did_last_match), do: []
   defp do_consecutive_matching([], _fun, matched, _did_last_match), do: matched
-  defp do_consecutive_matching(_list, _fun, matched, false) when length(matched) > 0 do
+  defp do_consecutive_matching(_list, _fun, matched, false) when matched != [] do
     # If there are matches and previous did not match then the matches are no
     # long consecutive. So we return the result.
     matched |> Enum.reverse
@@ -228,7 +225,7 @@ defmodule Tzdata do
   """
   def leap_seconds_with_tai_diff do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    leap_seconds_data[:leap_seconds]
+    leap_seconds_data.leap_seconds
   end
 
   @doc """
@@ -246,10 +243,9 @@ defmodule Tzdata do
        {{1972, 12, 31}, {23, 59, 60}}]
   """
   def leap_seconds do
-    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    just_leap_seconds = leap_seconds_data[:leap_seconds]
-      |> Enum.map(&(Map.get(&1, :date_time)))
-    just_leap_seconds
+    for %{date_time: date_time} <- leap_seconds_with_tai_diff() do
+      date_time
+    end
   end
 
   @doc """
@@ -263,7 +259,7 @@ defmodule Tzdata do
   """
   def leap_second_data_valid_until do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
-    leap_seconds_data[:valid_until]
+    leap_seconds_data.valid_until
   end
 
   defp smaller_than_or_equals(:min, _), do: true
