@@ -12,7 +12,7 @@ defmodule Tzdata.DataLoader do
     content_length = byte_size(body)
     {:ok, last_modified} = last_modified_from_headers(headers)
     new_dir_name ="#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100000000)}/"
-    File.mkdir_p(new_dir_name)
+    File.mkdir_p!(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
     File.write!(target_filename, body)
     extract(target_filename, new_dir_name)
@@ -23,7 +23,7 @@ defmodule Tzdata.DataLoader do
 
   defp extract(filename, target_dir) do
     :erl_tar.extract(filename, [:compressed, {:cwd, target_dir}])
-    File.rm(filename) # remove tar.gz file after extraction
+    File.rm!(filename) # remove tar.gz file after extraction
   end
 
   def release_version_for_dir(dir_name) do
@@ -103,7 +103,7 @@ defmodule Tzdata.DataLoader do
 
   def set_latest_remote_poll_date do
     {y, m, d} = current_date_utc()
-    File.write(remote_poll_file_name(), "#{y}-#{m}-#{d}")
+    File.write!(remote_poll_file_name(), "#{y}-#{m}-#{d}")
   end
   def latest_remote_poll_date do
     latest_remote_poll_file_exists?() |> do_latest_remote_poll_date
