@@ -43,8 +43,13 @@ defmodule Tzdata.ReleaseUpdater do
         :do_nothing
 
       {:ok, false} ->
-        Tzdata.DataBuilder.load_and_save_table()
-        Tzdata.EtsHolder.new_release_has_been_downloaded()
+        case Tzdata.DataBuilder.load_and_save_table() do
+          {:ok, _, _} ->
+            Tzdata.EtsHolder.new_release_has_been_downloaded()
+
+          {:error, error} ->
+            {:error, error}
+        end
 
       _ ->
         :do_nothing
@@ -71,11 +76,19 @@ defmodule Tzdata.ReleaseUpdater do
   end
 
   defp loaded_tzdata_matches_remote_last_modified? do
-    {tag, last_modified} = Tzdata.DataLoader.last_modified_of_latest_available()
+    {tag, candidate_last_modified} = Tzdata.DataLoader.last_modified_of_latest_available()
 
     case tag do
       :ok ->
-        {:ok, last_modified == Tzdata.ReleaseReader.modified_at()}
+        current_last_modified = Tzdata.ReleaseReader.modified_at()
+
+        if candidate_last_modified != current_last_modified do
+          ("tzdata release in place is from a file last modified #{current_last_modified}. " <>
+             "Release file on server was last modified #{candidate_last_modified}.")
+          |> Logger.info()
+        end
+
+        {:ok, candidate_last_modified == current_last_modified}
 
       _ ->
         {tag, nil}
