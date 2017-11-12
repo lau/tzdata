@@ -1,5 +1,13 @@
 # Changelog for Tzdata
 
+## [0.5.13] - 2017-11-12
+### Fixed
+- Handle varying Last-Modified headers from IANA.org for same relase. For avoiding these errors:
+
+      Elixir.ArgumentError: argument error
+      Module "ets", in :ets.new/2
+      File "lib/tzdata/data_builder.ex", line 11, in Tzdata.DataBuilder.load_and_save_table/0
+
 ## [0.5.12] - 2017-04-16
 ### Changed
 - Ships with tz data version 2017b instead of 2016c

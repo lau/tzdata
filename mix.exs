@@ -5,7 +5,7 @@ defmodule Tzdata.Mixfile do
     [
       app: :tzdata,
       name: "tzdata",
-      version: "0.5.12",
+      version: "0.5.13",
       elixir: "~> 1.0",
       package: package(),
       description: description(),
