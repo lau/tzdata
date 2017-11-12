@@ -2,11 +2,31 @@ defmodule Tzdata.DataBuilder do
   alias Tzdata.DataLoader
   alias Tzdata.PeriodBuilder
   alias Tzdata.LeapSecParser
+  require Logger
 
   # download new data releases, then parse them, build
   # periods and save the data in an ETS table
   def load_and_save_table do
     {:ok, content_length, release_version, tzdata_dir, modified_at} = DataLoader.download_new()
+    current_version = Tzdata.ReleaseReader.release_version()
+
+    if release_version == current_version do
+      # remove temporary tzdata dir
+      File.rm_rf(tzdata_dir)
+
+      Logger.info(
+        "Downloaded tzdata release from IANA is the same version as the version currently in use (#{
+          current_version
+        })."
+      )
+
+      {:error, :downloaded_version_same_as_current_version}
+    else
+      do_load_and_save_table(content_length, release_version, tzdata_dir, modified_at)
+    end
+  end
+
+  defp do_load_and_save_table(content_length, release_version, tzdata_dir, modified_at) do
     ets_table_name = ets_table_name_for_release_version(release_version)
     table = :ets.new(ets_table_name, [:set, :named_table])
     {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(tzdata_dir)
