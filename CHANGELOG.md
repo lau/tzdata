@@ -1,5 +1,12 @@
 # Changelog for Tzdata
 
+## [0.5.14] - 2017-11-22
+### Fixed
+- Follow redirects when downloading from IANA.
+  Use
+  https://data.iana.org/time-zones/tzdata-latest.tar.gz instead of
+  https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz
+
 ## [0.5.13] - 2017-11-12
 ### Fixed
 - Handle varying Last-Modified headers from IANA.org for same relase. For avoiding these errors:
