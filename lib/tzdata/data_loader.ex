@@ -3,7 +3,7 @@ defmodule Tzdata.DataLoader do
   @compile :nowarn_deprecated_function
   # Can poll for newest version of tz data and can download
   # and extract it.
-  @download_url "https://www.iana.org/time-zones/repository/tzdata-latest.tar.gz"
+  @download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
