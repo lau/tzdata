@@ -7,7 +7,7 @@ defmodule Tzdata.DataLoader do
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
-    {:ok, 200, headers, client_ref} = :hackney.get(url, [], "", [])
+    {:ok, 200, headers, client_ref} = :hackney.get(url, [], "", [follow_redirect: true])
     {:ok, body} = :hackney.body(client_ref)
     content_length = byte_size(body)
     {:ok, last_modified} = last_modified_from_headers(headers)
