@@ -347,4 +347,12 @@ defmodule Tzdata.Util do
       _          -> Application.app_dir(:tzdata, "priv")
     end
   end
+
+  def custom_data_dir_configured? do
+    case Application.fetch_env(:tzdata, :data_dir) do
+      {:ok, nil} -> false
+      {:ok, _dir} -> true
+      _          -> false
+    end
+  end
 end
