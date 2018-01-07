@@ -27,7 +27,7 @@ or directly: it is available on hex as `tzdata`.
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.5.14"},  ]
+  [  {:tzdata, "~> 0.5.15"},  ]
 end
 ```
 
@@ -56,6 +56,9 @@ config :tzdata, :data_dir, "/etc/elixir_tzdata_data"
 Add the `release_ets` directory from `priv` to that directory
 containing the `20xxx.ets` file that ships with this library.
 
+For instance with this config: `config :tzdata, :data_dir, "/etc/elixir_tzdata_data"`
+an `.ets` file such as `/etc/elixir_tzdata_data/release_ets/2017b.ets` should be present.
+
 ## Automatic data updates
 
 By default Tzdata will poll for timezone database updates every day.
@@ -66,6 +69,11 @@ This feature can be disabled with the following configuration:
 ```elixir
 config :tzdata, :autoupdate, :disabled
 ```
+
+If the autoupdate setting is set to disabled, one has to manually put updated .ets files
+in the release_ets sub-dir of the "data_dir" (see the "Data directory and releases" section above).
+When IANA releases new versions of the time zone data, this Tzdata library can be used to generate
+a new .ets file containing the new data.
 
 ## Changes from 0.1.x
 

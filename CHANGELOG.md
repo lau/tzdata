@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.5.15] - 2018-01-07
+### Fixed
+- If no release file is present at a custom data dir location, copy the .ets file that ships with Tzdata
+  to the custom data dir location. Avoids crashes when no .ets files are present at startup.
+
 ## [0.5.14] - 2017-11-22
 ### Fixed
 - Follow redirects when downloading from IANA.
