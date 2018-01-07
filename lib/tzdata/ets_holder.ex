@@ -2,6 +2,7 @@ defmodule Tzdata.EtsHolder do
   require Logger
   use GenServer
   alias Tzdata.DataBuilder
+  alias Tzdata.Util
 
   def start_link() do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
@@ -71,9 +72,25 @@ defmodule Tzdata.EtsHolder do
   defp make_sure_a_release_is_on_file do
     make_sure_a_release_dir_exists()
 
-    if release_files() == [] do
-      Tzdata.DataBuilder.load_and_save_table()
+    cond do
+      release_files() == [] and Util.custom_data_dir_configured? ->
+        Logger.info("No tzdata release files found in custom data dir. Copying release file from tzdata priv dir.")
+        copy_release_dir_from_priv()
+      release_files() == [] and not Util.custom_data_dir_configured? ->
+        Logger.error("No tzdata release files found!")
+      true ->
+        nil
     end
+  end
+
+  defp copy_release_dir_from_priv() do
+    custom_destination_dir = Tzdata.Util.data_dir() <> "/release_ets"
+    priv_release_ets_dir = Application.app_dir(:tzdata, "priv") <> "/release_ets"
+    priv_release_ets_dir
+    |> release_files_for_dir
+    |> Enum.each(fn file ->
+      File.copy!(priv_release_ets_dir <> "/" <> file, custom_destination_dir <> "/" <> file)
+    end)
   end
 
   defp make_sure_a_release_dir_exists do
@@ -87,7 +104,13 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp release_files do
-    File.ls!(release_dir())
+    release_dir()
+    |> release_files_for_dir()
+  end
+
+  defp release_files_for_dir(dir) do
+    dir
+    |> File.ls!()
     |> Enum.filter(&Regex.match?(~r/^2\d{3}[a-z]\.ets/, &1))
     |> Enum.sort()
   end
