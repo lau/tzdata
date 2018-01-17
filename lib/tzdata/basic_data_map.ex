@@ -3,7 +3,7 @@ defmodule Tzdata.BasicDataMap do
 
   alias Tzdata.Parser
   alias Tzdata.ParserOrganizer, as: Organizer
-  @file_names ~w(africa antarctica asia australasia backward etcetera europe northamerica pacificnew southamerica)s
+  @file_names ~w(africa antarctica asia australasia backward etcetera europe northamerica southamerica)s
   def from_files_in_dir(dir_name) do
     Enum.map(@file_names, fn file_name -> {String.to_atom(file_name), Parser.read_file(file_name, dir_name)} end)
     |> make_map
