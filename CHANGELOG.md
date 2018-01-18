@@ -1,5 +1,9 @@
 # Changelog for Tzdata
 
+## [0.5.16] - 2018-01-18
+### Fixed
+- Fix could not load 2018a release by removing obsolete reference to pacificnew file. (Johannes Weißl)
+
 ## [0.5.15] - 2018-01-07
 ### Fixed
 - If no release file is present at a custom data dir location, copy the .ets file that ships with Tzdata
