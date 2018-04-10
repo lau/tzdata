@@ -1,6 +1,6 @@
 defmodule Tzdata.DataBuilder do
   alias Tzdata.DataLoader
-  alias Tzdata.PeriodBuilder
+  alias Tzdata.PeriodBuilderNew, as: PeriodBuilder
   alias Tzdata.LeapSecParser
   require Logger
 
