@@ -196,14 +196,23 @@ defmodule Tzdata.PeriodBuilderNew do
     {{wall_year, wall_month, wall_day}, _} =
       :calendar.gregorian_seconds_to_datetime(utc_seconds + utc_off + std_off)
 
-    with true <- TzUtil.rule_applies_for_year(rule, wall_year),
-         {{{_, month, day}, _}, _} = rule_dt = TzUtil.time_for_rule(rule, wall_year),
-         true <- {month, day} > {wall_month, wall_day},
-         rule_utc = datetime_to_utc(rule_dt, utc_off, std_off),
-         true <- rule_utc > utc_seconds do
-      {rule_utc, rule}
+    result =
+      if TzUtil.rule_applies_for_year(rule, wall_year) do
+        {{{_, month, day}, _}, _} = rule_dt = TzUtil.time_for_rule(rule, wall_year)
+
+        if {month, day} > {wall_month, wall_day} do
+          rule_utc = datetime_to_utc(rule_dt, utc_off, std_off)
+
+          if rule_utc > utc_seconds do
+            {rule_utc, rule}
+          end
+        end
+      end
+
+    if result do
+      result
     else
-      _ -> next_rule_by_time(rules, utc_seconds, utc_off, std_off)
+      next_rule_by_time(rules, utc_seconds, utc_off, std_off)
     end
   end
 
