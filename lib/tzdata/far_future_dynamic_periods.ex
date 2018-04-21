@@ -10,7 +10,6 @@ defmodule Tzdata.FarFutureDynamicPeriods do
   @moduledoc false
   alias Tzdata.ReleaseReader
   alias Tzdata.Util
-  alias Tzdata.PeriodBuilder
 
   # February 1st 30 years from compile time
   @greg_sec_30_years_from_now :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 30, 2, 1}, {0, 0, 0}}
@@ -54,7 +53,7 @@ defmodule Tzdata.FarFutureDynamicPeriods do
 
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = PeriodBuilder.datetime_to_utc(Util.time_for_rule(end_rule, until_time_year), utc_off, std_off)
+    until_utc = Util.datetime_to_utc(Util.time_for_rule(end_rule, until_time_year), utc_off, std_off)
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
 
@@ -87,12 +86,12 @@ defmodule Tzdata.FarFutureDynamicPeriods do
     # std off before is the offset before the first period starts
     std_off_before = rule_beginning_of_year.save
     std_off = rule_end_of_year.save
-    from = PeriodBuilder.datetime_to_utc(Util.time_for_rule(rule_end_of_year, year-1), utc_off, std_off_before)
+    from = Util.datetime_to_utc(Util.time_for_rule(rule_end_of_year, year-1), utc_off, std_off_before)
     letter = rule_end_of_year.letter
 
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = PeriodBuilder.datetime_to_utc(Util.time_for_rule(rule_beginning_of_year, year), utc_off, std_off)
+    until_utc = Util.datetime_to_utc(Util.time_for_rule(rule_beginning_of_year, year), utc_off, std_off)
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
 

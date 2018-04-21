@@ -330,6 +330,23 @@ defmodule Tzdata.Util do
     {{{year, month, day}, time}, modifier}
   end
 
+  @doc "Converts a datetime and a type (:utc | :standard | wall) to a number of gregorian seconds"
+  def datetime_to_utc({datetime, :utc}, _, _) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime)
+  end
+
+  def datetime_to_utc({datetime, :standard}, utc_off, _) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
+  end
+
+  def datetime_to_utc({datetime, :wall}, utc_off, std_off) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
+  end
+
+  def datetime_to_utc(datetime, _, _) when datetime in [:min, :max] do
+    datetime
+  end
+
   @doc """
   Takes a zone abbreviation, a standard offset integer
   and a "letter" as found in a the letter column of a tz rule.

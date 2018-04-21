@@ -1,7 +1,7 @@
 defmodule Tzdata.PeriodBuilder do
   @moduledoc false
 
-  alias Tzdata.Util, as: TzUtil
+  alias Tzdata.Util, as: Util
   # the last year to use when precalcuating rules that go into the future
   # indefinitely
   @years_in_the_future_where_precompiled_periods_are_used 40
@@ -111,7 +111,7 @@ defmodule Tzdata.PeriodBuilder do
 
   defp filter_rules_after(rules, period) do
     {{year, _, _}, _} = :calendar.gregorian_seconds_to_datetime(period.until.standard)
-    Enum.filter(rules, &TzUtil.rule_applies_after_year?(&1, year))
+    Enum.filter(rules, &Util.rule_applies_after_year?(&1, year))
   end
 
   defp build_period(zone_line, state, until \\ nil) do
@@ -136,7 +136,7 @@ defmodule Tzdata.PeriodBuilder do
     period = %{
       std_off: std_off,
       utc_off: utc_off,
-      zone_abbr: TzUtil.period_abbrevation(format, std_off, letter),
+      zone_abbr: Util.period_abbrevation(format, std_off, letter),
       from: times_from_utc(utc_from, utc_off, std_off),
       until: times_from_utc(utc_until, utc_off, std_off)
     }
@@ -146,27 +146,11 @@ defmodule Tzdata.PeriodBuilder do
   end
 
   defp zone_until(%{until: datetime}, utc_off, std_off) do
-    datetime_to_utc(datetime, utc_off, std_off)
+    Util.datetime_to_utc(datetime, utc_off, std_off)
   end
 
   defp zone_until(%{}, _, _) do
     :max
-  end
-
-  def datetime_to_utc({datetime, :utc}, _, _) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime)
-  end
-
-  def datetime_to_utc({datetime, :standard}, utc_off, _) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
-  end
-
-  def datetime_to_utc({datetime, :wall}, utc_off, std_off) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
-  end
-
-  def datetime_to_utc(datetime, _, _) when datetime in [:min, :max] do
-    datetime
   end
 
   defp times_from_utc(utc_time, utc_off, std_off) when is_integer(utc_time) do
@@ -179,7 +163,7 @@ defmodule Tzdata.PeriodBuilder do
 
   defp end_of_year_utc(seconds, utc_off, std_off) do
     {{year, _, _}, _} = :calendar.gregorian_seconds_to_datetime(seconds + utc_off)
-    datetime_to_utc({{{year + 1, 1, 1}, {0, 0, 0}}, :standard}, utc_off, std_off)
+    Util.datetime_to_utc({{{year + 1, 1, 1}, {0, 0, 0}}, :standard}, utc_off, std_off)
   end
 
   defp ensure_letter(%{letter: binary} = state, _) when is_binary(binary) do
@@ -199,8 +183,8 @@ defmodule Tzdata.PeriodBuilder do
   defp next_rule_by_time(rules, :min, utc_off, std_off) do
     # we transition at the start of the first rule
     rule = Enum.min_by(rules, &{&1.from, &1.in})
-    rule_dt = TzUtil.time_for_rule(rule, rule.from)
-    rule_utc = datetime_to_utc(rule_dt, utc_off, std_off)
+    rule_dt = Util.time_for_rule(rule, rule.from)
+    rule_utc = Util.datetime_to_utc(rule_dt, utc_off, std_off)
     {rule_utc, rule}
   end
 
@@ -208,11 +192,11 @@ defmodule Tzdata.PeriodBuilder do
     {wall_year, wall_month, wall_day} = date
 
     result =
-      if TzUtil.rule_applies_for_year(rule, wall_year) do
-        {{{_, month, day}, _}, _} = rule_dt = TzUtil.time_for_rule(rule, wall_year)
+      if Util.rule_applies_for_year(rule, wall_year) do
+        {{{_, month, day}, _}, _} = rule_dt = Util.time_for_rule(rule, wall_year)
 
         if {month, day} > {wall_month, wall_day} do
-          rule_utc = datetime_to_utc(rule_dt, utc_off, std_off)
+          rule_utc = Util.datetime_to_utc(rule_dt, utc_off, std_off)
 
           if rule_utc > utc_seconds do
             {rule_utc, rule}
