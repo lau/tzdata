@@ -191,10 +191,21 @@ defmodule Tzdata.PeriodBuilder do
     %{state | letter: letter}
   end
 
-  defp next_rule_by_time([rule | rules], utc_seconds, utc_off, std_off)
-       when is_integer(utc_seconds) do
-    {{wall_year, wall_month, wall_day}, _} =
-      :calendar.gregorian_seconds_to_datetime(utc_seconds + utc_off + std_off)
+  defp next_rule_by_time(rules, utc_seconds, utc_off, std_off) when is_integer(utc_seconds) do
+    {wall_day, _} = :calendar.gregorian_seconds_to_datetime(utc_seconds + utc_off + std_off)
+    next_rule_by_date(rules, wall_day, utc_seconds, utc_off, std_off)
+  end
+
+  defp next_rule_by_time(rules, :min, utc_off, std_off) do
+    # we transition at the start of the first rule
+    rule = Enum.min_by(rules, &{&1.from, &1.in})
+    rule_dt = TzUtil.time_for_rule(rule, rule.from)
+    rule_utc = datetime_to_utc(rule_dt, utc_off, std_off)
+    {rule_utc, rule}
+  end
+
+  defp next_rule_by_date([rule | rules], date, utc_seconds, utc_off, std_off) do
+    {wall_year, wall_month, wall_day} = date
 
     result =
       if TzUtil.rule_applies_for_year(rule, wall_year) do
@@ -212,19 +223,11 @@ defmodule Tzdata.PeriodBuilder do
     if result do
       result
     else
-      next_rule_by_time(rules, utc_seconds, utc_off, std_off)
+      next_rule_by_date(rules, date, utc_seconds, utc_off, std_off)
     end
   end
 
-  defp next_rule_by_time([], _, _, _) do
+  defp next_rule_by_date([], _, _, _, _) do
     nil
-  end
-
-  defp next_rule_by_time(rules, :min, utc_off, std_off) do
-    # we transition at the start of the first rule
-    rule = Enum.min_by(rules, &{&1.from, &1.in})
-    rule_dt = TzUtil.time_for_rule(rule, rule.from)
-    rule_utc = datetime_to_utc(rule_dt, utc_off, std_off)
-    {rule_utc, rule}
   end
 end
