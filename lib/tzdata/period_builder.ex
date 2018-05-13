@@ -1,225 +1,217 @@
 defmodule Tzdata.PeriodBuilder do
   @moduledoc false
 
-  alias Tzdata.Util, as: TzUtil
-  @min_year 1900 # the first year to use when looking at rules
-  # the last year to use when looking at rules
+  alias Tzdata.Util, as: Util
+  # the last year to use when precalcuating rules that go into the future
+  # indefinitely
   @years_in_the_future_where_precompiled_periods_are_used 40
   @extra_years_to_precompile 4
-  @max_year (:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used + @extra_years_to_precompile
+  @future_years_in_seconds (@years_in_the_future_where_precompiled_periods_are_used +
+                              @extra_years_to_precompile) * 31_556_736
+  @max_gregorian_for_rules :calendar.universal_time()
+                           |> :calendar.datetime_to_gregorian_seconds()
+                           |> Kernel.+(@future_years_in_seconds)
+
+  defmodule State do
+    defstruct utc_off: 0,
+              std_off: 0,
+              letter: :undefined,
+              utc_from: :min
+  end
+
+  alias __MODULE__.State
 
   def calc_periods(btz_data, zone_name) do
-    calc_periods_h(btz_data, zone_name) |> Enum.filter(fn(x) -> (x != nil) end)
-  end
-  defp calc_periods_h(btz_data, zone_name) do
-    {:ok, zone} = zone(btz_data, zone_name)
-    calc_periods(btz_data, zone.zone_lines, :min, Map.get(hd(zone.zone_lines), :rules), "")
-  end
+    {:ok, zone} = Map.fetch(btz_data.zones, zone_name)
 
-  defp zone(btz_data, zone_name) do
-    {:ok, Map.get(btz_data.zones, zone_name)}
-  end
-  defp get_rules(btz_data, rules_name) do
-    {:ok, Map.get(btz_data.rules, rules_name)}
+    {periods, _} =
+      Enum.flat_map_reduce(zone.zone_lines, %State{}, &calc_periods_for_line(btz_data, &1, &2))
+
+    combine_periods(periods, [])
   end
 
-  def calc_periods(btz_data, [zone_line_hd|zone_line_tl], from, zone_hd_rules, letter) when zone_hd_rules == nil do
-    std_off = 0 # since there are no rules, there is no standard offset
-    utc_off = zone_line_hd.gmtoff
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(Map.get(zone_line_hd, :until), utc_off, std_off)
-    until_standard_time = standard_time_from_utc(until_utc, utc_off)
-    until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-    period = %{
-        std_off: 0,
-        utc_off: utc_off,
-        from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-        until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: zone_line_hd.format
-      }
-    h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter)
+  def calc_periods_for_line(_btz_data, %{rules: nil} = zone_line, state) do
+    state = %{state | std_off: 0}
+    build_period(zone_line, state)
   end
 
-  def calc_periods(btz_data, [zone_line_hd|zone_line_tl], from, zone_hd_rules, letter) do
-    std_off = 0 # we start out by assuming there is no offset. the rules might change this
-    utc_off = zone_line_hd.gmtoff
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    zone_has_until_limit = Map.get(zone_line_hd, :until) != nil
+  def calc_periods_for_line(_btz_data, %{rules: {:amount, std_off}} = zone_line, state) do
+    state = %{state | std_off: std_off}
+    build_period(zone_line, state)
+  end
 
-    # Get the year of the "from" time. We use the standard time with utc offset
-    # applied. If for instance we are ahead of UTC and the period starts at the
-    # start of a new year we want the new year.
+  def calc_periods_for_line(btz_data, %{rules: {:named_rules, rule_name}} = zone_line, state) do
+    {:ok, rules} = Map.fetch(btz_data.rules, rule_name)
+    calc_named_rule_periods(zone_line, state, rules)
+  end
 
-    from_standard_time_year = case from do
-      :min -> @min_year
-      _    -> {{year,_,_},_} = :calendar.gregorian_seconds_to_datetime(from_standard_time); year
+  def combine_periods([first, second | rest], acc) do
+    if first.std_off == second.std_off and first.utc_off == second.utc_off and
+         first.zone_abbr == second.zone_abbr do
+      combined = Map.put(first, :until, second.until)
+      combine_periods([combined | rest], acc)
+    else
+      combine_periods([second | rest], [first | acc])
     end
+  end
 
-    max_year_to_use = case zone_has_until_limit do
-      true -> {{{year, _, _}, _}, _} = Map.get(zone_line_hd, :until); year
-      _    -> @max_year
+  def combine_periods(rest, acc) do
+    Enum.reverse(acc, rest)
+  end
+
+  defp calc_named_rule_periods(zone_line, state, [_ | _] = rules) do
+    utc_off = zone_line.gmtoff
+    std_off = state.std_off
+    zone_until = zone_until(zone_line, utc_off, std_off)
+    state = ensure_letter(state, rules)
+    rules = Enum.sort_by(rules, &{&1.in, &1.from})
+
+    case next_rule_by_time(rules, state.utc_from, utc_off, std_off) do
+      nil ->
+        # no rule for the rest of the year. the current period goes until the
+        # start of next year, or the end of the period, whichever comes first
+        end_of_year = end_of_year_utc(state.utc_from, utc_off, std_off)
+        {[period], state} = build_period(zone_line, state, min(end_of_year, zone_until))
+
+        {periods, state} =
+          if end_of_year < zone_until and end_of_year < @max_gregorian_for_rules do
+            rules = filter_rules_after(rules, period)
+            calc_named_rule_periods(zone_line, state, rules)
+          else
+            {[], state}
+          end
+
+        {[period | periods], state}
+
+      {utc_until, rule} when utc_until < zone_until ->
+        # transition happens at utc_until, and the new state should have the values from rule
+        {[period], state} = build_period(zone_line, state, utc_until)
+        state = %{state | std_off: rule.save, letter: rule.letter}
+        rules = filter_rules_after(rules, period)
+        {periods, state} = calc_named_rule_periods(zone_line, state, rules)
+        {[period | periods], state}
+
+      {^zone_until, rule} ->
+        # next transition happens when the zone ends: update the state but
+        # otherwise build a normal period
+        {periods, state} = build_period(zone_line, state)
+        state = %{state | std_off: rule.save, letter: rule.letter}
+        {periods, state}
+
+      {_, _} ->
+        # next transition happens after the zone ends: build a normal period
+        build_period(zone_line, state)
     end
-    years_to_use = from_standard_time_year..max_year_to_use |> Enum.to_list
-    # get rules
-    {rules_type, rules_value} = zone_hd_rules
-    calc_rule_periods_h(btz_data, rules_type, rules_value, [zone_line_hd|zone_line_tl], from, utc_off, std_off, years_to_use, letter)
   end
 
-  # Helper function for function calc_periods with no rules
-  # When the zone line tail is empty we are at the last zone line.
-  # As this should only be called when there are no rules, we assume that
-  # there the period is until :max and thus it is the last period. So we don't
-  # add any more periods.
-  def h_calc_periods_no_rules(_btz_data, period, _, zone_line_tl, _) when zone_line_tl == [] do
-    [period]
-  end
-  # If there is a zone line tail, we recursively add to the list of periods with that zone line tail
-  def h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter) do
-    [period
-     |calc_periods(btz_data, zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
-    ]
+  defp calc_named_rule_periods(zone_line, state, []) do
+    # no more valid rules; the current one goes to the end of the zone line
+    build_period(zone_line, state)
   end
 
-  defp calc_rule_periods_h(btz_data, :amount, rules_value, [zone_line_hd|zone_line_tl], from, _, _, _, letter) do
-    std_off = rules_value
-    utc_off = Map.get(zone_line_hd, :gmtoff)
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(Map.get(zone_line_hd, :until), utc_off, std_off)
-    until_standard_time = standard_time_from_utc(until_utc, utc_off)
-    until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-    period = %{
-        std_off: rules_value,
-        utc_off: utc_off,
-        from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-        until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: zone_line_hd.format
-      }
-    h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter)
-  end
-  defp calc_rule_periods_h(btz_data, :named_rules, rules_value, [zone_line_hd|zone_line_tl], from, utc_off, std_off, years_to_use, letter) do
-    {:ok, rules} = get_rules(btz_data, rules_value)
-    calc_rule_periods(btz_data, [zone_line_hd|zone_line_tl], from, utc_off, std_off, years_to_use, rules, letter)
+  defp filter_rules_after(rules, period) do
+    {{year, _, _}, _} = :calendar.gregorian_seconds_to_datetime(period.until.standard)
+    Enum.filter(rules, &Util.rule_applies_after_year?(&1, year))
   end
 
-  # At the last zone line, which should last until "max".
-  # An example of this is Asia/Tokyo where at the time this is written
-  # the current period starts in 1951 and is still in effect.
-  def calc_rule_periods(_btz_data, [zone_line], from, utc_off, std_off, [], _, letter) do
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    period =
+  defp build_period(zone_line, state, until \\ nil) do
     %{
+      gmtoff: utc_off,
+      format: format
+    } = zone_line
+
+    %{
+      utc_from: utc_from,
+      std_off: std_off,
+      letter: letter
+    } = state
+
+    utc_until =
+      if until do
+        until
+      else
+        zone_until(zone_line, utc_off, std_off)
+      end
+
+    period = %{
       std_off: std_off,
       utc_off: utc_off,
-      from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-      until: %{standard: :max, wall: :max, utc: :max},
-      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+      zone_abbr: Util.period_abbrevation(format, std_off, letter),
+      from: times_from_utc(utc_from, utc_off, std_off),
+      until: times_from_utc(utc_until, utc_off, std_off)
     }
-    [period]
+
+    state = %{state | utc_off: utc_off, utc_from: utc_until}
+    {[period], state}
   end
 
-  def calc_rule_periods(btz_data, [zone_line|zone_line_tl], from, utc_off, std_off, [], _, letter) do
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(Map.get(zone_line, :until), utc_off, std_off)
-    until_standard_time = standard_time_from_utc(until_utc, utc_off)
-    until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-    period =
-    %{
-      std_off: std_off,
-      utc_off: utc_off,
-      from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-      until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
-    }
-    [ period |
-      calc_periods(btz_data, zone_line_tl, until_utc, Map.get(hd(zone_line_tl), :rules), letter)
-    ]
+  defp zone_until(%{until: datetime}, utc_off, std_off) do
+    Util.datetime_to_utc(datetime, utc_off, std_off)
   end
 
-  def calc_rule_periods(btz_data, zone_lines, from, utc_off, std_off, [years_hd|years_tl], zone_rules, letter) do
-    rules_for_year = TzUtil.rules_for_year(zone_rules, years_hd) |> sort_rules_by_time
-    # if there are no rules for the given year, continue with the remaining years
-    if rules_for_year == [] do
-      calc_rule_periods(btz_data, zone_lines, from, utc_off, std_off, years_tl, zone_rules, letter)
-    else
-      calc_periods_for_year(btz_data, zone_lines, from, utc_off, std_off, [years_hd|years_tl], zone_rules, rules_for_year, letter)
-    end
-  end
-
-  def calc_periods_for_year(btz_data, [zone_line|zone_line_tl], from, utc_off, std_off, years, zone_rules, rules_for_year, letter) do
-    year = years |> hd
-    rule = rules_for_year |> hd
-    rules_tail = rules_for_year |> tl
-    from_standard_time = standard_time_from_utc(from, utc_off)
-    from_wall_time = wall_time_from_utc(from, utc_off, std_off)
-    until_utc = datetime_to_utc(TzUtil.time_for_rule(rule, year), utc_off, std_off)
-    until_standard_time = standard_time_from_utc(until_utc, utc_off)
-    until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-
-    # Some times this will calculate periods with zero length.
-    # Set period to nil if the length is zero (ie. "until" equals "from")
-    # Nil values will be filtered by another function
-    period =
-      if until_utc == from, do: nil,
-        else: %{
-                std_off: std_off,
-                utc_off: utc_off,
-                from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-                until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-                zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
-              }
-    # If there are no more rules for the year, continue with the next zone line
-    if rules_tail == [] do
-      [period |
-       calc_rule_periods(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years|>tl, zone_rules, rule.letter)
-      ]
-    # Else continue with those rules
-    else
-      [period|
-       calc_periods_for_year(btz_data, [zone_line|zone_line_tl], until_utc, utc_off, rule.save, years, zone_rules, rules_tail, rule.letter)
-      ]
-    end
-  end
-
-  # earliest rule first
-  # sort by month!
-  def sort_rules_by_time(rules) do
-    Enum.sort(rules, &(&1.in < &2.in))
-  end
-
-  @doc """
-  Takes a tuple of date time and modifier that can be :utc, :standard or :wall
-  UTC offset in seconds and standard offset in seconds.
-  Returns UTC time in seconds.
-  """
-  # special case for datetime provided being nil. we assume it's for
-  # use with a timezone line with until being nil
-  def datetime_to_utc(until, _, _) when until == nil do
+  defp zone_until(%{}, _, _) do
     :max
   end
-  def datetime_to_utc({datetime, modifier}, _, _) when modifier == :utc do
-    :calendar.datetime_to_gregorian_seconds(datetime)
+
+  defp times_from_utc(utc_time, utc_off, std_off) when is_integer(utc_time) do
+    %{utc: utc_time, standard: utc_time + utc_off, wall: utc_time + utc_off + std_off}
   end
 
-  def datetime_to_utc({datetime, modifier}, utc_off, _) when modifier == :standard do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
+  defp times_from_utc(utc_time, _, _) when utc_time in [:min, :max] do
+    %{utc: utc_time, standard: utc_time, wall: utc_time}
   end
 
-  def datetime_to_utc({datetime, modifier}, utc_off, std_off) when modifier == :wall do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
+  defp end_of_year_utc(seconds, utc_off, std_off) do
+    {{year, _, _}, _} = :calendar.gregorian_seconds_to_datetime(seconds + utc_off)
+    Util.datetime_to_utc({{{year + 1, 1, 1}, {0, 0, 0}}, :standard}, utc_off, std_off)
   end
 
-  def standard_time_from_utc(:min, _), do: :min
-  def standard_time_from_utc(:max, _), do: :max
-  def standard_time_from_utc(utc_time, utc_offset) do
-    utc_time + utc_offset
+  defp ensure_letter(%{letter: binary} = state, _) when is_binary(binary) do
+    state
   end
-  def wall_time_from_utc(:min, _, _), do: :min
-  def wall_time_from_utc(:max, _, _), do: :max
-  def wall_time_from_utc(utc_time, utc_offset, standard_offset) do
-    utc_time + utc_offset + standard_offset
+
+  defp ensure_letter(%{letter: :undefined} = state, rules) do
+    letter = Enum.find_value(rules, &(&1.save == 0 && &1.letter))
+    %{state | letter: letter}
+  end
+
+  defp next_rule_by_time(rules, utc_seconds, utc_off, std_off) when is_integer(utc_seconds) do
+    {wall_day, _} = :calendar.gregorian_seconds_to_datetime(utc_seconds + utc_off + std_off)
+    next_rule_by_date(rules, wall_day, utc_seconds, utc_off, std_off)
+  end
+
+  defp next_rule_by_time(rules, :min, utc_off, std_off) do
+    # we transition at the start of the first rule
+    rule = Enum.min_by(rules, &{&1.from, &1.in})
+    rule_dt = Util.time_for_rule(rule, rule.from)
+    rule_utc = Util.datetime_to_utc(rule_dt, utc_off, std_off)
+    {rule_utc, rule}
+  end
+
+  defp next_rule_by_date([rule | rules], date, utc_seconds, utc_off, std_off) do
+    {wall_year, wall_month, wall_day} = date
+
+    result =
+      if Util.rule_applies_for_year(rule, wall_year) do
+        {{{_, month, day}, _}, _} = rule_dt = Util.time_for_rule(rule, wall_year)
+
+        if {month, day} > {wall_month, wall_day} do
+          rule_utc = Util.datetime_to_utc(rule_dt, utc_off, std_off)
+
+          if rule_utc > utc_seconds do
+            {rule_utc, rule}
+          end
+        end
+      end
+
+    if result do
+      result
+    else
+      next_rule_by_date(rules, date, utc_seconds, utc_off, std_off)
+    end
+  end
+
+  defp next_rule_by_date([], _, _, _, _) do
+    nil
   end
 end

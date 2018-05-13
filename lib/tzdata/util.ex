@@ -275,6 +275,42 @@ defmodule Tzdata.Util do
   end
 
   @doc """
+  Returns true if the rule applies after the given year.
+
+  Useful for filtering out rules which are no longer valid when building periods.
+
+  ## Examples
+      iex> rule_applies_after_year?(%{at: "23:00", from: 1916, in: 5, letter: "S", name: "Denmark", on: "14", record_type: :rule, save: 3600, to: :only, type: "-"}, 1915)
+      true
+      iex> rule_applies_after_year?(%{at: "23:00", from: 1916, in: 5, letter: "S", name: "Denmark", on: "14", record_type: :rule, save: "1:00", to: :only, type: "-"}, 2000)
+      false
+      iex> rule_applies_after_year?(%{at: "2:00", from: 1993, in: "Oct", letter: "S", name: "Thule", on: "lastSun", record_type: :rule, save: "0", to: 2006, type: "-"}, 1992)
+      true
+      iex> rule_applies_after_year?(%{at: "2:00", from: 1994, in: "Oct", letter: "S", name: "Thule", on: "lastSun", record_type: :rule, save: "0", to: 2006, type: "-"}, 1994)
+      true
+      iex> rule_applies_after_year?(%{at: "2:00", from: 1994, in: "Oct", letter: "S", name: "Thule", on: "lastSun", record_type: :rule, save: "0", to: 2006, type: "-"}, 2006)
+      true
+      iex> rule_applies_after_year?(%{at: "2:00", from: 1994, in: "Oct", letter: "S", name: "Thule", on: "lastSun", record_type: :rule, save: "0", to: 2006, type: "-"}, 2007)
+      false
+      iex> rule_applies_after_year?(%{at: "1:00u", from: 1981, in: "Mar", letter: "S", name: "EU", on: "lastSun", record_type: :rule, save: "1:00", to: :max, type: "-"}, 2014)
+      true
+      iex> rule_applies_after_year?(%{at: "1:00u", from: 1981, in: "Mar", letter: "S", name: "EU", on: "lastSun", record_type: :rule, save: "1:00", to: :max, type: "-"}, 1981)
+      true
+      iex> rule_applies_after_year?(%{at: "1:00u", from: 1981, in: "Mar", letter: "S", name: "EU", on: "lastSun", record_type: :rule, save: "1:00", to: :max, type: "-"}, 1980)
+      true
+  """
+  def rule_applies_after_year?(rule, year) do
+    case rule.to do
+      :only ->
+        rule.from >= year
+      :max ->
+        true
+      to ->
+        to >= year
+    end
+  end
+
+  @doc """
   Takes a list of rules and a year.
   Returns the same list of rules except the rules that do not apply
   for the year.
@@ -292,6 +328,23 @@ defmodule Tzdata.Util do
     month = rule.in
     day = tz_day_to_int year, month, rule.on
     {{{year, month, day}, time}, modifier}
+  end
+
+  @doc "Converts a datetime and a type (:utc | :standard | wall) to a number of gregorian seconds"
+  def datetime_to_utc({datetime, :utc}, _, _) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime)
+  end
+
+  def datetime_to_utc({datetime, :standard}, utc_off, _) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
+  end
+
+  def datetime_to_utc({datetime, :wall}, utc_off, std_off) when is_tuple(datetime) do
+    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
+  end
+
+  def datetime_to_utc(datetime, _, _) when datetime in [:min, :max] do
+    datetime
   end
 
   @doc """
@@ -328,8 +381,11 @@ defmodule Tzdata.Util do
   defp period_abbrevation_h(:no_slash, zone_abbr, _, "-") do
     String.replace(zone_abbr, "%s", "")
   end
-  defp period_abbrevation_h(:no_slash, zone_abbr, _, letter) do
+  defp period_abbrevation_h(:no_slash, zone_abbr, _, letter) when is_binary(letter) do
     String.replace(zone_abbr, "%s", letter)
+  end
+  defp period_abbrevation_h(:no_slash, zone_abbr, _, :undefined) do
+    zone_abbr
   end
 
   def strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
