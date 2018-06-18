@@ -11,12 +11,12 @@ defmodule TableDataTest do
   end
 
   test "timezone entries for country code" do
-    assert TableData.for_country_code("UY") == [%{"comments" => "", "country_codes" => ["UY"], "latlong" => "-3453-05611",
+    assert TableData.for_country_code("UY") == [%{"comments" => "", "country_codes" => ["UY"], "latlong" => "-345433-0561245",
               "timezone" => "America/Montevideo"}]
   end
 
   test "entry for timezone" do
-    assert TableData.for_timezone("America/Montevideo") == %{"comments" => "", "country_codes" => ["UY"], "latlong" => "-3453-05611",
+    assert TableData.for_timezone("America/Montevideo") == %{"comments" => "", "country_codes" => ["UY"], "latlong" => "-345433-0561245",
              "timezone" => "America/Montevideo"}
   end
 end

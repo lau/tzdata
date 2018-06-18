@@ -4,7 +4,7 @@ defmodule Tzdata.BasicData do
 
   alias Tzdata.Parser
   alias Tzdata.ParserOrganizer, as: Organizer
-  file_names = ~w(africa antarctica asia australasia backward etcetera europe northamerica pacificnew southamerica)s
+  file_names = ~w(africa antarctica asia australasia backward etcetera europe northamerica southamerica)s
   all_files_read = Enum.map(file_names, fn file_name -> {String.to_atom(file_name), Parser.read_file(file_name)} end)
   all_files_flattened = all_files_read |> Enum.map(fn {_name, read_file} -> read_file end) |> List.flatten
 

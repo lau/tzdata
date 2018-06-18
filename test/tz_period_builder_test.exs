@@ -67,7 +67,7 @@ defmodule TzPeriodBuilderTest do
     prds = TzPeriodBuilder.calc_periods("Etc/UTC")
     assert hd(prds) == %{std_off: 0, from: %{utc: :min, standard: :min, wall: :min}, until: %{utc: :max, standard: :max, wall: :max}, utc_off: 0, zone_abbr: "UTC"}
     prds = TzPeriodBuilder.calc_periods("Etc/GMT-10")
-    assert hd(prds) == %{std_off: 0, from: %{utc: :min, standard: :min, wall: :min}, until: %{utc: :max, standard: :max, wall: :max}, utc_off: 36000, zone_abbr: "GMT-10"}
+    assert hd(prds) == %{std_off: 0, from: %{utc: :min, standard: :min, wall: :min}, until: %{utc: :max, standard: :max, wall: :max}, utc_off: 36000, zone_abbr: "+10"}
   end
 
   test "calculate periods for zone where last line has no rules" do
@@ -77,12 +77,12 @@ defmodule TzPeriodBuilderTest do
 
   test "calculate periods for zone where last line has rules, but the rules do not continue forever" do
     periods = TzPeriodBuilder.calc_periods("Asia/Tokyo")
-    assert periods|>Enum.at(11) == %{from: %{standard: 61589206800, utc: 61589174400, wall: 61589206800}, std_off: 0, until: %{standard: :max, utc: :max, wall: :max}, utc_off: 32400, zone_abbr: "JST"}
+    assert periods |> Enum.at(9) == %{from: %{standard: 61589286000, utc: 61589253600, wall: 61589286000}, std_off: 0, until: %{standard: :max, utc: :max, wall: :max}, utc_off: 32400, zone_abbr: "JST"}
   end
 
   test "calculate periods for zone where in a zone line there is a rule which is an amount of time" do
     periods = TzPeriodBuilder.calc_periods("Africa/Ceuta")
     assert periods |> Enum.at(5) == %{from: %{standard: 60724767600, utc: 60724767600, wall: 60724771200}, std_off: 3600,
-             until: %{standard: 60739542000, utc: 60739542000, wall: 60739545600}, utc_off: 0, zone_abbr: "WEST"}
+             until: %{standard: 60739545600, utc: 60739545600, wall: 60739549200}, utc_off: 0, zone_abbr: "WEST"}
   end
 end
