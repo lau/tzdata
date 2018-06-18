@@ -32,7 +32,7 @@ defmodule Tzdata.Mixfile do
     %{ licenses: ["MIT"],
        maintainers: ["Lau Taarnskov"],
        links: %{ "GitHub" => "https://github.com/lau/tzdata"},
-       files: ~w(lib priv mix.exs README* LICENSE*
-                 license* CHANGELOG* changelog* src source_data) }
+       files: ~w(lib mix.exs README*
+                 CHANGELOG* source_data) }
   end
 end
