@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.5.17] - 2018-06-18
+### Changes
+- New PeriodBuilder implementation (Paul Swartz)
+- tz release that ships with Tzdata is now 2018e instead of 2017b
+
 ## [0.5.16] - 2018-01-18
 ### Fixed
 - Fix could not load 2018a release by removing obsolete reference to pacificnew file. (Johannes Weißl)
