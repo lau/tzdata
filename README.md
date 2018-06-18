@@ -8,7 +8,7 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 0.5.7 the tz release 2016c
+As of version 0.5.17 the tz release 2018e
 is included in the package.
 
 When a new release is out, it will be automatically downloaded.
@@ -17,7 +17,7 @@ The tz release version in use can be verified with the following function:
 
 ```elixir
 iex> Tzdata.tzdata_version
-"2015f"
+"2018e"
 ```
 
 ## Getting started
@@ -27,7 +27,7 @@ or directly: it is available on hex as `tzdata`.
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.5.16"},  ]
+  [  {:tzdata, "~> 0.5.17"},  ]
 end
 ```
 
@@ -84,6 +84,11 @@ is available, it is automatically downloaded and used.
 For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.2.
+
+
+## Hackney dependency and security
+
+Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
 
 ## Documentation
 
