@@ -9,22 +9,43 @@ defmodule Tzdata do
   timezone.
   """
 
+  @type time_zone_name :: String.t()
+  @type gregorian_seconds :: non_neg_integer()
+  @type time_zone_period_limit :: gregorian_seconds() | :min | :max
+  @type time_zone_period :: %{
+          from: %{
+            standard: time_zone_period_limit,
+            utc: time_zone_period_limit,
+            wall: time_zone_period_limit
+          },
+          std_off: integer,
+          until: %{
+            standard: time_zone_period_limit,
+            utc: time_zone_period_limit,
+            wall: time_zone_period_limit
+          },
+          utc_off: integer,
+          zone_abbr: String.t()
+        }
+
   @doc """
   zone_list provides a list of all the zone names that can be used with
   DateTime. This includes aliases.
   """
+  @spec zone_list() :: [time_zone_name]
   def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list
 
   @doc """
   Like zone_list, but excludes aliases for zones.
   """
+  @spec canonical_zone_list() :: [time_zone_name]
   def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list
 
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
-
+  @spec canonical_zone_list() :: [time_zone_name]
   def zone_alias_list, do: Tzdata.ReleaseReader.link_list
 
   @doc """
@@ -37,6 +58,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_exists? "Europe/Jersey"
       true
   """
+  @spec zone_exists?(time_zone_name) :: boolean()
   def zone_exists?(name), do: Enum.member?(zone_list(), name)
 
   @doc """
@@ -48,6 +70,7 @@ defmodule Tzdata do
       iex> Tzdata.canonical_zone? "Europe/Jersey"
       false
   """
+  @spec canonical_zone?(time_zone_name) :: boolean()
   def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
 
   @doc """
@@ -59,6 +82,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_alias? "Europe/London"
       false
   """
+  @spec zone_alias?(time_zone_name) :: boolean()
   def zone_alias?(name), do: Enum.member?(zone_alias_list(), name)
 
   @doc """
@@ -67,6 +91,7 @@ defmodule Tzdata do
       iex> Tzdata.links["Europe/Jersey"]
       "Europe/London"
   """
+  @spec links() :: %{time_zone_name => time_zone_name}
   def links, do: Tzdata.ReleaseReader.links
 
   @doc """
@@ -74,6 +99,7 @@ defmodule Tzdata do
   time zone names. The group names mirror the file names used by the tzinfo
   database.
   """
+  @spec zone_lists_grouped() :: %{atom() => [time_zone_name]}
   def zone_lists_grouped, do: Tzdata.ReleaseReader.by_group
 
   @doc """
@@ -84,6 +110,7 @@ defmodule Tzdata do
       Tzdata.tzdata_version
       "2014i"
   """
+  @spec tzdata_version() :: String.t
   def tzdata_version, do: Tzdata.ReleaseReader.release_version
 
   @doc """
@@ -112,6 +139,7 @@ defmodule Tzdata do
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
   """
+  @spec periods(time_zone_name) :: {:ok, [time_zone_period]}
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
@@ -164,6 +192,7 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
       []
   """
+  @spec periods_for_time(time_zone_name, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period]
   def periods_for_time(zone_name, time_point, time_type) do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
     match_fn = fn %{from: from, until: until} ->
@@ -222,6 +251,7 @@ defmodule Tzdata do
       [%{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
        %{date_time: {{1972, 12, 31}, {23, 59, 60}}, tai_diff: 12}]
   """
+  @spec leap_seconds_with_tai_diff() :: [%{date_time: :calendar.datetime(), tai_diff: integer}]
   def leap_seconds_with_tai_diff do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
     leap_seconds_data.leap_seconds
@@ -240,6 +270,7 @@ defmodule Tzdata do
       [{{1972,  6, 30}, {23, 59, 60}},
        {{1972, 12, 31}, {23, 59, 60}}]
   """
+  @spec leap_seconds() :: [:calendar.datetime()]
   def leap_seconds do
     for %{date_time: date_time} <- leap_seconds_with_tai_diff() do
       date_time
@@ -255,6 +286,7 @@ defmodule Tzdata do
       Tzdata.leap_second_data_valid_until
       {{2015, 12, 28}, {0, 0, 0}}
   """
+  @spec leap_second_data_valid_until() :: :calendar.datetime()
   def leap_second_data_valid_until do
     leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
     leap_seconds_data.valid_until
