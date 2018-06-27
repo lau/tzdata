@@ -54,9 +54,9 @@ defmodule Tzdata.ReleaseReader do
   """
   @very_high_number_representing_gregorian_seconds 9315537984000
   @low_number_representing_before_year_0 -1
-  defp delimiter_to_number(:min), do: @low_number_representing_before_year_0
-  defp delimiter_to_number(:max), do: @very_high_number_representing_gregorian_seconds
-  defp delimiter_to_number(integer) when is_integer(integer), do: integer
+  def delimiter_to_number(:min), do: @low_number_representing_before_year_0
+  def delimiter_to_number(:max), do: @very_high_number_representing_gregorian_seconds
+  def delimiter_to_number(integer) when is_integer(integer), do: integer
 
   defp current_release_from_table do
     :ets.lookup(:tzdata_current_release, :release_version) |> hd |> elem(1)
@@ -64,5 +64,44 @@ defmodule Tzdata.ReleaseReader do
 
   defp table_name_for_release_name(release_name) do
     "tzdata_rel_#{release_name}" |> String.to_atom
+  end
+
+  def periods_for_zone_time_and_type(zone_name, time_point, time_type) do
+    case do_periods_for_zone_time_and_type(zone_name, time_point, time_type) do
+      {:ok, []} ->
+        # Try with a link
+        zone_name_to_use = links()[zone_name]
+        case zone_name_to_use do
+          nil -> {:ok, []}
+          _ -> do_periods_for_zone_time_and_type(zone_name_to_use, time_point, time_type)
+        end
+      {:ok, list} ->
+        {:ok, list}
+    end
+  end
+
+  @max_possible_periods_for_wall_time 2
+  @max_possible_periods_for_utc 1
+  def do_periods_for_zone_time_and_type(zone_name, time_point, :wall) do
+    match_fun = [
+      {{String.to_atom(zone_name), :"$1", :"$2", :"$3", :"$4", :"$5", :"$6", :"$7", :"$8", :"$9"},
+       [
+         {:andalso, {:orelse, {:"=<", :"$2", time_point}, {:==, :"$2", :"min"}},
+          {:orelse, {:>=, :"$5", time_point}, {:==, :"$5", :"max"}}}
+       ], [:"$_"]}
+    ]
+    {ets_result, _} = :ets.select(current_release_from_table() |> table_name_for_release_name, match_fun, @max_possible_periods_for_wall_time)
+    {:ok, ets_result}
+  end
+  def do_periods_for_zone_time_and_type(zone_name, time_point, :utc) do
+    match_fun = [
+      {{String.to_atom(zone_name), :"$1", :"$2", :"$3", :"$4", :"$5", :"$6", :"$7", :"$8", :"$9"},
+       [
+         {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :"min"}},
+          {:orelse, {:>=, :"$4", time_point}, {:==, :"$4", :"max"}}}
+       ], [:"$_"]}
+    ]
+    {ets_result, _} = :ets.select(current_release_from_table() |> table_name_for_release_name, match_fun, @max_possible_periods_for_utc)
+    {:ok, ets_result}
   end
 end

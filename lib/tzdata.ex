@@ -194,7 +194,7 @@ defmodule Tzdata do
   """
   @spec periods_for_time(time_zone_name, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period]
   def periods_for_time(zone_name, time_point, time_type) do
-    case possible_periods_for_zone_and_time(zone_name, time_point) do
+    case possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
       {:ok, periods} ->
         match_fn = fn %{from: from, until: until} ->
           smaller_than_or_equals(Map.get(from, time_type), time_point) &&
@@ -227,7 +227,7 @@ defmodule Tzdata do
   # Use dynamic periods for points in time that are about 40 years into the future
   @years_in_the_future_where_precompiled_periods_are_used 40
   @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
-  defp possible_periods_for_zone_and_time(zone_name, time_point) when time_point >= @point_from_which_to_use_dynamic_periods do
+  defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) when time_point >= @point_from_which_to_use_dynamic_periods do
     if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
       periods(zone_name)
     else
@@ -235,12 +235,26 @@ defmodule Tzdata do
       if link_status == nil do
         Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
       else
-        possible_periods_for_zone_and_time(link_status, time_point)
+        possible_periods_for_zone_and_time(link_status, time_point, time_type)
       end
     end
   end
-  defp possible_periods_for_zone_and_time(zone_name, _time_point) do
-    periods(zone_name)
+  defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
+    {:ok, periods} = Tzdata.ReleaseReader.periods_for_zone_time_and_type(zone_name, time_point, time_type)
+    mapped_periods = periods
+    |> Enum.sort_by(fn {_, from_utc, _, _, _, _, _, _, _, _} -> -(from_utc |> Tzdata.ReleaseReader.delimiter_to_number) end)
+    |> Enum.map(
+      fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} ->
+            %{
+              std_off: std_off,
+              utc_off: utc_off,
+              from: %{utc: f_utc, wall: f_wall, standard: f_std},
+              until: %{utc: u_utc, standard: u_std, wall: u_wall},
+              zone_abbr: zone_abbr
+            }
+          end
+    )
+    {:ok, mapped_periods}
   end
 
   @doc """
