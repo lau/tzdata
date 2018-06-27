@@ -139,7 +139,7 @@ defmodule Tzdata do
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
   """
-  @spec periods(time_zone_name) :: {:ok, [time_zone_period]}
+  @spec periods(time_zone_name) :: {:ok, [time_zone_period]} | {:error, atom()}
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
