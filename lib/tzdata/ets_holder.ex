@@ -56,7 +56,12 @@ defmodule Tzdata.EtsHolder do
 
   defp load_ets_table(release_name) do
     file_name = "#{release_dir()}/#{release_name}.ets"
-    {:ok, _table} = :ets.file2tab(:erlang.binary_to_list(file_name))
+    case :ets.file2tab(:erlang.binary_to_list(file_name)) do
+      {:ok, _table}  ->  :ok
+      {:error, _table} ->
+        File.rm(file_name)
+        copy_release_dir_from_priv()
+    end
   end
 
   defp create_current_release_ets_table do
