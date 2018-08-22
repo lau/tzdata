@@ -1,5 +1,9 @@
 # Changelog for Tzdata
 
+## [0.5.18] - 2018-08-21
+### Fixed
+- Fake leap second at 1971-12-31 23:59:60 removed
+
 ## [0.5.17] - 2018-06-18
 ### Changes
 - New PeriodBuilder implementation (Paul Swartz)
