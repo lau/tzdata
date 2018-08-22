@@ -24,8 +24,7 @@ defmodule Tzdata.Mixfile do
   defp deps do
     [
       {:hackney, "~> 1.0"},
-      {:earmark, "~> 0.1.17", only: :dev},
-      {:ex_doc, "~> 0.10", only: :dev}
+      {:ex_doc, "~> 0.18", only: :dev},
     ]
   end
 
