@@ -218,9 +218,8 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take(3)
-      [%{date_time: {{1971, 12, 31}, {23, 59, 60}}, tai_diff: 10},
-       %{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
+      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take(2)
+      [%{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
        %{date_time: {{1972, 12, 31}, {23, 59, 60}}, tai_diff: 12}]
   """
   def leap_seconds_with_tai_diff do
@@ -237,9 +236,8 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds |> Enum.take(3)
-      [{{1971, 12, 31}, {23, 59, 60}},
-       {{1972,  6, 30}, {23, 59, 60}},
+      iex> Tzdata.leap_seconds |> Enum.take(2)
+      [{{1972,  6, 30}, {23, 59, 60}},
        {{1972, 12, 31}, {23, 59, 60}}]
   """
   def leap_seconds do
