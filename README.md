@@ -27,7 +27,7 @@ or directly: it is available on hex as `tzdata`.
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.5.18"},  ]
+  [  {:tzdata, "~> 0.5.19"},  ]
 end
 ```
 

@@ -1,5 +1,12 @@
 # Changelog for Tzdata
 
+## [0.5.19] - 2018-09-93
+### Fixed
+- Europe/Dublin zone was incorrect since 0.5.17 due to PeriodBuilder
+
+### Changes
+- Reverted PeriodBuilder to avoid problem with Europe/Dublin
+
 ## [0.5.18] - 2018-08-21
 ### Fixed
 - Fake leap second at 1971-12-31 23:59:60 removed
