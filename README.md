@@ -3,6 +3,8 @@ Tzdata
 
 [![Build
 Status](https://travis-ci.org/lau/tzdata.svg?branch=master)](https://travis-ci.org/lau/tzdata)
+[![Hex.pm version](https://img.shields.io/hexpm/v/tzdata.svg)](http://hex.pm/packages/tzdata)
+[![Hex.pm downloads](https://img.shields.io/hexpm/dt/tzdata.svg)](https://hex.pm/packages/tzdata)
 
 Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
