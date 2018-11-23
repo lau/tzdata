@@ -79,6 +79,9 @@ defmodule Tzdata.DataLoader do
       {:ok, 200, _headers, client_ref} ->
         {:ok, body} = :hackney.body(client_ref)
         {:ok, byte_size(body)}
+      {:ok, _status, _headers, client_ref} ->
+        :hackney.skip_body(client_ref)
+        {:error, :did_not_get_ok_response}
 
       _ ->
         {:error, :did_not_get_ok_response}
