@@ -43,6 +43,41 @@ the applications list in your mix.exs file. An example:
   end
 ```
 
+## Using with Elixir master / 1.8+
+
+In the current master branch of Elixir it is possible to do time zone calculations by depending on Tzdata.
+You can test this by using the master branch of Tzdata.
+
+```elixir
+defp deps do
+  [
+    {:tzdata, git: "https://github.com/lau/tzdata.git", tag: "master"},
+  ]
+end
+```
+
+You can then pass the `Tzdata.TimeZoneDatabase` module as an argument to the
+standard library functions that need a timezone database like so:
+
+```elixir
+DateTime.now("Europe/Copenhagen", Tzdata.TimeZoneDatabase)`
+{:ok, #DateTime<2018-11-30 20:51:59.076524+01:00 CET Europe/Copenhagen>}
+```
+
+Alternatively you can call this function `Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)`
+which globally sets `Tzdata.TimeZoneDatabase` to be the default `TimeZoneDatabase` to be used by
+the Elixir standard library. Then you can call those functions without passing `Tzdata.TimeZoneDatabase`:
+
+```elixir
+iex> DateTime.now("Europe/Copenhagen")
+{:ok, #DateTime<2018-11-30 20:51:59.076524+01:00 CET Europe/Copenhagen>}
+```
+
+The plan is to have a new release of Tzdata that includes these functions around
+the time of the release of Elixir 1.8 in 2019.
+
+Note that the name of the module `Tzdata.TimeZoneDatabase` may change before a release.
+
 ## Data directory and releases
 
 The library uses a file directory to store data. By default this directory
