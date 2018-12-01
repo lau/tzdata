@@ -1,11 +1,14 @@
-language: elixir
-elixir:
-  - 1.1.1
-  - 1.2.0
-  - 1.3.4
-  - 1.4.5
-  - 1.5.2
+# Use Elixir master instead of a release in order to test Elixir 1.8 functionality
+language: erlang
 otp_release:
-  - 18.1
-env:
-  - MIX_ENV=test
+  - 21.0
+before_install:
+  - git clone https://github.com/elixir-lang/elixir
+  - cd elixir && git checkout master && make && cd ..
+before_script:
+  - export PATH=`pwd`/elixir/bin:$PATH
+  - mix local.rebar --force
+  - mix local.hex --force
+  - MIX_ENV=test mix do deps.get
+script:
+  - mix test
