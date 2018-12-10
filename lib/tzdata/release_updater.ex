@@ -22,7 +22,7 @@ defmodule Tzdata.ReleaseUpdater do
   end
 
   @days_between_remote_poll 1
-  def check_if_time_to_update do
+  defp check_if_time_to_update do
     {tag, days} = DataLoader.days_since_last_remote_poll()
 
     case tag do
@@ -36,7 +36,7 @@ defmodule Tzdata.ReleaseUpdater do
     end
   end
 
-  def poll_for_update do
+  defp poll_for_update do
     Logger.debug("Tzdata polling for update.")
 
     case loaded_tzdata_matches_newest_one?() do
