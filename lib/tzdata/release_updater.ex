@@ -7,12 +7,14 @@ defmodule Tzdata.ReleaseUpdater do
     GenServer.start_link(__MODULE__, [], name: :tzdata_release_updater)
   end
 
+  @impl true
   def init([]) do
     Process.send_after(self(), :check_if_time_to_update, 3000)
     {:ok, []}
   end
 
   @msecs_between_checking_date 18_000_000
+  @impl true
   def handle_info(:check_if_time_to_update, state) do
     check_if_time_to_update()
     Process.send_after(self(), :check_if_time_to_update, @msecs_between_checking_date)
