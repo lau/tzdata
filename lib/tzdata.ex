@@ -13,19 +13,22 @@ defmodule Tzdata do
   zone_list provides a list of all the zone names that can be used with
   DateTime. This includes aliases.
   """
-  def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list
+  @spec zone_list :: [Calendar.time_zone()]
+  def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list()
 
   @doc """
-  Like zone_list, but excludes aliases for zones.
+  Like `zone_list/0`, but excludes aliases for zones.
   """
-  def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list
+  @spec canonical_zone_list :: [Calendar.time_zone()]
+  def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list()
 
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
 
-  def zone_alias_list, do: Tzdata.ReleaseReader.link_list
+  @spec zone_alias_list :: [Calendar.time_zone()]
+  def zone_alias_list, do: Tzdata.ReleaseReader.link_list()
 
   @doc """
   Takes the name of a zone. Returns true if zone exists. Otherwise false.
@@ -37,6 +40,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_exists? "Europe/Jersey"
       true
   """
+  @spec zone_exists?(Calendar.time_zone()) :: boolean
   def zone_exists?(name), do: Enum.member?(zone_list(), name)
 
   @doc """
@@ -48,6 +52,7 @@ defmodule Tzdata do
       iex> Tzdata.canonical_zone? "Europe/Jersey"
       false
   """
+  @spec canonical_zone?(Calendar.time_zone()) :: boolean
   def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
 
   @doc """
@@ -59,6 +64,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_alias? "Europe/London"
       false
   """
+  @spec zone_alias?(Calendar.time_zone()) :: boolean
   def zone_alias?(name), do: Enum.member?(zone_alias_list(), name)
 
   @doc """
@@ -84,7 +90,8 @@ defmodule Tzdata do
       Tzdata.tzdata_version
       "2014i"
   """
-  def tzdata_version, do: Tzdata.ReleaseReader.release_version
+  @spec tzdata_version :: String.t()
+  def tzdata_version, do: Tzdata.ReleaseReader.release_version()
 
   @doc """
   Returns a list of periods for the `zone_name` provided as an argument.
@@ -214,7 +221,7 @@ defmodule Tzdata do
   Get a list of maps with known leap seconds and
   the difference between UTC and the TAI in seconds.
 
-  See also `leap_seconds/1`
+  See also `leap_seconds/0`
 
   ## Example
 
@@ -232,7 +239,7 @@ defmodule Tzdata do
   tuples representing the extra leap second to be inserted.
   The date-times are in UTC.
 
-  See also `leap_seconds_with_tai_diff/1`
+  See also `leap_seconds_with_tai_diff/0`
 
   ## Example
 
