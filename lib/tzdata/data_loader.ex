@@ -1,4 +1,6 @@
 defmodule Tzdata.DataLoader do
+  @moduledoc false
+
   require Logger
   @compile :nowarn_deprecated_function
   # Can poll for newest version of tz data and can download

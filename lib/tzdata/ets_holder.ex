@@ -1,4 +1,6 @@
 defmodule Tzdata.EtsHolder do
+  @moduledoc false
+
   require Logger
   use GenServer
   alias Tzdata.DataBuilder

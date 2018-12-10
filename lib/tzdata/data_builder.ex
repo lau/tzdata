@@ -1,4 +1,6 @@
 defmodule Tzdata.DataBuilder do
+  @moduledoc false
+
   alias Tzdata.DataLoader
   alias Tzdata.PeriodBuilder
   alias Tzdata.LeapSecParser
