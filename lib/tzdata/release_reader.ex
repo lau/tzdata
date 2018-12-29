@@ -69,7 +69,9 @@ defmodule Tzdata.ReleaseReader do
   def periods_for_zone_time_and_type(zone_name, time_point, time_type) do
     case do_periods_for_zone_time_and_type(zone_name, time_point, time_type) do
       {:ok, []} ->
-        # Try with a link
+        # If nothing was found, it could be that the zone name is not canonical.
+        # E.g. "Europe/Jersey" which links to "Europe/London".
+        # So we try with a link
         zone_name_to_use = links()[zone_name]
         case zone_name_to_use do
           nil -> {:ok, []}
@@ -84,10 +86,10 @@ defmodule Tzdata.ReleaseReader do
   @max_possible_periods_for_utc 1
   def do_periods_for_zone_time_and_type(zone_name, time_point, :wall) do
     match_fun = [
-      {{String.to_atom(zone_name), :"_", :"$1", :"_", :"_", :"$2", :"_", :"_", :"_", :"_"},
+      {{String.to_atom(zone_name), :_, :"$1", :_, :_, :"$2", :_, :_, :_, :_},
        [
-         {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :"min"}},
-          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :"max"}}}
+         {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :min}},
+          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :max}}}
        ], [:"$_"]}
     ]
 
@@ -100,10 +102,10 @@ defmodule Tzdata.ReleaseReader do
   end
   def do_periods_for_zone_time_and_type(zone_name, time_point, :utc) do
     match_fun = [
-      {{String.to_atom(zone_name), :"$1", :"_", :"_", :"$2", :"_", :"_", :"_", :"_", :"_"},
+      {{String.to_atom(zone_name), :"$1", :_, :_, :"$2", :_, :_, :_, :_, :_},
        [
-         {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :"min"}},
-          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :"max"}}}
+         {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :min}},
+          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :max}}}
        ], [:"$_"]}
     ]
     case  :ets.select(current_release_from_table() |> table_name_for_release_name, match_fun, @max_possible_periods_for_utc) do
