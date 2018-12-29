@@ -139,7 +139,7 @@ defmodule Tzdata do
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
   """
-  @spec periods(time_zone_name) :: {:ok, [time_zone_period]}
+  @spec periods(time_zone_name) :: {:ok, [time_zone_period]} | {:error, atom()}
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
@@ -176,7 +176,7 @@ defmodule Tzdata do
 
       # 63555753600 seconds is equivalent to {{2015, 1, 1}, {0, 0, 0}}
       iex> Tzdata.periods_for_time("Asia/Tokyo", 63587289600, :wall)
-      [%{from: %{standard: 61589286000, utc: 61589253600, wall: 61589286000}, std_off: 0,
+      [%{from: %{standard: 61589289600, utc: 61589257200, wall: 61589289600}, std_off: 0,
         until: %{standard: :max, utc: :max, wall: :max}, utc_off: 32400, zone_abbr: "JST"}]
 
       # 63612960000 seconds is equivalent to 2015-10-25 02:40:00 and is an ambiguous
