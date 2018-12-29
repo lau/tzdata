@@ -60,7 +60,7 @@ You can then pass the `Tzdata.TimeZoneDatabase` module as an argument to the
 standard library functions that need a timezone database like so:
 
 ```elixir
-DateTime.now("Europe/Copenhagen", Tzdata.TimeZoneDatabase)`
+DateTime.now("Europe/Copenhagen", Tzdata.TimeZoneDatabase)
 {:ok, #DateTime<2018-11-30 20:51:59.076524+01:00 CET Europe/Copenhagen>}
 ```
 
