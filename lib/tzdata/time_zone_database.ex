@@ -15,6 +15,8 @@ defmodule Tzdata.TimeZoneDatabase do
     case Tzdata.periods_for_time(time_zone, gregorian_seconds, :utc) do
       [period] -> {:ok, old_tz_period_to_new(period)}
       [] -> {:error, :time_zone_not_found}
+      {:error, :not_found} ->
+        {:error, :time_zone_not_found}
     end
   end
 
@@ -27,7 +29,6 @@ defmodule Tzdata.TimeZoneDatabase do
       [period] ->
         new_period = old_tz_period_to_new(period)
         {:ok, new_period}
-        {:single, new_period}
 
       [_p1, _p2] = periods ->
         [p1, p2] =
@@ -39,6 +40,8 @@ defmodule Tzdata.TimeZoneDatabase do
 
       [] ->
         gap_for_time_zone(time_zone, gregorian_seconds)
+      {:error, :not_found} ->
+        {:error, :time_zone_not_found}
     end
   end
 
