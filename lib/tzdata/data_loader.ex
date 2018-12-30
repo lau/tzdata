@@ -7,8 +7,7 @@ defmodule Tzdata.DataLoader do
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
-    {:ok, 200, headers, client_ref} = :hackney.get(url, [], "", [follow_redirect: true])
-    {:ok, body} = :hackney.body(client_ref)
+    {:ok, 200, headers, body} = Tzdata.HttpClient.get(url)
     content_length = byte_size(body)
     {:ok, last_modified} = last_modified_from_headers(headers)
 
@@ -52,7 +51,7 @@ defmodule Tzdata.DataLoader do
   def last_modified_of_latest_available(url \\ @download_url) do
     set_latest_remote_poll_date()
 
-    case :hackney.head(url, [], "", []) do
+    case Tzdata.HttpClient.head(url) do
       {:ok, 200, headers} ->
         last_modified_from_headers(headers)
 
@@ -75,12 +74,10 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_get(url) do
-    case :hackney.get(url, [], "", []) do
-      {:ok, 200, _headers, client_ref} ->
-        {:ok, body} = :hackney.body(client_ref)
+    case Tzdata.HttpClient.get(url) do
+      {:ok, 200, _headers, body} ->
         {:ok, byte_size(body)}
-      {:ok, _status, _headers, client_ref} ->
-        :hackney.skip_body(client_ref)
+      {:ok, _status, _headers, _body} ->
         {:error, :did_not_get_ok_response}
 
       _ ->
@@ -89,7 +86,7 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_head(url) do
-    :hackney.head(url, [], "", [])
+    Tzdata.HttpClient.head(url)
     |> do_latest_file_size_by_head
   end
 
@@ -104,14 +101,14 @@ defmodule Tzdata.DataLoader do
   end
 
   defp content_length_from_headers(headers) do
-    case value_from_headers(headers, "Content-Length") do
+    case value_from_headers(headers, 'content-length') do
       {:ok, content_length} -> {:ok, content_length |> String.to_integer()}
       {:error, reason} -> {:error, reason}
     end
   end
 
   defp last_modified_from_headers(headers) do
-    value_from_headers(headers, "Last-Modified")
+    value_from_headers(headers, 'last-modified')
   end
 
   defp value_from_headers(headers, key) do
