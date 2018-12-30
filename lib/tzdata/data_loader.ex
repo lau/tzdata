@@ -20,7 +20,7 @@ defmodule Tzdata.DataLoader do
     extract(target_filename, new_dir_name)
     release_version = release_version_for_dir(new_dir_name)
     Logger.debug("Tzdata data downloaded. Release version #{release_version}.")
-    {:ok, content_length, release_version, new_dir_name, last_modified}
+    {:ok, content_length, release_version, new_dir_name, last_modified |> List.to_string()}
   end
 
   defp extract(filename, target_dir) do
@@ -102,7 +102,7 @@ defmodule Tzdata.DataLoader do
 
   defp content_length_from_headers(headers) do
     case value_from_headers(headers, 'content-length') do
-      {:ok, content_length} -> {:ok, content_length |> String.to_integer()}
+      {:ok, content_length} -> {:ok, content_length |> List.to_integer()}
       {:error, reason} -> {:error, reason}
     end
   end
