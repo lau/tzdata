@@ -15,7 +15,7 @@ defmodule Tzdata.Mixfile do
 
   def application do
     [
-      applications: [:hackney, :logger],
+      applications: [:logger],
       env: env(),
       mod: {Tzdata.App, []}
     ]
@@ -23,7 +23,6 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.0"},
       {:ex_doc, "~> 0.18", only: :dev},
     ]
   end
