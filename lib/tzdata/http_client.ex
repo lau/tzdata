@@ -1,7 +1,18 @@
 defmodule Tzdata.HttpClient do
+  @moduledoc """
+  The purpose of the module is to provide a high level abstraction for http requests
+  required to keep the the IANA tz database up to date.
+
+  Currently implemented with httpc
+  """
+
   require Logger
 
-  @spec get(binary() | charlist()) :: {:ok, integer(), any(), any()}
+  @doc """
+  get implements the http get method and takes a url as either a binary or charlist
+  """
+
+  @spec get(binary() | charlist()) :: {:ok, integer(), list(), binary()}
   def get(url) when is_binary(url) do
     String.to_charlist(url) |> get()
   end
@@ -14,7 +25,11 @@ defmodule Tzdata.HttpClient do
     {:ok, response, headers, :erlang.list_to_binary(body)}
   end
 
-  @spec head(binary() | charlist()) :: {:ok, integer(), any()}
+  @doc """
+  head implements the http head method and takes a url as either a binary or charlist
+  """
+
+  @spec head(binary() | charlist()) :: {:ok, integer(), list()}
   def head(url) when is_binary(url) do
     String.to_charlist(url) |> head()
   end
@@ -27,10 +42,16 @@ defmodule Tzdata.HttpClient do
     {:ok, response, headers}
   end
 
+  ##
+  # sane defaults for http requests
+  ##
   defp http_options() do
     [{:ssl, ssl_options()}]
   end
 
+  ##
+  # sane defaults for ssl options
+  ##
   defp ssl_options() do
     local_storage = Tzdata.Util.data_dir() |> String.to_charlist()
 
