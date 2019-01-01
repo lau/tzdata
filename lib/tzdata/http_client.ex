@@ -53,8 +53,33 @@ defmodule Tzdata.HttpClient do
   # sane defaults for ssl options
   ##
   defp ssl_options() do
+    cacert =
+      case Application.fetch_env(:tzdata, :cacert) do
+        {:ok, nil} -> packaged_cacert()
+        {:ok, system_cacert} -> custom_cacert(system_cacert)
+        _ -> packaged_cacert()
+      end
+
+    [{:verify, :verify_peer}, {:cacertfile, cacert}]
+  end
+
+  ##
+  # uses packaged cacert file
+  ##
+  defp packaged_cacert() do
     local_storage = Tzdata.Util.data_dir() |> String.to_charlist()
 
-    [{:verify, :verify_peer}, {:cacertfile, local_storage ++ '/cacert/cacert.pem'}]
+    local_storage ++ '/cacert/cacert.pem'
+  end
+
+  ##
+  # uses cacert file maintained elsewhere on the system
+  ##
+  defp custom_cacert(cacert) when is_binary(cacert) do
+    cacert |> String.to_charlist()
+  end
+
+  defp custom_cacert(cacert) when is_list(cacert) do
+    cacert
   end
 end
