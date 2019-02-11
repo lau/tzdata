@@ -28,7 +28,7 @@ defmodule Tzdata.DataBuilder do
 
   defp do_load_and_save_table(content_length, release_version, tzdata_dir, modified_at) do
     ets_table_name = ets_table_name_for_release_version(release_version)
-    table = :ets.new(ets_table_name, [:set, :named_table])
+    table = :ets.new(ets_table_name, [:bag, :named_table])
     {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(tzdata_dir)
     :ets.insert(table, {:release_version, release_version})
     :ets.insert(table, {:archive_content_length, content_length})
@@ -64,7 +64,7 @@ defmodule Tzdata.DataBuilder do
   defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
 
   def ets_file_name_for_release_version(release_version) do
-    "#{release_dir()}/#{release_version}.ets"
+    "#{release_dir()}/#{release_version}.v#{Tzdata.EtsHolder.file_version}.ets"
   end
 
   def ets_table_name_for_release_version(release_version) do
@@ -81,7 +81,9 @@ defmodule Tzdata.DataBuilder do
            period_to_tuple(key, period)
          end)
 
-    :ets.insert(table, {key, tuple_periods})
+    tuple_periods |> Enum.each(fn tuple_period ->
+      :ets.insert(table, tuple_period)
+    end)
   end
 
   defp period_to_tuple(key, period) do
