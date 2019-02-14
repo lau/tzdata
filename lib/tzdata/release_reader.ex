@@ -89,7 +89,7 @@ defmodule Tzdata.ReleaseReader do
       {{String.to_atom(zone_name), :_, :"$1", :_, :_, :"$2", :_, :_, :_, :_},
        [
          {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :min}},
-          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :max}}}
+          {:orelse, {:>, :"$2", time_point}, {:==, :"$2", :max}}}
        ], [:"$_"]}
     ]
 
@@ -105,7 +105,7 @@ defmodule Tzdata.ReleaseReader do
       {{String.to_atom(zone_name), :"$1", :_, :_, :"$2", :_, :_, :_, :_, :_},
        [
          {:andalso, {:orelse, {:"=<", :"$1", time_point}, {:==, :"$1", :min}},
-          {:orelse, {:>=, :"$2", time_point}, {:==, :"$2", :max}}}
+          {:orelse, {:>, :"$2", time_point}, {:==, :"$2", :max}}}
        ], [:"$_"]}
     ]
     case  :ets.select(current_release_from_table() |> table_name_for_release_name, match_fun, @max_possible_periods_for_utc) do
