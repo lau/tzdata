@@ -1,4 +1,6 @@
 defmodule Tzdata.ReleaseUpdater do
+  @moduledoc false
+
   require Logger
   use GenServer
   alias Tzdata.DataLoader

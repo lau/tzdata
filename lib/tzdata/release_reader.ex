@@ -1,4 +1,6 @@
 defmodule Tzdata.ReleaseReader do
+  @moduledoc false
+
   def rules,                  do: simple_lookup(:rules) |> hd |> elem(1)
   def zones,                  do: simple_lookup(:zones) |> hd |> elem(1)
   def links,                  do: simple_lookup(:links) |> hd |> elem(1)
