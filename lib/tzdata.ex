@@ -192,7 +192,7 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
       []
   """
-  @spec periods_for_time(time_zone_name, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period]
+  @spec periods_for_time(time_zone_name, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period] | {:error, term}
   def periods_for_time(zone_name, time_point, time_type) do
     case possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
       {:ok, periods} ->
