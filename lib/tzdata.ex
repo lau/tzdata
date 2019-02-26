@@ -9,7 +9,6 @@ defmodule Tzdata do
   timezone.
   """
 
-  @type time_zone_name :: String.t()
   @type gregorian_seconds :: non_neg_integer()
   @type time_zone_period_limit :: gregorian_seconds() | :min | :max
   @type time_zone_period :: %{
@@ -32,20 +31,20 @@ defmodule Tzdata do
   zone_list provides a list of all the zone names that can be used with
   DateTime. This includes aliases.
   """
-  @spec zone_list() :: [time_zone_name]
+  @spec zone_list() :: [Calendar.time_zone]
   def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list
 
   @doc """
   Like zone_list, but excludes aliases for zones.
   """
-  @spec canonical_zone_list() :: [time_zone_name]
+  @spec canonical_zone_list() :: [Calendar.time_zone]
   def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list
 
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
-  @spec canonical_zone_list() :: [time_zone_name]
+  @spec canonical_zone_list() :: [Calendar.time_zone]
   def zone_alias_list, do: Tzdata.ReleaseReader.link_list
 
   @doc """
@@ -58,7 +57,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_exists? "Europe/Jersey"
       true
   """
-  @spec zone_exists?(time_zone_name) :: boolean()
+  @spec zone_exists?(String.t) :: boolean()
   def zone_exists?(name), do: Enum.member?(zone_list(), name)
 
   @doc """
@@ -70,7 +69,7 @@ defmodule Tzdata do
       iex> Tzdata.canonical_zone? "Europe/Jersey"
       false
   """
-  @spec canonical_zone?(time_zone_name) :: boolean()
+  @spec canonical_zone?(Calendar.time_zone) :: boolean()
   def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
 
   @doc """
@@ -82,7 +81,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_alias? "Europe/London"
       false
   """
-  @spec zone_alias?(time_zone_name) :: boolean()
+  @spec zone_alias?(Calendar.time_zone) :: boolean()
   def zone_alias?(name), do: Enum.member?(zone_alias_list(), name)
 
   @doc """
@@ -91,7 +90,7 @@ defmodule Tzdata do
       iex> Tzdata.links["Europe/Jersey"]
       "Europe/London"
   """
-  @spec links() :: %{time_zone_name => time_zone_name}
+  @spec links() :: %{Calendar.time_zone => Calendar.time_zone}
   def links, do: Tzdata.ReleaseReader.links
 
   @doc """
@@ -99,7 +98,7 @@ defmodule Tzdata do
   time zone names. The group names mirror the file names used by the tzinfo
   database.
   """
-  @spec zone_lists_grouped() :: %{atom() => [time_zone_name]}
+  @spec zone_lists_grouped() :: %{atom() => [Calendar.time_zone]}
   def zone_lists_grouped, do: Tzdata.ReleaseReader.by_group
 
   @doc """
@@ -139,7 +138,7 @@ defmodule Tzdata do
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
   """
-  @spec periods(time_zone_name) :: {:ok, [time_zone_period]} | {:error, atom()}
+  @spec periods(Calendar.time_zone) :: {:ok, [time_zone_period]} | {:error, atom()}
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
     case tag do
@@ -192,7 +191,7 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
       []
   """
-  @spec periods_for_time(time_zone_name, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period] | {:error, term}
+  @spec periods_for_time(Calendar.time_zone, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period] | {:error, term}
   def periods_for_time(zone_name, time_point, time_type) do
     case possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
       {:ok, periods} ->
