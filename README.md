@@ -10,73 +10,49 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 0.5.17 the tz release 2018e
+As of version 1.0.0-rc.0 the tz release 2018i
 is included in the package.
 
-When a new release is out, it will be automatically downloaded.
+When a new release is out, it will be automatically downloaded at runtime.
 
 The tz release version in use can be verified with the following function:
 
 ```elixir
 iex> Tzdata.tzdata_version
-"2018e"
+"2018i"
 ```
 
 ## Getting started
 
-Use through the [Calendar](https://github.com/lau/calendar) library
-or directly: it is available on hex as `tzdata`.
+To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mix file:
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 0.5.19"},  ]
+  [  {:tzdata, "~> 1.0.0-rc.0"},  ]
 end
 ```
 
-The Tzdata app must be started. This can be done by adding :tzdata to
-the applications list in your mix.exs file. An example:
+In your application you can choose to globally configure Elixir to use Tzdata.
+This can be done by putting the following line in the config file of your application:
 
-```elixir
-  def application do
-    [applications: [:logger, :tzdata],
-    ]
-  end
-```
+    config :elixir, :time_zone_database, Tzdata.TimeZoneDatabase
 
-## Using with Elixir master / 1.8+
+That's it!
 
-In the current master branch of Elixir it is possible to do time zone calculations by depending on Tzdata.
-You can test this by using the master branch of Tzdata.
-
-```elixir
-defp deps do
-  [
-    {:tzdata, git: "https://github.com/lau/tzdata.git", tag: "master"},
-  ]
-end
-```
-
-You can then pass the `Tzdata.TimeZoneDatabase` module as an argument to the
-standard library functions that need a timezone database like so:
-
-```elixir
-DateTime.now("Europe/Copenhagen", Tzdata.TimeZoneDatabase)
-{:ok, #DateTime<2018-11-30 20:51:59.076524+01:00 CET Europe/Copenhagen>}
-```
-
-Alternatively you can call this function `Calendar.put_time_zone_database(Tzdata.TimeZoneDatabase)`
-which globally sets `Tzdata.TimeZoneDatabase` to be the default `TimeZoneDatabase` to be used by
-the Elixir standard library. Then you can call those functions without passing `Tzdata.TimeZoneDatabase`:
+That allows you to [use the Elixir standard library to use Tzdata to do time zone calculations](https://hexdocs.pm/elixir/DateTime.html#content).
+One example is getting the current time in a certain time zone:
 
 ```elixir
 iex> DateTime.now("Europe/Copenhagen")
 {:ok, #DateTime<2018-11-30 20:51:59.076524+01:00 CET Europe/Copenhagen>}
 ```
 
-The plan is to have a new release of Tzdata that includes these functions around
-the time of the release of Elixir 1.8 in 2019.
+If you do not want Elixir to have a time zone database globally defined you can instead pass
+the module name `Tzdata.TimeZoneDatabase` directly to the functions that need a time zone database:
 
-Note that the name of the module `Tzdata.TimeZoneDatabase` may change before a release.
+```elixir
+DateTime.now("Europe/Copenhagen", Tzdata.TimeZoneDatabase)
+```
 
 ## Data directory and releases
 
@@ -142,4 +118,4 @@ be downloaded, parsed, saved and used in place of the old data.
 
 The tzdata Elixir library is released under the MIT license. See the LICENSE file.
 
-The tz database files (found in the source_data directory) is public domain.
+The tz database files (found in the source_data directory of early versions) is public domain.
