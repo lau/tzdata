@@ -13,8 +13,12 @@ defmodule Tzdata.TimeZoneDatabase do
     gregorian_seconds = :calendar.datetime_to_gregorian_seconds(datetime_erl)
 
     case Tzdata.periods_for_time(time_zone, gregorian_seconds, :utc) do
-      [period] -> {:ok, old_tz_period_to_new(period)}
-      [] -> {:error, :time_zone_not_found}
+      [period] ->
+        {:ok, old_tz_period_to_new(period)}
+
+      [] ->
+        {:error, :time_zone_not_found}
+
       {:error, :not_found} ->
         {:error, :time_zone_not_found}
     end
@@ -40,6 +44,7 @@ defmodule Tzdata.TimeZoneDatabase do
 
       [] ->
         gap_for_time_zone(time_zone, gregorian_seconds)
+
       {:error, :not_found} ->
         {:error, :time_zone_not_found}
     end
@@ -85,7 +90,8 @@ defmodule Tzdata.TimeZoneDatabase do
        Takes a time_zone period in the format returned by Tzdata 0.1.x and 0.5.x
        and returns one of the TimeZoneDatabase.time_zone_period type.
        """
-  @spec old_tz_period_to_new(Tzdata.time_zone_period()) :: Calendar.TimeZoneDatabase.time_zone_period()
+  @spec old_tz_period_to_new(Tzdata.time_zone_period()) ::
+          Calendar.TimeZoneDatabase.time_zone_period()
   defp old_tz_period_to_new(old_period) do
     %{
       utc_offset: old_period.utc_off,
