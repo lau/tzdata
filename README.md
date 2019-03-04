@@ -28,7 +28,12 @@ To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mi
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 1.0.0-rc.0"},  ]
+  [
+    {:tzdata, "~> 1.0.0-rc.0"}
+
+    # required for auto-updating, see "Automatic data updates" and "HTTP Client" sections below
+    {:hackney, "~> 1.0"}
+  ]
 end
 ```
 
@@ -99,9 +104,38 @@ specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.2.
 
 
-## Hackney dependency and security
+## HTTP Client
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Tzdata requires a HTTP client to perform automatic data updates.
+
+By default, Tzdata uses Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+
+In order to use the built-in adapter, add the following to your mix.exs dependencies list:
+
+```elixir
+{:hackney, "~> 1.0"}
+```
+
+To use a different client, implement a `Tzdata.HTTPClient` behaviour:
+
+```elixir
+defmodule MyApp.TzdataHTTPClient do
+  @behaviour Tzdata.HTTPClient
+
+  @impl true
+  def get(url, headers) do
+    # ...
+  end
+
+  # ...
+end
+```
+
+And configure tzdata to use it:
+
+```
+config :tzdata, :http_client, MyApp.TzdataHTTPClient
+```
 
 ## Documentation
 
