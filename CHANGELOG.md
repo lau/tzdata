@@ -1,5 +1,14 @@
 # Changelog for Tzdata
 
+## [0.5.20] - 2019-03-27
+### Fixed
+
+- tz release 2019a causing update errors due to typo in tz data. Fixed by reading version differently.
+
+### Changes
+
+- tz release that ships with Tzdata is now 2019a instead of 2018e
+
 ## [0.5.19] - 2018-09-93
 ### Fixed
 - Europe/Dublin zone was incorrect since 0.5.17 due to PeriodBuilder
