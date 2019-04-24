@@ -1,6 +1,6 @@
 # Changelog for Tzdata
 
-## [1.0.0]
+## [1.0.0] - 2019-04-23
 
 ### Changed
 
