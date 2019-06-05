@@ -40,7 +40,9 @@ defmodule Tzdata.ReleaseReader do
       _ -> nil
     end
   end
-  defp lookup_periods_for_zone(zone) when is_binary(zone), do: simple_lookup(String.to_atom zone)
+
+  defp lookup_periods_for_zone(zone) when is_binary(zone),
+    do: simple_lookup(String.to_existing_atom(zone))
   defp lookup_periods_for_zone(_), do: []
 
   defp current_release_from_table do
