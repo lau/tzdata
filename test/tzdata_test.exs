@@ -4,8 +4,7 @@ defmodule TzdataTest do
 
   test "Periods for UTC time in zone with DST around DST changes" do
     gregorian_seconds_point_in_time =
-      ~N[2018-10-28T01:00:00]
-      |> NaiveDateTime.to_erl()
+      {{2018, 10, 28}, {1, 0, 0}}
       |> :calendar.datetime_to_gregorian_seconds()
 
     assert Tzdata.periods_for_time("Europe/Copenhagen", gregorian_seconds_point_in_time, :utc) ==
@@ -30,8 +29,7 @@ defmodule TzdataTest do
 
   test "Periods for wall time just after DST changes" do
     gregorian_seconds_point_in_time =
-      ~N[2018-10-28 03:00:00]
-      |> NaiveDateTime.to_erl()
+      {{2018, 10, 28}, {3, 0, 0}}
       |> :calendar.datetime_to_gregorian_seconds()
 
     assert Tzdata.periods_for_time("Europe/Copenhagen", gregorian_seconds_point_in_time, :wall) ==
