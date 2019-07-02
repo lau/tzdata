@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+## [1.0.1] - 2019-07-01
+
+### Fixed
+
+- Fixed: could not process 2019b release. Error related to `first_matching_weekday_in_month(1932, 4, 7, [])`.
+
 ## [1.0.0] - 2019-04-23
 
 ### Changed
