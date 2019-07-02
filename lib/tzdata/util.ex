@@ -21,29 +21,34 @@ defmodule Tzdata.Util do
     3020
   """
   def string_amount_to_secs("0"), do: 0
+
   def string_amount_to_secs(string) do
     string
     |> String.replace(~r/\s/, "")
     |> String.split(":")
     |> _string_amount_to_secs
   end
+
   # If there is only one or two elements, add 00 minutes or 00 seconds
   # until we have a 3 element list
   defp _string_amount_to_secs([h]) do
     _string_amount_to_secs([h, "0", "0"])
   end
+
   defp _string_amount_to_secs([h, m]) do
     _string_amount_to_secs([h, m, "0"])
   end
+
   # maybe the hours are negative, so multiply the result by -1
-  defp _string_amount_to_secs([<<?- :: utf8>> <> hours, m, s]) do
+  defp _string_amount_to_secs([<<?-::utf8>> <> hours, m, s]) do
     -1 * _string_amount_to_secs([hours, m, s])
   end
+
   defp _string_amount_to_secs([h, m, s]) do
     {hours, ""} = Integer.parse(h)
     {mins, ""} = Integer.parse(m)
     {secs, ""} = Integer.parse(s)
-    hours*3600+mins*60+secs
+    hours * 3600 + mins * 60 + secs
   end
 
   @doc """
@@ -59,23 +64,77 @@ defmodule Tzdata.Util do
   def last_weekday_of_month(year, month, weekday) do
     weekday = weekday_string_to_number!(weekday)
     days_in_month = day_count_for_month(year, month)
-    day_list = Enum.to_list days_in_month..1
-    first_matching_weekday_in_month(year, month, weekday, day_list)
+    day_list = Enum.to_list(days_in_month..1)
+    {:ok, day} = first_matching_weekday_in_month(year, month, weekday, day_list)
+    day
   end
 
-  def first_weekday_of_month_at_least(year, month, weekday, minimum_date) do
+  # returns tuple with {year, month, day}
+  # e.g. first Sunday of a certain month. But at least on the 25th. Not before.
+  # Can be in the next month if no matching date and weekday is found in the specified month
+  defp first_weekday_of_month_at_least(year, month, weekday, minimum_date) do
     weekday = weekday_string_to_number!(weekday)
     days_in_month = day_count_for_month(year, month)
-    day_list = Enum.to_list minimum_date..days_in_month
-    first_matching_weekday_in_month(year, month, weekday, day_list)
+    day_list = Enum.to_list(minimum_date..days_in_month)
+
+    case first_matching_weekday_in_month(year, month, weekday, day_list) do
+      {:ok, day} when is_integer(day) ->
+        {year, month, day}
+
+      {:error, :not_found} ->
+        # If not found, go to the next month and find it.
+        # Example of where this is needed is Toronto rule for April 1932
+        # where Sunday >= 25 in April is used. But the first Sunday on or after April 25 is in May.
+        # We want to find May 1st so we advance one month.
+        # See https://github.com/eggert/tz/commit/c86b7fb7b09a
+        {new_year, new_month} = next_month(year, month)
+        first_weekday_of_month_at_least(new_year, new_month, weekday, 1)
+    end
   end
 
-  defp first_matching_weekday_in_month(year, month, weekday, [head|tail]) do
+  # E.g. First found Sunday of a certain month on the 3rd of the month or earlier in the month.
+  # Can be in the previous month if no matching date and weekday is found in the specified month
+  defp first_weekday_of_month_at_most(year, month, weekday, maximum_date) do
+    weekday = weekday_string_to_number!(weekday)
+    day_list = Enum.to_list(maximum_date..1)
+
+    case first_matching_weekday_in_month(year, month, weekday, day_list) do
+      {:ok, day} when is_integer(day) ->
+        {year, month, day}
+
+      {:error, :not_found} ->
+        # If not found, go to the previous month and find it.
+        {new_year, new_month} = prev_month(year, month)
+
+        first_weekday_of_month_at_most(
+          new_year,
+          new_month,
+          weekday,
+          day_count_for_month(new_year, new_month)
+        )
+    end
+  end
+
+  defp next_month(year, 12) when is_integer(year), do: {year + 1, 1}
+
+  defp next_month(year, month) when is_integer(year) and month <= 11 and month >= 1,
+    do: {year, month + 1}
+
+  defp prev_month(year, 1) when is_integer(year), do: {year - 1, 12}
+
+  defp prev_month(year, month) when is_integer(year) and month <= 12 and month >= 2,
+    do: {year, month - 1}
+
+  defp first_matching_weekday_in_month(year, month, weekday, [head | tail]) do
     if weekday == day_of_the_week(year, month, head) do
-      head
+      {:ok, head}
     else
       first_matching_weekday_in_month(year, month, weekday, tail)
     end
+  end
+
+  defp first_matching_weekday_in_month(_, _, _, []) do
+    {:error, :not_found}
   end
 
   def day_count_for_month(year, month), do: :calendar.last_day_of_the_month(year, month)
@@ -94,9 +153,10 @@ defmodule Tzdata.Util do
 
   def month_number_for_month_name(string) do
     string
-    |> String.downcase
+    |> String.downcase()
     |> cap_month_number_for_month_name
   end
+
   defp cap_month_number_for_month_name("jan"), do: 1
   defp cap_month_number_for_month_name("feb"), do: 2
   defp cap_month_number_for_month_name("mar"), do: 3
@@ -111,48 +171,85 @@ defmodule Tzdata.Util do
   defp cap_month_number_for_month_name("dec"), do: 12
   defp cap_month_number_for_month_name(string), do: to_int(string)
 
-  @doc """
-  Takes a year and month int and a day that is a string.
-  The day string can be either a number e.g. "5" or TZ data style definition
-  such as "lastSun" or sun>=8
-  """
-  def tz_day_to_int(year, month, day) do
+  @doc false &&
+         """
+         Takes a year and month int and a day that is a string.
+         The day string can be either a number e.g. "5" or TZ data style definition
+         such as "lastSun" or sun>=8
+
+           > tz_day_to_date(2000, 4, "lastSun")
+           {2000, 4, 30}
+           > tz_day_to_date(1932, 4, "Sun>=25")
+           {1932, 5, 1}
+           > tz_day_to_date(2005, 4, "Fri<=1")
+           {2005, 4, 1}
+           > tz_day_to_date(2005, 4, "Mon<=1")
+           {2005, 3, 28}
+         """
+  def tz_day_to_date(year, month, day) do
     last_regex = ~r/last(?<day_name>[^\s]+)/
     at_least_regex = ~r/(?<day_name>[^\s]+)\>\=(?<at_least>\d+)/
+    at_most_regex = ~r/(?<day_name>[a-zA-Z]+)\<\=(?<at_most>\d+)/
+
     cond do
       Regex.match?(last_regex, day) ->
-        weekdayHash = Regex.named_captures last_regex, day
-        day_name = String.downcase weekdayHash["day_name"]
-        last_weekday_of_month(year, month, day_name)
+        weekdayHash = Regex.named_captures(last_regex, day)
+        day_name = String.downcase(weekdayHash["day_name"])
+        day = last_weekday_of_month(year, month, day_name)
+        {year, month, day}
+
       Regex.match?(at_least_regex, day) ->
-        weekdayHash = Regex.named_captures at_least_regex, day
-        day_name = String.downcase weekdayHash["day_name"]
-        minimum_date = to_int weekdayHash["at_least"]
-        first_weekday_of_month_at_least(year, month, day_name, minimum_date)
+        weekdayHash = Regex.named_captures(at_least_regex, day)
+        day_name = String.downcase(weekdayHash["day_name"])
+        minimum_date = to_int(weekdayHash["at_least"])
+        # At least meaning e.g. at least on the 25th of the month. Or later.
+        {year, month, day} = first_weekday_of_month_at_least(year, month, day_name, minimum_date)
+        {year, month, day}
+
+      Regex.match?(at_most_regex, day) ->
+        weekdayHash = Regex.named_captures(at_most_regex, day)
+        day_name = String.downcase(weekdayHash["day_name"])
+        maximum_day = to_int(weekdayHash["at_most"])
+        # At most meaning e.g. at most on the 5th of the month. Or before.
+        {year, month, day} = first_weekday_of_month_at_most(year, month, day_name, maximum_day)
+        {year, month, day}
+
       true ->
-        to_int day
+        {year, month, to_int(day)}
     end
   end
-  def to_int(string) do elem(Integer.parse(string),0) end
+
+  def to_int(string) do
+    elem(Integer.parse(string), 0)
+  end
+
   def transform_until_datetime(nil), do: nil
+
   def transform_until_datetime(input_date_string) do
     regex_year_only = ~r/(?<year>\d+)/
     regex_year_month = ~r/(?<year>\d+)[\s]+(?<month>[^\s]+)/
     regex_year_date = ~r/(?<year>\d+)[\s]+(?<month>[^\s]+)[\s]+(?<date>[^\s]*)/
-    regex_year_date_time = ~r/(?<year>\d+)[\s]+(?<month>[^\s]+)[\s]+(?<date>[^\s]+)[\s]+(?<hour>[^\s]*):(?<min>[^\s]*)/
+
+    regex_year_date_time =
+      ~r/(?<year>\d+)[\s]+(?<month>[^\s]+)[\s]+(?<date>[^\s]+)[\s]+(?<hour>[^\s]*):(?<min>[^\s]*)/
+
     cond do
       Regex.match?(regex_year_date_time, input_date_string) ->
         captured = Regex.named_captures(regex_year_date_time, input_date_string)
         transform_until_datetime(:year_date_time, captured)
+
       Regex.match?(regex_year_date, input_date_string) ->
         captured = Regex.named_captures(regex_year_date, input_date_string)
         transform_until_datetime(:year_date, captured)
+
       Regex.match?(regex_year_month, input_date_string) ->
         captured = Regex.named_captures(regex_year_month, input_date_string)
         transform_until_datetime(:year_month, captured)
+
       Regex.match?(regex_year_only, input_date_string) ->
         captured = Regex.named_captures(regex_year_only, input_date_string)
         transform_until_datetime(:year_only, captured)
+
       true ->
         raise "none matched"
     end
@@ -161,28 +258,32 @@ defmodule Tzdata.Util do
   def transform_until_datetime(:year_date_time, map) do
     year = to_int(map["year"])
     month_number = month_number_for_month_name(map["month"])
-    date = tz_day_to_int(year, month_number, map["date"])
 
-    {{{year, month_number, date},
-      {to_int(map["hour"]),
-       to_int(map["min"]),00}}, time_modifier(map["min"])}
+    {year_calculated, month_calculated, day_calculated} =
+      tz_day_to_date(year, month_number, map["date"])
+
+    {{{year_calculated, month_calculated, day_calculated},
+      {to_int(map["hour"]), to_int(map["min"]), 00}}, time_modifier(map["min"])}
   end
 
   def transform_until_datetime(:year_date, map) do
     year = to_int(map["year"])
     month_number = month_number_for_month_name(map["month"])
-    date = tz_day_to_int(year, month_number, map["date"])
-    {{{year, month_number, date},{0,0,0}}, :wall}
+
+    {year_calculated, month_calculated, day_calculated} =
+      tz_day_to_date(year, month_number, map["date"])
+
+    {{{year_calculated, month_calculated, day_calculated}, {0, 0, 0}}, :wall}
   end
 
   def transform_until_datetime(:year_month, map) do
     year = to_int(map["year"])
     month_number = month_number_for_month_name(map["month"])
-    {{{year, month_number, 1},{0,0,0}}, :wall}
+    {{{year, month_number, 1}, {0, 0, 0}}, :wall}
   end
 
   def transform_until_datetime(:year_only, map) do
-    {{{to_int(map["year"]),1,1},{0,0,0}}, :wall}
+    {{{to_int(map["year"]), 1, 1}, {0, 0, 0}}, :wall}
   end
 
   @doc """
@@ -199,11 +300,12 @@ defmodule Tzdata.Util do
       iex> transform_rule_at("0")
       {{0,0,0}, :wall}
   """
-  def transform_rule_at("0"), do: transform_rule_at "0:00"
+  def transform_rule_at("0"), do: transform_rule_at("0:00")
+
   def transform_rule_at(string) do
     modifier = string |> time_modifier
     map = Regex.named_captures(~r/(?<hours>[0-9]{1,2})[\:\.](?<minutes>[0-9]{1,2})/, string)
-    {{map["hours"]|>to_int, map["minutes"]|>to_int, 0}, modifier}
+    {{map["hours"] |> to_int, map["minutes"] |> to_int, 0}, modifier}
   end
 
   @doc """
@@ -221,7 +323,8 @@ defmodule Tzdata.Util do
       :standard
   """
   def time_modifier(string) do
-    string = String.downcase string
+    string = String.downcase(string)
+
     cond do
       Regex.match?(~r/[zug]/, string) -> :utc
       Regex.match?(~r/s/, string) -> :standard
@@ -256,20 +359,26 @@ defmodule Tzdata.Util do
   def rule_applies_for_year(rule, year) do
     rule_applies_for_year_h(rule.from, rule.to, year)
   end
+
   defp rule_applies_for_year_h(rule_from, :only, year) do
     rule_from == year
   end
+
   defp rule_applies_for_year_h(rule_from, :max, year) do
     year >= rule_from
   end
+
   # if we have reached this point, we assume "to" is a year number and
   # convert to integer
   defp rule_applies_for_year_h(rule_from, rule_to, year) do
     rule_applies_for_year_ints(rule_from, rule_to, year)
   end
-  defp rule_applies_for_year_ints(rule_from, rule_to, year) when rule_from > year or rule_to < year do
+
+  defp rule_applies_for_year_ints(rule_from, rule_to, year)
+       when rule_from > year or rule_to < year do
     false
   end
+
   defp rule_applies_for_year_ints(_, _, _) do
     true
   end
@@ -303,8 +412,10 @@ defmodule Tzdata.Util do
     case rule.to do
       :only ->
         rule.from >= year
+
       :max ->
         true
+
       to ->
         to >= year
     end
@@ -316,7 +427,7 @@ defmodule Tzdata.Util do
   for the year.
   """
   def rules_for_year(rules, year) do
-    rules |> Enum.filter(fn(rule) -> rule_applies_for_year(rule, year) end)
+    rules |> Enum.filter(fn rule -> rule_applies_for_year(rule, year) end)
   end
 
   @doc """
@@ -326,8 +437,8 @@ defmodule Tzdata.Util do
   def time_for_rule(rule, year) do
     {time, modifier} = rule.at
     month = rule.in
-    day = tz_day_to_int year, month, rule.on
-    {{{year, month, day}, time}, modifier}
+    {year_calculated, month_calculated, day_calculated} = tz_day_to_date(year, month, rule.on)
+    {{{year_calculated, month_calculated, day_calculated}, time}, modifier}
   end
 
   @doc "Converts a datetime and a type (:utc | :standard | wall) to a number of gregorian seconds"
@@ -370,28 +481,35 @@ defmodule Tzdata.Util do
       period_abbrevation_h(:no_slash, zone_abbr, std_off, letter)
     end
   end
+
   defp period_abbrevation_h(:slash, zone_abbr, 0, _) do
     map = Regex.named_captures(~r/(?<first>[^\/]+)\/(?<second>[^\/]+)/, zone_abbr)
     map["first"]
   end
+
   defp period_abbrevation_h(:slash, zone_abbr, _, _) do
     map = Regex.named_captures(~r/(?<first>[^\/]+)\/(?<second>[^\/]+)/, zone_abbr)
     map["second"]
   end
+
   defp period_abbrevation_h(:no_slash, zone_abbr, _, "-") do
     String.replace(zone_abbr, "%s", "")
   end
+
   defp period_abbrevation_h(:no_slash, zone_abbr, _, letter) when is_binary(letter) do
     String.replace(zone_abbr, "%s", letter)
   end
+
   defp period_abbrevation_h(:no_slash, zone_abbr, _, :undefined) do
     zone_abbr
   end
 
   def strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
+
   def filter_comment_lines(input) do
     Stream.filter(input, fn x -> !Regex.match?(~r/^[\s]*#/, x) end)
   end
+
   def filter_empty_lines(input) do
     Stream.filter(input, fn x -> !Regex.match?(~r/^\n$/, x) end)
   end
@@ -400,7 +518,7 @@ defmodule Tzdata.Util do
     case Application.fetch_env(:tzdata, :data_dir) do
       {:ok, nil} -> Application.app_dir(:tzdata, "priv")
       {:ok, dir} -> dir
-      _          -> Application.app_dir(:tzdata, "priv")
+      _ -> Application.app_dir(:tzdata, "priv")
     end
   end
 
@@ -408,7 +526,7 @@ defmodule Tzdata.Util do
     case Application.fetch_env(:tzdata, :data_dir) do
       {:ok, nil} -> false
       {:ok, _dir} -> true
-      _          -> false
+      _ -> false
     end
   end
 end
