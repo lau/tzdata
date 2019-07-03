@@ -29,7 +29,7 @@ To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mi
 ```elixir
 defp deps do
   [
-    {:tzdata, "~> 1.0.0-rc.0"}
+    {:tzdata, "~> 1.0"},
 
     # required for auto-updating, see "Automatic data updates" and "HTTP Client" sections below
     {:hackney, "~> 1.0"}
