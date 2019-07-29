@@ -9,8 +9,7 @@ defmodule Tzdata.DataLoader do
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
-    {:ok, 200, headers, client_ref} = :hackney.get(url, [], "", [follow_redirect: true])
-    {:ok, body} = :hackney.body(client_ref)
+    {:ok, {200, headers, body}} = http_client().get(url, [], follow_redirect: true)
     content_length = byte_size(body)
     {:ok, last_modified} = last_modified_from_headers(headers)
 
@@ -44,8 +43,8 @@ defmodule Tzdata.DataLoader do
   def last_modified_of_latest_available(url \\ @download_url) do
     set_latest_remote_poll_date()
 
-    case :hackney.head(url, [], "", []) do
-      {:ok, 200, headers} ->
+    case http_client().head(url, [], []) do
+      {:ok, {200, headers}} ->
         last_modified_from_headers(headers)
 
       _ ->
@@ -67,13 +66,9 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_get(url) do
-    case :hackney.get(url, [], "", []) do
-      {:ok, 200, _headers, client_ref} ->
-        {:ok, body} = :hackney.body(client_ref)
+    case http_client().get(url, [], []) do
+      {:ok, {200, _headers, body}} ->
         {:ok, byte_size(body)}
-      {:ok, _status, _headers, client_ref} ->
-        :hackney.skip_body(client_ref)
-        {:error, :did_not_get_ok_response}
 
       _ ->
         {:error, :did_not_get_ok_response}
@@ -81,7 +76,7 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_head(url) do
-    :hackney.head(url, [], "", [])
+    http_client().head(url, [], [])
     |> do_latest_file_size_by_head
   end
 
@@ -175,4 +170,8 @@ defmodule Tzdata.DataLoader do
   end
 
   defp data_dir, do: Tzdata.Util.data_dir()
+
+  defp http_client() do
+    Application.get_env(:tzdata, :http_client, Tzdata.HTTPClient.Hackney)
+  end
 end

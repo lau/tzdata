@@ -99,9 +99,38 @@ specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
 
-## Hackney dependency and security
+## HTTP Client
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Tzdata requires a HTTP client to perform automatic data updates.
+
+By default, Tzdata uses Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+
+In order to use the built-in adapter, add the following to your mix.exs dependencies list:
+
+```elixir
+{:hackney, "~> 1.0"}
+```
+
+To use a different client, implement a `Tzdata.HTTPClient` behaviour:
+
+```elixir
+defmodule MyApp.TzdataHTTPClient do
+  @behaviour Tzdata.HTTPClient
+
+  @impl true
+  def get(url, headers) do
+    # ...
+  end
+
+  # ...
+end
+```
+
+And configure tzdata to use it:
+
+```
+config :tzdata, :http_client, MyApp.TzdataHTTPClient
+```
 
 ## Documentation
 
