@@ -3,7 +3,7 @@ defmodule UtilTest do
   alias Tzdata.Util, as: TzUtil
   alias Tzdata.BasicDataMap
   import TzUtil
-  doctest TzUtil
+  doctest Tzdata.Util
 
   test "get last weekday of month" do
     # last thursday of Aug 2014 should be on the 28th
@@ -45,5 +45,12 @@ defmodule UtilTest do
 
     rule = %{at: {{1, 0, 0}, :wall}, from: 1917, in: 10, letter: "-", name: "Iceland", on: "21", record_type: :rule, save: 0, to: :only, type: "-"}
     assert TzUtil.time_for_rule(rule, 1917) == {{{1917, 10, 21}, {1,0,0}}, :wall}
+  end
+
+  test "tz_day_to_date" do
+    assert TzUtil.tz_day_to_date(2000, 4, "lastSun") == {2000, 4, 30}
+    assert TzUtil.tz_day_to_date(1932, 4, "Sun>=25") == {1932, 5, 1}
+    assert TzUtil.tz_day_to_date(2005, 4, "Fri<=1") == {2005, 4, 1}
+    assert TzUtil.tz_day_to_date(2005, 4, "Mon<=1") == {2005, 3, 28}
   end
 end

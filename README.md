@@ -10,7 +10,7 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 1.0.0-rc.0 the tz release 2018i
+As of version 1.0.0 the tz release 2019a
 is included in the package.
 
 When a new release is out, it will be automatically downloaded at runtime.
@@ -19,7 +19,7 @@ The tz release version in use can be verified with the following function:
 
 ```elixir
 iex> Tzdata.tzdata_version
-"2018i"
+"2019a"
 ```
 
 ## Getting started
@@ -28,12 +28,7 @@ To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mi
 
 ```elixir
 defp deps do
-  [
-    {:tzdata, "~> 1.0"},
-
-    # required for auto-updating, see "Automatic data updates" and "HTTP Client" sections below
-    {:hackney, "~> 1.0"}
-  ]
+  [  {:tzdata, "~> 1.0.0"},  ]
 end
 ```
 
@@ -93,7 +88,7 @@ in the release_ets sub-dir of the "data_dir" (see the "Data directory and releas
 When IANA releases new versions of the time zone data, this Tzdata library can be used to generate
 a new .ets file containing the new data.
 
-## Changes from 0.1.x
+## Changes from 0.1.x to 0.5.x
 
 The 0.5.1+ versions uses ETS tables and automatically polls the IANA
 servers for updated data. When a new version of the timezone database
@@ -101,7 +96,7 @@ is available, it is automatically downloaded and used.
 
 For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
-using version ~> 0.5.2.
+using version ~> 0.5.20
 
 
 ## HTTP Client

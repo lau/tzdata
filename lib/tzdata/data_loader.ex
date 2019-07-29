@@ -32,22 +32,12 @@ defmodule Tzdata.DataLoader do
   end
 
   def release_version_for_dir(dir_name) do
-    # 100 lines should be more than enough to get the first Release line
-    release_string =
-      "#{dir_name}/NEWS"
+    [only_line_in_file] =
+      "#{dir_name}/version"
       |> File.stream!()
-      |> Stream.filter(fn string -> Regex.match?(~r/Release/, string) end)
-      |> Enum.take(100)
-      |> hd
-      |> String.replace(~r/\s*$/, "")
+      |> Enum.to_list()
 
-    captured =
-      Regex.named_captures(
-        ~r/Release[\s]+(?<version>[^\s]+)[\s]+-[\s]+(?<timestamp>.+)/m,
-        release_string
-      )
-
-    captured["version"]
+    only_line_in_file |> String.replace(~r/\s/, "")
   end
 
   def last_modified_of_latest_available(url \\ @download_url) do

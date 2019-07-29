@@ -1,15 +1,19 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
+  @version "1.0.1"
+
   def project do
     [
       app: :tzdata,
       name: "tzdata",
-      version: "1.0.0-rc.0",
+      version: @version,
       elixir: "~> 1.8",
       package: package(),
       description: description(),
-      deps: deps()
+      deps: deps(),
+      docs: docs(),
+      source_url: "https://github.com/lau/tzdata"
     ]
   end
 
@@ -27,8 +31,16 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.0", optional: true},
-      {:ex_doc, "~> 0.18", only: :dev, runtime: false},
+      {:hackney, "~> 1.0"},
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+    ]
+  end
+
+  defp docs do
+    [
+      main: "readme",
+      extras: ["README.md"],
+      source_ref: "v#{@version}"
     ]
   end
 
