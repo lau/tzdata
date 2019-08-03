@@ -28,7 +28,7 @@ To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mi
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 1.0.0"},  ]
+  [  {:tzdata, "~> 1.0.1"},  ]
 end
 ```
 
