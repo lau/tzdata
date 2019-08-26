@@ -1,5 +1,5 @@
 defmodule Tzdata.HTTPClient do
-  @moduledoc """
+  @moduledoc false && """
   Behaviour for HTTP client used by Tzdata.
 
   See "HTTP Client" section in README.md for more information.
