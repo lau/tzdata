@@ -165,12 +165,18 @@ defmodule Tzdata do
       []
   """
   def periods_for_time(zone_name, time_point, time_type) do
-    {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
-    match_fn = fn %{from: from, until: until} ->
-      smaller_than_or_equals(Map.get(from, time_type), time_point) &&
-        bigger_than(Map.get(until, time_type), time_point)
+    case possible_periods_for_zone_and_time(zone_name, time_point) do
+      {:ok, periods} ->
+        match_fn = fn %{from: from, until: until} ->
+          smaller_than_or_equals(Map.get(from, time_type), time_point) &&
+            bigger_than(Map.get(until, time_type), time_point)
+        end
+
+        do_consecutive_matching(periods, match_fn, [], false)
+
+      {:error, _} = error ->
+        error
     end
-    do_consecutive_matching(periods, match_fn, [], false)
   end
 
   # Like Enum.filter, but returns the first consecutive result.

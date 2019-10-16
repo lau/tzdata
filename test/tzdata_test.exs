@@ -102,9 +102,9 @@ defmodule TzdataTest do
     zone_name = "Foo/Bar"
     gregorian_seconds = 63_555_753_600
 
-    assert Tzdata.periods_for_time(zone_name, gregorian_seconds, :utc) == []
+    assert Tzdata.periods_for_time(zone_name, gregorian_seconds, :utc) == {:error, :not_found}
 
-    assert Tzdata.periods_for_time(zone_name, gregorian_seconds, :wall) == []
+    assert Tzdata.periods_for_time(zone_name, gregorian_seconds, :wall) == {:error, :not_found}
   end
 
   test "test that atom count does not increase by ~1000 when doing query of 1000 zone names" do
