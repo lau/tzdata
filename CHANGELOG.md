@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+## [1.0.2] - 2019-10-17
+
+### Fixed
+
+- Avoid creating atoms for non-existing time zone names.
+
 ## [1.0.1] - 2019-07-01
 
 ### Fixed
