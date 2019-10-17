@@ -108,21 +108,25 @@ defmodule TzdataTest do
   end
 
   test "test that atom count does not increase by ~1000 when doing query of 1000 zone names" do
-    gregorian_seconds = 63_555_753_600
-    atom_count_before = :erlang.system_info(:atom_count)
-    # create random strings that will be used for zone names and could be turned into atoms
-    time_zone_names =
-      0..1000
-      |> Enum.map(&"Fake/#{&1}-#{:crypto.rand_uniform(1, 9_999_999)}")
+    # Only run this test if Elixir version is at least 1.4.5 where Erlang 20 is supported which
+    # in turn supports :erlang.system_info(:atom_count)
+    if Version.match?(System.version, ">= 1.4.5") do
+      gregorian_seconds = 63_555_753_600
+      atom_count_before = :erlang.system_info(:atom_count)
+      # create random strings that will be used for zone names and could be turned into atoms
+      time_zone_names =
+        0..1000
+        |> Enum.map(&"Fake/#{&1}-#{:crypto.rand_uniform(1, 9_999_999)}")
 
-    time_zone_names
-    |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :utc))
+      time_zone_names
+      |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :utc))
 
-    time_zone_names
-    |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :wall))
+      time_zone_names
+      |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :wall))
 
-    atom_count_after = :erlang.system_info(:atom_count)
-    atom_count_diff = atom_count_after - atom_count_before
-    assert atom_count_diff < 900
+      atom_count_after = :erlang.system_info(:atom_count)
+      atom_count_diff = atom_count_after - atom_count_before
+      assert atom_count_diff < 900
+    end
   end
 end
