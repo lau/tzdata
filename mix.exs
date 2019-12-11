@@ -19,15 +19,11 @@ defmodule Tzdata.Mixfile do
 
   def application do
     [
-      applications: applications(Mix.env()),
       extra_applications: [:logger],
       env: env(),
       mod: {Tzdata.App, []}
     ]
   end
-
-  defp applications(:dev), do: [:hackney]
-  defp applications(_), do: []
 
   defp deps do
     [
