@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+## [1.0.3] - 2019-12-19
+
+### Fixed
+
+- Hackney was not set as an "application" in non-dev environments in 1.0.2 and could cause errors in updating.
+
 ## [1.0.2] - 2019-10-17
 
 ### Fixed
