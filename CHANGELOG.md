@@ -2,6 +2,10 @@
 
 ## [1.0.3] - 2019-12-19
 
+### Changed
+
+- tzdata release version shipped with this library is now 2019c instead of 2019a.
+
 ### Fixed
 
 - Hackney was not set as an "application" in non-dev environments in 1.0.2 and could cause errors in updating.
