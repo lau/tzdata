@@ -104,7 +104,7 @@ defmodule Tzdata.DataLoader do
   defp value_from_headers(headers, key) do
     header =
       headers
-      |> Enum.filter(fn {k, _v} -> k == key end)
+      |> Enum.filter(fn {k, _v} -> String.downcase(k) == String.downcase(key) end)
       |> List.first()
 
     case header do
