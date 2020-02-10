@@ -87,16 +87,11 @@ defmodule Tzdata.EtsHolder do
     make_sure_a_release_dir_exists()
 
     cond do
-      release_files() == [] and Util.custom_data_dir_configured?() ->
-        Logger.info(
-          "No tzdata release files found in custom data dir. Copying release file from tzdata priv dir."
-        )
-
+      release_files() == [] and Util.custom_data_dir_configured? ->
+        Logger.info("No tzdata release files found in custom data dir. Copying release file from tzdata priv dir.")
         copy_release_dir_from_priv()
-
-      release_files() == [] and not Util.custom_data_dir_configured?() ->
+      release_files() == [] and not Util.custom_data_dir_configured? ->
         Logger.error("No tzdata release files found!")
-
       true ->
         nil
     end
@@ -105,7 +100,6 @@ defmodule Tzdata.EtsHolder do
   defp copy_release_dir_from_priv() do
     custom_destination_dir = Tzdata.Util.data_dir() <> "/release_ets"
     priv_release_ets_dir = Application.app_dir(:tzdata, "priv") <> "/release_ets"
-
     priv_release_ets_dir
     |> release_files_for_dir
     |> Enum.each(fn file ->
