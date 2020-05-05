@@ -7,7 +7,7 @@ defmodule Tzdata.ReleaseParser do
   release_string = @file_with_release_version
   |> File.stream!
   |> Enum.to_list |> hd
-  |> String.rstrip
+  |> String.trim_trailing
 
   captured = Regex.named_captures( ~r/Release[\s]+(?<version>[^\s]+)[\s]+-[\s]+(?<timestamp>.+)/, release_string)
 

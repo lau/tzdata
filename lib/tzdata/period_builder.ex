@@ -46,16 +46,18 @@ defmodule Tzdata.PeriodBuilder do
     # Get the year of the "from" time. We use the standard time with utc offset
     # applied. If for instance we are ahead of UTC and the period starts at the
     # start of a new year we want the new year.
-    if from == :min do
-      from_standard_time_year = @min_year
+    from_standard_time_year = if from == :min do
+      @min_year
     else
       {{from_standard_time_year,_,_},{_,_,_}} = :calendar.gregorian_seconds_to_datetime from_standard_time
+      from_standard_time_year
     end
-    if zone_has_until_limit do
+    max_year_to_use = if zone_has_until_limit do
       # If zone has an until - use that max year.
       {{{max_year_to_use, _, _}, _}, _} = Map.get(zone_line_hd, :until)
+      max_year_to_use
     else
-      max_year_to_use = @max_year
+      @max_year
     end
     years_to_use = from_standard_time_year..max_year_to_use |> Enum.to_list
     # get rules
@@ -156,22 +158,24 @@ defmodule Tzdata.PeriodBuilder do
       until_utc = datetime_to_utc(TzUtil.time_for_rule(rule, year), utc_off, std_off)
       until_standard_time = standard_time_from_utc(until_utc, utc_off)
       until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
-      period =
-      %{
-        std_off: std_off,
-        utc_off: utc_off,
-        from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
-        until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
-      }
 
       # Some times this will calculate periods with zero length.
       # Set period to nil if the length is zero (ie. "until" equals "from")
       # Nil values will be filtered by another function
-      if period.until.utc == period.from.utc, do: period = nil
+      period = if until_utc == from do
+        nil
+      else
+        %{
+          std_off: std_off,
+          utc_off: utc_off,
+          from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
+          until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
+          zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+        }
+      end
       # If there are more rules for the year, continue with those rules
       if length(rules_tail) > 0 do
-        [period|
+        [period |
          calc_periods_for_year([zone_line|zone_line_tl], until_utc, utc_off, rule.save, years, zone_rules, rules_tail, rule.letter)
         ]
       # Else continue with the next zone line

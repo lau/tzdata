@@ -47,10 +47,10 @@ defmodule Tzdata.FarFutureDynamicPeriods do
     end_rule = rules |> tl |> hd
     std_off = begin_rule.save
 
-    if length(prev_periods) >= rules_per_year do
-      until_time_year = year + 1
+    until_time_year = if length(prev_periods) >= rules_per_year do
+      year + 1
     else
-      until_time_year = year
+      year
     end
 
     from_standard_time = standard_time_from_utc(from, utc_off)
@@ -117,6 +117,6 @@ defmodule Tzdata.FarFutureDynamicPeriods do
     {:ok, rules} = BasicData.rules(rule_name)
     rules
     |> Util.rules_for_year(year)
-    |> Enum.sort &(&1.in < &2.in)
+    |> Enum.sort(&(&1.in < &2.in))
   end
 end

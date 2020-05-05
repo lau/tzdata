@@ -57,7 +57,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_exists? "Europe/Jersey"
       true
   """
-  def zone_exists?(name), do: Enum.member?(zone_list, name)
+  def zone_exists?(name), do: Enum.member?(zone_list(), name)
 
   @doc """
   Takes the name of a zone. Returns true if zone exists and is canonical.
@@ -68,7 +68,7 @@ defmodule Tzdata do
       iex> Tzdata.canonical_zone? "Europe/Jersey"
       false
   """
-  def canonical_zone?(name), do: Enum.member?(canonical_zone_list, name)
+  def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
 
   @doc """
   Takes the name of a zone. Returns true if zone exists and is an alias.
@@ -79,7 +79,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_alias? "Europe/London"
       false
   """
-  def zone_alias?(name), do: Enum.member?(zone_alias_list, name)
+  def zone_alias?(name), do: Enum.member?(zone_alias_list(), name)
 
   # Provide map of links
   @doc """
@@ -200,8 +200,8 @@ defmodule Tzdata do
     {:ok, periods} = possible_periods_for_zone_and_time(zone_name, time_point)
     periods
     |> Enum.filter(fn x ->
-                     ((Map.get(x.from, time_type) |>smaller_than_or_equals time_point)
-                     && (Map.get(x.until, time_type) |>bigger_than time_point))
+                     ((Map.get(x.from, time_type) |> smaller_than_or_equals(time_point))
+                     && (Map.get(x.until, time_type) |> bigger_than(time_point)))
                    end)
   end
 
@@ -230,7 +230,7 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take 3
+      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take(3)
       [%{date_time: {{1971, 12, 31}, {23, 59, 60}}, tai_diff: 10},
        %{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
        %{date_time: {{1972, 12, 31}, {23, 59, 60}}, tai_diff: 12}]
@@ -240,7 +240,7 @@ defmodule Tzdata do
   end
 
   just_leap_seconds = leap_seconds_data[:leap_seconds]
-    |> Enum.map &(Map.get(&1, :date_time))
+    |> Enum.map(&(Map.get(&1, :date_time)))
   @doc """
   Get a list of known leap seconds. The leap seconds are datetime
   tuples representing the extra leap second to be inserted.
@@ -250,7 +250,7 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds |> Enum.take 3
+      iex> Tzdata.leap_seconds |> Enum.take(3)
       [{{1971, 12, 31}, {23, 59, 60}},
        {{1972,  6, 30}, {23, 59, 60}},
        {{1972, 12, 31}, {23, 59, 60}}]

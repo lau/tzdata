@@ -23,7 +23,7 @@ defmodule Tzdata.Util do
   def string_amount_to_secs("0"), do: 0
   def string_amount_to_secs(string) do
     string
-    |> String.strip
+    |> String.trim
     |> String.split(":")
     |> _string_amount_to_secs
   end
@@ -39,8 +39,11 @@ defmodule Tzdata.Util do
     # maybe the hours are negative, so use the absolute value in this calculation
     result = abs(hours)*3600+mins*60+secs
     # if hours are negative, the whole result should be negative: multiply by -1
-    if Regex.match?(~r/-/, hd(list)), do: result = -1*result
-    result
+    if Regex.match?(~r/-/, hd(list)) do
+      -1*result
+    else
+      result
+    end
   end
 
   @doc """
@@ -277,7 +280,7 @@ defmodule Tzdata.Util do
   for the year.
   """
   def rules_for_year(rules, year) do
-    rules |> Enum.filter fn(rule) -> rule_applies_for_year(rule, year) end
+    rules |> Enum.filter(fn(rule) -> rule_applies_for_year(rule, year) end)
   end
 
   @doc """

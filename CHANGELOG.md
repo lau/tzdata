@@ -1,5 +1,10 @@
 # Changelog for Tzdata
 
+## [0.1.9] - 2020-05-05
+### Changed
+
+Fixes Elixir 1.10 compilation errors and warnings.
+
 ## [0.1.8] - 2015-10-07
 ### Changed
 

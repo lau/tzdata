@@ -30,11 +30,11 @@ defmodule TzDataTest do
 
   test "Should provide list of zone names and link names" do
     # London is cononical zone. Jersey is a link
-    assert TzData.zone_list |> Enum.member? "Europe/London"
+    assert TzData.zone_list |> Enum.member?("Europe/London")
     assert TzData.zone_list |> Enum.member?("Europe/Jersey") != true
     assert TzData.link_list |> Enum.member?("Europe/London") != true
-    assert TzData.link_list |> Enum.member? "Europe/Jersey"
-    assert TzData.zone_and_link_list |> Enum.member? "Europe/London"
-    assert TzData.zone_and_link_list |> Enum.member? "Europe/Jersey"
+    assert TzData.link_list |> Enum.member?("Europe/Jersey")
+    assert TzData.zone_and_link_list |> Enum.member?("Europe/London")
+    assert TzData.zone_and_link_list |> Enum.member?("Europe/Jersey")
   end
 end

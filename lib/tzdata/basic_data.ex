@@ -29,6 +29,6 @@ defmodule Tzdata.BasicData do
   # Group by filename
   by_group = all_files_read
   |> Enum.map(fn {name, file_read} -> {name, Organizer.zone_and_link_list(file_read)} end)
-  |> Enum.into Map.new
+  |> Enum.into(Map.new)
   def zones_and_links_by_groups, do: unquote(Macro.escape(by_group))
 end

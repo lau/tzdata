@@ -140,8 +140,11 @@ defmodule Tzdata.Parser do
     rules: transform_zone_line_rules(captured["rules"]),
     format: captured["format"],
     until: until}
-    # remove until key if it is nil
-    if (map[:until]==nil) do map = Map.delete(map,:until) end
-    map
+    # remove until key if it is nil, else return full map
+    if (map[:until]==nil) do
+      Map.delete(map,:until)
+    else
+      map
+    end
   end
 end
