@@ -96,7 +96,7 @@ defmodule Tzdata.TimeZoneDatabase do
     %{
       utc_offset: old_period.utc_off,
       std_offset: old_period.std_off,
-      zone_abbr: old_period.zone_abbr(),
+      zone_abbr: old_period.zone_abbr,
       from_wall: old_period.from.wall |> old_limit_to_new,
       until_wall: old_period.until.wall |> old_limit_to_new
     }
