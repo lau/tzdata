@@ -241,7 +241,8 @@ defmodule Tzdata do
   defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
     {:ok, periods} = Tzdata.ReleaseReader.periods_for_zone_time_and_type(zone_name, time_point, time_type)
     mapped_periods = periods
-    |> Enum.sort_by(fn {_, from_utc, _, _, _, _, _, _, _, _} -> -(from_utc |> Tzdata.ReleaseReader.delimiter_to_number) end)
+    |> Tzdata.ReleaseReader.sort_periods()
+    |> Enum.reverse
     |> Enum.map(
       fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} ->
             %{
