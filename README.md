@@ -10,7 +10,7 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 1.0.0 the tz release 2019a
+As of version 1.0.3 the tz release 2019c
 is included in the package.
 
 When a new release is out, it will be automatically downloaded at runtime.
@@ -28,7 +28,7 @@ To use the Tzdata library with Elixir 1.8, add it to the dependencies in your mi
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 1.0.3"},  ]
+  [  {:tzdata, "~> 1.0.4"},  ]
 end
 ```
 

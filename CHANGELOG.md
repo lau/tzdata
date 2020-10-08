@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+## [1.0.4] - 2020-10-07
+
+### Fixed
+
+- Fix warning in Elixir 1.11
+
 ## [1.0.3] - 2019-12-19
 
 ### Changed
