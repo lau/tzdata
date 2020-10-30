@@ -4,13 +4,11 @@ defmodule Tzdata.App do
   use Application
 
   def start(_type, _args) do
-    import Supervisor.Spec
-
     children = [
-      worker(Tzdata.EtsHolder, [])
+      Tzdata.EtsHolder
     ]
     children = case Application.fetch_env(:tzdata, :autoupdate) do
-      {:ok, :enabled} -> children ++ [worker(Tzdata.ReleaseUpdater, [])]
+      {:ok, :enabled} -> children ++ [Tzdata.ReleaseUpdater]
       {:ok, :disabled} -> children
     end
 
