@@ -61,7 +61,7 @@ defmodule Tzdata.TimeZoneDatabase do
       {:ok, periods} when is_list(periods) ->
         period_before =
           periods
-          |> Enum.filter(fn period -> period.until.wall < gregorian_seconds end)
+          |> Enum.filter(fn period -> period.until.wall <= gregorian_seconds end)
           |> Enum.sort_by(fn period -> period.until.utc end)
           |> List.last()
           |> old_tz_period_to_new
