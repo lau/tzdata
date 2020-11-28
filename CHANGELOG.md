@@ -1,10 +1,20 @@
 # Changelog for Tzdata
 
+## [1.0.5] - 2020-11-27
+
+### Fixed
+
+- Fix issues with Tzdata.TimeZoneDatabase during gaps (Benjamin Milde)
+
+### Changed
+
+- tzdata release version shipped with this library is now 2020d instead of 2019c.
+
 ## [1.0.4] - 2020-10-07
 
 ### Fixed
 
-- Fix warning in Elixir 1.11
+- Fix warning in Elixir 1.11 (Thanabodee Charoenpiriyakij)
 
 ## [1.0.3] - 2019-12-19
 
