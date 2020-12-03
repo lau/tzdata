@@ -44,7 +44,7 @@ defmodule Tzdata do
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
-  @spec canonical_zone_list() :: [Calendar.time_zone]
+  @spec zone_alias_list() :: [Calendar.time_zone]
   def zone_alias_list, do: Tzdata.ReleaseReader.link_list
 
   @doc """
