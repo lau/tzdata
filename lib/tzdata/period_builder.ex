@@ -11,12 +11,73 @@ defmodule Tzdata.PeriodBuilder do
               @years_in_the_future_where_precompiled_periods_are_used + @extra_years_to_precompile
 
   def calc_periods(btz_data, zone_name) do
-    calc_periods_h(btz_data, zone_name)
+    periods = calc_periods_h(btz_data, zone_name)
     |> Enum.filter(fn x -> x != nil end)
-    # Make sure periods have UTC "from" before "until"
-    |> Enum.filter(fn period ->
-      period.from.utc < period.until.utc or period.from.utc == :min or period.until == :max
+    backwards_jumps = find_backward_jumps(periods)
+    clean_up(periods, backwards_jumps)
+  end
+
+  defp find_backward_jumps(periods) do
+    # Time-backwards jumps indicate that a prior rule has overlapped with a subsequent one. Ideally
+    # this code should be refactored such that there is a first pass that determines the UTC
+    # boundaries of each rule change, and then a second pass that applies the rules, ensuring they
+    # do not exceed the boundaries. This should hopefully make the code much simpler as a side
+    # effect.
+    #
+    # For now, the less desirable, and potentially imcomplete fix, is to detect time backwards
+    # jumps and then ensure that any prior periods that have been generated are truncated to the
+    # 'from' utc of the backwards jump, and then also to remove the backwards jump.
+    #
+    # As a consequence of this clean-up, the `Tzdata.periods_for_time` should give only one
+    # definitive result for a `:utc` query.
+    periods
+    |> Enum.reduce({[], false}, fn period, {jumps, prior_was_jump} ->
+      is_jump = period.from.utc != :min and period.until != :max and period.from.utc >= period.until.utc
+      cond do
+        is_jump == false -> {jumps, false}
+        prior_was_jump == false -> {[period | jumps], true}
+        true -> {[period | tl(jumps)], true} # consolidate sequential timebackwards jumps
+      end
     end)
+    |> elem(0)
+    |> Enum.reverse()
+  end
+
+  defp clean_up(periods, []), do: periods
+
+  defp clean_up(periods, [_|_] = backward_jumps) do
+    periods
+    |> Enum.reduce({[], backward_jumps}, &clean_up/2)
+    |> elem(0)
+  end
+
+  defp clean_up(period, {acc, [jump | tail] = jumps}) do
+    boundary = jump.until.utc
+    cond do
+      period == jump -> # backwards jump reached -> skip, move to next time-backwards jump (if there is one)
+        IO.puts("Equal: #{inspect(period)} #{inspect(jump)}")
+        {acc, tail}
+      period.from.utc != :min && period.from.utc >= boundary -> # entirely past boundary -> skip
+        {acc, jumps}
+      period.until.utc != :max && period.until.utc > boundary -> # end past boundary -> truncate and add
+        until = period.until
+        seconds_difference = until.utc - boundary
+        until = %{
+          # as seconds within a time period ought to be monotonic (excluding sub-second corrections)
+          # a subtraction across all these fields should be valid
+          standard: until.standard - seconds_difference,
+          wall: until.wall - seconds_difference,
+          utc: until.utc - seconds_difference,
+        }
+        period = %{period | until: until}
+        {acc ++ [period], jumps}
+      true ->
+        {acc ++ [period], jumps}
+    end
+  end
+
+  defp clean_up(period, {acc, []}) do # no time-backwards jumps remaining
+    {acc ++ [period], []}
   end
 
   defp calc_periods_h(btz_data, zone_name) do

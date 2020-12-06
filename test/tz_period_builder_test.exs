@@ -2,7 +2,8 @@ defmodule Tzdata.PeriodBuilderTest do
   use ExUnit.Case, async: true
   import Tzdata.PeriodBuilder
 
-  @source_data_dir "test/tzdata_fixtures/source_data/"
+  @fixtures_dir "test/tzdata_fixtures/"
+  @source_data_dir "#{@fixtures_dir}source_data/"
 
   @doc "Convert an ISO time to Gregorian seconds"
   defmacro sigil_G({:<<>>, _, [string]}, []) do
@@ -28,6 +29,67 @@ defmodule Tzdata.PeriodBuilderTest do
   setup_all do
     {:ok, map} = Tzdata.BasicDataMap.from_files_in_dir(@source_data_dir)
     {:ok, %{map: map}}
+  end
+
+  def convert(utc, location) do
+    case utc do
+      atom when is_atom(utc) -> atom
+      utc ->
+        :calendar.gregorian_seconds_to_datetime(utc + 60*60*3)
+        |> NaiveDateTime.from_erl!()
+    end
+  end
+
+  def test_for_overlaps(map, location) do
+    result = calc_periods(map, location)
+    |> Enum.map(fn period ->
+      IO.puts("#{convert(period.from.utc, location)}..#{convert(period.until.utc, location)} #{period.from.utc} #{period.until.utc}")
+      period
+    end)
+    |> Enum.reduce_while(nil, fn period, last ->
+      %{from: %{utc: from_utc}, until: %{utc: until_utc}, zone_abbr: zone_abbr} = period
+      # preconditions
+      assert from_utc != :max # period can't start at :max
+      assert until_utc != :min # period can't finish at :min
+      assert from_utc == :min || until_utc == :max || from_utc < until_utc,
+        "#{location}: #{convert(from_utc, location)} >= #{convert(until_utc, location)}" # 'from' must precede 'until' time
+      case last do
+        nil -> {:cont, {:ok, period}}
+        {:ok, last} ->
+          # check if this period overlaps with prior period
+          coincident = last.until.utc == :max || last.until.utc != :min && from_utc < last.until.utc
+          non_sequential = last.until.utc != from_utc
+          if coincident || non_sequential do
+            conflicts = if coincident, do: " coincident", else: ""
+              <> if non_sequential, do: " non-sequential", else: ""
+            {:halt, {:error,
+              "Location #{location}: #{convert(last.from.utc, location)}..#{convert(last.until.utc, location)} #{last.zone_abbr}"
+              <> "... is#{conflicts} with ..."
+              <> "#{convert(from_utc, location)}..#{convert(until_utc, location)} #{zone_abbr}"
+            }}
+          else
+            {:cont, {:ok, period}}
+          end
+      end
+    end)
+    assert {:ok, _last} = result
+  end
+
+  describe "special case time zones with overlap" do
+    setup do
+      {:ok, map} = Tzdata.BasicDataMap.from_single_file_in_dir(@fixtures_dir, "rule_overlap")
+      {:ok, %{map: map}}
+    end
+    test "will handle coincidence of a rule time change with a subsequent time change", %{map: map} do
+      # ["America/Whitehorse", "America/Santiago", "Pacific/Easter", "Pacific/Easter", "Bahia/Banderas", "Asia/Gaza"]
+      ["Asia/Gaza"]
+      |> Enum.each(&(test_for_overlaps(map, &1)))
+    end
+  end
+
+  test "sourc data has no time period overlaps", %{map: map} do
+    map.zone_list
+    |> Enum.each(&(test_for_overlaps(map, &1)))
   end
 
   test "can calculate for zones with one line", %{map: map} do
