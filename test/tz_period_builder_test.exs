@@ -53,14 +53,10 @@ defmodule Tzdata.PeriodBuilderTest do
         nil -> {:cont, {:ok, period}}
         {:ok, last} ->
           # check if this period overlaps with prior period
-          coincident = last.until.utc == :max || last.until.utc != :min && from_utc < last.until.utc
-          non_sequential = last.until.utc != from_utc
-          if coincident || non_sequential do
-            conflicts = if coincident, do: " coincident", else: ""
-              <> if non_sequential, do: " non-sequential", else: ""
+          if last.until.utc != from_utc do
             {:halt, {:error,
               "Location #{location}: #{convert(last.from.utc)}UTC..#{convert(last.until.utc)}UTC #{last.zone_abbr}"
-              <> "... is#{conflicts} with ..."
+              <> "... is non-sequential with ..."
               <> "#{convert(from_utc)}UTC..#{convert(until_utc)}UTC #{zone_abbr}"
             }}
           else
