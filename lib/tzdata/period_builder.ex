@@ -42,7 +42,7 @@ defmodule Tzdata.PeriodBuilder do
       zone_abbr: zone_line_hd.format
     }
 
-    h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter)
+    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
   end
 
   def calc_periods(btz_data, [zone_line_hd | zone_line_tl], from, zone_hd_rules, letter) do
@@ -94,16 +94,20 @@ defmodule Tzdata.PeriodBuilder do
   # As this should only be called when there are no rules, we assume that
   # there the period is until :max and thus it is the last period. So we don't
   # add any more periods.
-  def h_calc_periods_no_rules(_btz_data, period, _, zone_line_tl, _) when zone_line_tl == [] do
-    [period]
+  def h_calc_next_zone_line(_btz_data, period, _, zone_line_tl, _) when zone_line_tl == [] do
+    case period do
+      nil -> []
+      _ -> [ period ]
+    end
   end
 
   # If there is a zone line tail, we recursively add to the list of periods with that zone line tail
-  def h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter) do
-    [
-      period
-      | calc_periods(btz_data, zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
-    ]
+  def h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter) do
+    tail = calc_periods(btz_data, zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
+    case period do
+      nil -> tail
+      _ -> [ period | tail ]
+    end
   end
 
   defp calc_rule_periods_h(
@@ -133,7 +137,7 @@ defmodule Tzdata.PeriodBuilder do
       zone_abbr: zone_line_hd.format
     }
 
-    h_calc_periods_no_rules(btz_data, period, until_utc, zone_line_tl, letter)
+    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
   end
 
   defp calc_rule_periods_h(
@@ -284,8 +288,8 @@ defmodule Tzdata.PeriodBuilder do
     # truncate end of period to within time range of zone line
     until_before_lower_limit = is_integer(lower_limit) && is_integer(until_utc) && lower_limit > until_utc
     until_utc = if until_before_lower_limit, do: lower_limit, else: until_utc
-    last_year_for_rule = is_integer(upper_limit) && is_integer(until_utc) && upper_limit <= until_utc
-    until_utc = if last_year_for_rule, do: upper_limit, else: until_utc
+    last_included_rule = is_integer(upper_limit) && is_integer(until_utc) && upper_limit <= until_utc
+    until_utc = if last_included_rule, do: upper_limit, else: until_utc
     # derive standard and wall time for 'until'
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
     until_wall_time = wall_time_from_utc(until_utc, utc_off, std_off)
@@ -304,40 +308,43 @@ defmodule Tzdata.PeriodBuilder do
           zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
         }
 
-    tail = cond do
-      # If we've hit the upper time boundary of this zone line, we do not need to examine any more
-      # years for this rule
-      last_year_for_rule ->
-        calc_periods(btz_data, zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
-      # If there are no more rules for the year, continue with the next zone line
-      rules_tail == [] ->
-        calc_rule_periods(
-          btz_data,
-          [zone_line | zone_line_tl],
-          until_utc,
-          utc_off,
-          rule.save,
-          years |> tl,
-          zone_rules,
-          rule.letter
-        )
+    no_more_years = tl(years) == []
 
-      # Else continue with those rules
-      true ->
-        calc_periods_for_year(
-          btz_data,
-          [zone_line | zone_line_tl],
-          until_utc,
-          utc_off,
-          rule.save,
-          years,
-          zone_rules,
-          rules_tail,
-          rule.letter,
-          lower_limit
-        )
+    # If we've hit the upper time boundary of this zone line, we do not need to examine any more
+    # rules for this rule set OR there are no more years to consider for this rule set
+    if last_included_rule || no_more_years do
+      h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
+    else
+      tail = cond do
+        # If there are no more rules for the year, continue with the next year
+        rules_tail == [] ->
+          calc_rule_periods(
+            btz_data,
+            [zone_line | zone_line_tl],
+            until_utc,
+            utc_off,
+            rule.save,
+            years |> tl,
+            zone_rules,
+            rule.letter
+          )
+        # Else continue with those rules
+        true ->
+          calc_periods_for_year(
+            btz_data,
+            [zone_line | zone_line_tl],
+            until_utc,
+            utc_off,
+            rule.save,
+            years,
+            zone_rules,
+            rules_tail,
+            rule.letter,
+            lower_limit
+          )
+      end
+      if period == nil, do: tail, else: [ period | tail ]
     end
-    if period == nil, do: tail, else: [ period | tail ]
   end
 
   # earliest rule first
