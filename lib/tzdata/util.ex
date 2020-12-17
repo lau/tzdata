@@ -287,7 +287,7 @@ defmodule Tzdata.Util do
   end
 
   @doc """
-  Given a string of a Rule "AT" column return a tupple of a erlang style
+  Given a string of a Rule "AT" column return a tuple of a erlang style
   time tuple and a modifier that can be either :wall, :standard or :utc
 
   ## Examples
