@@ -1,6 +1,7 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
+  @source_url "https://github.com/lau/tzdata"
   @version "1.0.5"
 
   def project do
@@ -12,8 +13,7 @@ defmodule Tzdata.Mixfile do
       package: package(),
       description: description(),
       deps: deps(),
-      docs: docs(),
-      source_url: "https://github.com/lau/tzdata"
+      docs: docs()
     ]
   end
 
@@ -35,7 +35,8 @@ defmodule Tzdata.Mixfile do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
+      extras: ["README.md", "CHANGELOG.md": [title: "Changelog"]],
+      source_url: @source_url,
       source_ref: "v#{@version}"
     ]
   end
@@ -58,9 +59,11 @@ defmodule Tzdata.Mixfile do
     %{
       licenses: ["MIT"],
       maintainers: ["Lau Taarnskov"],
-      links: %{"GitHub" => "https://github.com/lau/tzdata"},
-      files: ~w(lib priv mix.exs README* LICENSE*
-                 CHANGELOG*)
+      links: %{
+        "Changelog" => @source_url <> "/blob/master/CHANGELOG.md",
+        "GitHub" => @source_url
+      },
+      files: ~w(lib priv mix.exs README* LICENSE* CHANGELOG*)
     }
   end
 end
