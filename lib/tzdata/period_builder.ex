@@ -308,16 +308,17 @@ defmodule Tzdata.PeriodBuilder do
           zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
         }
 
+    no_more_rules = rules_tail == []
     no_more_years = tl(years) == []
 
     # If we've hit the upper time boundary of this zone line, we do not need to examine any more
     # rules for this rule set OR there are no more years to consider for this rule set
-    if last_included_rule || no_more_years do
+    if last_included_rule || no_more_years && no_more_rules do
       h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
     else
       tail = cond do
         # If there are no more rules for the year, continue with the next year
-        rules_tail == [] ->
+        no_more_rules ->
           calc_rule_periods(
             btz_data,
             [zone_line | zone_line_tl],
