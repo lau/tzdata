@@ -1,5 +1,16 @@
 # Changelog for Tzdata
 
+## [1.1.0] - 2020-12-26
+
+### Fixed
+
+- Fixed Elixir 1.11 compilation warnings. (Ho-Yon Mak)
+
+### Changed
+
+- Increased hackney dependency version requirement to ~> 1.17
+- tzdata release version shipped with this library is now 2020e instead of 2020d.
+
 ## [1.0.5] - 2020-11-27
 
 ### Fixed
