@@ -115,7 +115,7 @@ defmodule TzdataTest do
     # create random strings that will be used for zone names and could be turned into atoms
     time_zone_names =
       0..1000
-      |> Enum.map(&"Fake/#{&1}-#{:crypto.rand_uniform(1, 9_999_999)}")
+      |> Enum.map(&"Fake/#{&1}-#{:erlang.phash2(make_ref())}")
 
     time_zone_names
     |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :utc))

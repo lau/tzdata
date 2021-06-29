@@ -13,7 +13,7 @@ defmodule Tzdata.DataLoader do
     {:ok, last_modified} = last_modified_from_headers(headers)
 
     new_dir_name =
-      "#{data_dir()}/tmp_downloads/#{content_length}_#{:rand.uniform(100_000_000)}/"
+      "#{data_dir()}/tmp_downloads/#{content_length}_#{:erlang.phash2(make_ref())}/"
 
     File.mkdir_p!(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
