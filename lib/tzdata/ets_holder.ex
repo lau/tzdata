@@ -58,10 +58,16 @@ defmodule Tzdata.EtsHolder do
     {:ok, release_name}
   end
 
-  defp load_ets_table(release_name) do
-    file_name = "#{release_dir()}/#{release_name}.v#{@file_version}.ets"
-    {:ok, _table} = :ets.file2tab(:erlang.binary_to_list(file_name))
+  @doc false
+  def load_ets_table(release_name) do
+    file_name = Path.join([release_dir(), release_filename(release_name)])
+    {:ok, _table} = :ets.file2tab(String.to_charlist(file_name))
   end
+
+  # expose the release filename for test
+  @doc false
+  def release_filename(release_name), do: "#{release_name}.v#{@file_version}.ets"
+
 
   defp create_current_release_ets_table do
     table = :ets.new(:tzdata_current_release, [:set, :named_table])
@@ -119,7 +125,8 @@ defmodule Tzdata.EtsHolder do
     |> Enum.sort()
   end
 
-  defp release_dir do
+  @doc false
+  def release_dir do
     Tzdata.Util.data_dir() <> "/release_ets"
   end
 
