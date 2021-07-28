@@ -68,7 +68,6 @@ defmodule Tzdata.EtsHolder do
   @doc false
   def release_filename(release_name), do: "#{release_name}.v#{@file_version}.ets"
 
-
   defp create_current_release_ets_table do
     table = :ets.new(:tzdata_current_release, [:set, :named_table])
     {:ok, table}
