@@ -56,7 +56,7 @@
 - Elixir version requirement increased to Elixir 1.8+
 - ETS table normalization for performance improvements over 0.5.x releases
 - .ets release files now have contents with a different structure
-- Because of the different structre the .ets files now have a different file ending. E.g.: 2019a.v2.ets
+- Because of the different structure the .ets files now have a different file ending. E.g.: 2019a.v2.ets
 
 ### Added
 
