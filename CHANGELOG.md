@@ -9,6 +9,7 @@
 ### Changed
 
 - tzdata release version shipped with this library is now 2021e instead of 2020e.
+- Call :rand instead of :random for avoiding warnings
 
 ## [1.1.0] - 2020-12-26
 
