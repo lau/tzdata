@@ -1,10 +1,14 @@
 defmodule Tzdata.EtsHolder do
+  @moduledoc false
+
   require Logger
   use GenServer
   alias Tzdata.DataBuilder
   alias Tzdata.Util
 
-  def start_link() do
+  @file_version 2
+
+  def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: __MODULE__)
   end
 
@@ -55,8 +59,18 @@ defmodule Tzdata.EtsHolder do
   end
 
   defp load_ets_table(release_name) do
-    file_name = "#{release_dir()}/#{release_name}.ets"
-    {:ok, _table} = :ets.file2tab(:erlang.binary_to_list(file_name))
+    file_name = "#{release_dir()}/#{release_name}.v#{@file_version}.ets"
+
+    file_name
+    |> String.to_charlist()
+    |> :ets.file2tab()
+    |> case do
+      {:ok, table} ->
+        {:ok, table}
+
+      _error ->
+        raise "Failed to load ets table from file at #{file_name}"
+    end
   end
 
   defp create_current_release_ets_table do
@@ -100,7 +114,7 @@ defmodule Tzdata.EtsHolder do
   defp newest_release_on_file do
     release_files()
     |> List.last()
-    |> String.replace(".ets", "")
+    |> String.replace(".v#{@file_version}.ets", "")
   end
 
   defp release_files do
@@ -111,11 +125,19 @@ defmodule Tzdata.EtsHolder do
   defp release_files_for_dir(dir) do
     dir
     |> File.ls!()
-    |> Enum.filter(&Regex.match?(~r/^2\d{3}[a-z]\.ets/, &1))
+    |> Enum.filter(&Regex.match?(~r/^2\d{3}[a-z]\.v#{@file_version}\.ets/, &1))
     |> Enum.sort()
   end
 
   defp release_dir do
     Tzdata.Util.data_dir() <> "/release_ets"
+  end
+
+  @doc """
+  Returns the file version number used by the current version of Tzdata for the ETS files.
+  """
+  @spec file_version() :: non_neg_integer()
+  def file_version do
+    @file_version
   end
 end

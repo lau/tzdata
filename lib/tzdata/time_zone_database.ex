@@ -13,8 +13,14 @@ defmodule Tzdata.TimeZoneDatabase do
     gregorian_seconds = :calendar.datetime_to_gregorian_seconds(datetime_erl)
 
     case Tzdata.periods_for_time(time_zone, gregorian_seconds, :utc) do
-      [period] -> {:ok, old_tz_period_to_new(period)}
-      [] -> {:error, :time_zone_not_found}
+      [period] ->
+        {:ok, old_tz_period_to_new(period)}
+
+      [] ->
+        {:error, :time_zone_not_found}
+
+      {:error, :not_found} ->
+        {:error, :time_zone_not_found}
     end
   end
 
@@ -27,7 +33,6 @@ defmodule Tzdata.TimeZoneDatabase do
       [period] ->
         new_period = old_tz_period_to_new(period)
         {:ok, new_period}
-        {:single, new_period}
 
       [_p1, _p2] = periods ->
         [p1, p2] =
@@ -39,11 +44,14 @@ defmodule Tzdata.TimeZoneDatabase do
 
       [] ->
         gap_for_time_zone(time_zone, gregorian_seconds)
+
+      {:error, :not_found} ->
+        {:error, :time_zone_not_found}
     end
   end
 
   @spec gap_for_time_zone(String.t(), non_neg_integer()) ::
-          {:error, :time_zone_not_found} | {:gap, [TimeZoneDatabase.time_zone_period()]}
+          {:error, :time_zone_not_found} | {:gap, [Calendar.TimeZoneDatabase.time_zone_period()]}
   defp gap_for_time_zone(time_zone, gregorian_seconds) do
     # Gap in wall time
     case Tzdata.periods(time_zone) do
@@ -53,7 +61,7 @@ defmodule Tzdata.TimeZoneDatabase do
       {:ok, periods} when is_list(periods) ->
         period_before =
           periods
-          |> Enum.filter(fn period -> period.until.wall < gregorian_seconds end)
+          |> Enum.filter(fn period -> period.until.wall <= gregorian_seconds end)
           |> Enum.sort_by(fn period -> period.until.utc end)
           |> List.last()
           |> old_tz_period_to_new
@@ -82,12 +90,13 @@ defmodule Tzdata.TimeZoneDatabase do
        Takes a time_zone period in the format returned by Tzdata 0.1.x and 0.5.x
        and returns one of the TimeZoneDatabase.time_zone_period type.
        """
-  @spec old_tz_period_to_new(Tzdata.time_zone_period()) :: TimeZoneDatabase.time_zone_period()
+  @spec old_tz_period_to_new(Tzdata.time_zone_period()) ::
+          Calendar.TimeZoneDatabase.time_zone_period()
   defp old_tz_period_to_new(old_period) do
     %{
       utc_offset: old_period.utc_off,
       std_offset: old_period.std_off,
-      zone_abbr: old_period.zone_abbr(),
+      zone_abbr: old_period.zone_abbr,
       from_wall: old_period.from.wall |> old_limit_to_new,
       until_wall: old_period.until.wall |> old_limit_to_new
     }

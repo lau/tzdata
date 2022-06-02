@@ -1,39 +1,21 @@
-defmodule Tzdata.HttpClient do
-  require Logger
+defmodule Tzdata.HTTPClient do
+  @moduledoc false && """
+  Behaviour for HTTP client used by Tzdata.
 
-  @spec get(binary() | charlist()) :: {:ok, integer(), any(), any()}
-  def get(url) when is_binary(url) do
-    String.to_charlist(url) |> get()
-  end
+  See "HTTP Client" section in README.md for more information.
+  """
 
-  def get(url) when is_list(url) do
-    request = {url, []}
+  @type status() :: non_neg_integer()
 
-    {:ok, {{_, response, _}, headers, body}} = :httpc.request(:get, request, http_options(), [])
+  @type headers() :: [{header_name :: String.t(), header_value :: String.t()}]
 
-    {:ok, response, headers, :erlang.list_to_binary(body)}
-  end
+  @type body() :: binary()
 
-  @spec head(binary() | charlist()) :: {:ok, integer(), any()}
-  def head(url) when is_binary(url) do
-    String.to_charlist(url) |> head()
-  end
+  @type option() :: {:follow_redirect, boolean}
 
-  def head(url) when is_list(url) do
-    request = {url, []}
+  @callback get(url :: String.t(), headers(), options :: [option]) ::
+              {:ok, {status(), headers(), body()}} | {:error, term()}
 
-    {:ok, {{_, response, _}, headers, []}} = :httpc.request(:head, request, http_options(), [])
-
-    {:ok, response, headers}
-  end
-
-  defp http_options() do
-    [{:ssl, ssl_options()}]
-  end
-
-  defp ssl_options() do
-    local_storage = Tzdata.Util.data_dir() |> String.to_charlist()
-
-    [{:verify, :verify_peer}, {:cacertfile, local_storage ++ '/cacert/cacert.pem'}]
-  end
+  @callback head(url :: String.t(), headers(), options :: [option]) ::
+              {:ok, {status(), headers()}} | {:error, term()}
 end

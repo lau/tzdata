@@ -1,9 +1,11 @@
 defmodule Tzdata.ReleaseUpdater do
+  @moduledoc false
+
   require Logger
   use GenServer
   alias Tzdata.DataLoader
 
-  def start_link() do
+  def start_link([]) do
     GenServer.start_link(__MODULE__, [], name: :tzdata_release_updater)
   end
 

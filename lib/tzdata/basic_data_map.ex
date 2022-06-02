@@ -9,6 +9,11 @@ defmodule Tzdata.BasicDataMap do
     |> make_map
   end
 
+  def from_single_file_in_dir(dir_name, file_name) do
+    [{String.to_atom(file_name), Parser.read_file(file_name, dir_name)}]
+    |> make_map
+  end
+
   def make_map(all_files_read) do
     all_files_flattened = all_files_read |> Enum.map(fn {_name, read_file} -> read_file end) |> List.flatten
     rules = Organizer.rules(all_files_flattened)

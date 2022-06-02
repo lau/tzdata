@@ -24,7 +24,7 @@ defmodule Tzdata.Parser do
       "Rule" -> [process_rule(head)|process_tz_list(tail)]
       "Link" -> [process_link(head)|process_tz_list(tail)]
       "Zone" -> process_zone([head|tail])
-      ______ -> [head|process_tz_list(tail)] # pass through
+      _      -> [head|process_tz_list(tail)] # pass through
     end
   end
 

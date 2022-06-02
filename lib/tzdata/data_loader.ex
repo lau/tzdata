@@ -1,18 +1,19 @@
 defmodule Tzdata.DataLoader do
+  @moduledoc false
+
   require Logger
-  @compile :nowarn_deprecated_function
   # Can poll for newest version of tz data and can download
   # and extract it.
   @download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
-    {:ok, 200, headers, body} = Tzdata.HttpClient.get(url)
+    {:ok, {200, headers, body}} = http_client().get(url, [], follow_redirect: true)
     content_length = byte_size(body)
     {:ok, last_modified} = last_modified_from_headers(headers)
 
     new_dir_name =
-      "#{data_dir()}/tmp_downloads/#{content_length}_#{:random.uniform(100_000_000)}/"
+      "#{data_dir()}/tmp_downloads/#{content_length}_#{:rand.uniform(100_000_000)}/"
 
     File.mkdir_p!(new_dir_name)
     target_filename = "#{new_dir_name}latest.tar.gz"
@@ -30,29 +31,19 @@ defmodule Tzdata.DataLoader do
   end
 
   def release_version_for_dir(dir_name) do
-    # 100 lines should be more than enough to get the first Release line
-    release_string =
-      "#{dir_name}/NEWS"
+    [only_line_in_file] =
+      "#{dir_name}/version"
       |> File.stream!()
-      |> Stream.filter(fn string -> Regex.match?(~r/Release/, string) end)
-      |> Enum.take(100)
-      |> hd
-      |> String.replace(~r/\s*$/, "")
+      |> Enum.to_list()
 
-    captured =
-      Regex.named_captures(
-        ~r/Release[\s]+(?<version>[^\s]+)[\s]+-[\s]+(?<timestamp>.+)/m,
-        release_string
-      )
-
-    captured["version"]
+    only_line_in_file |> String.replace(~r/\s/, "")
   end
 
   def last_modified_of_latest_available(url \\ @download_url) do
     set_latest_remote_poll_date()
 
-    case Tzdata.HttpClient.head(url) do
-      {:ok, 200, headers} ->
+    case http_client().head(url, [], []) do
+      {:ok, {200, headers}} ->
         last_modified_from_headers(headers)
 
       _ ->
@@ -74,11 +65,9 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_get(url) do
-    case Tzdata.HttpClient.get(url) do
-      {:ok, 200, _headers, body} ->
+    case http_client().get(url, [], []) do
+      {:ok, {200, _headers, body}} ->
         {:ok, byte_size(body)}
-      {:ok, _status, _headers, _body} ->
-        {:error, :did_not_get_ok_response}
 
       _ ->
         {:error, :did_not_get_ok_response}
@@ -86,7 +75,7 @@ defmodule Tzdata.DataLoader do
   end
 
   defp latest_file_size_by_head(url) do
-    Tzdata.HttpClient.head(url)
+    http_client().head(url, [], [])
     |> do_latest_file_size_by_head
   end
 
@@ -114,7 +103,7 @@ defmodule Tzdata.DataLoader do
   defp value_from_headers(headers, key) do
     header =
       headers
-      |> Enum.filter(fn {k, _v} -> k == key end)
+      |> Enum.filter(fn {k, _v} -> String.downcase(k) == String.downcase(key) end)
       |> List.first()
 
     case header do
@@ -180,4 +169,8 @@ defmodule Tzdata.DataLoader do
   end
 
   defp data_dir, do: Tzdata.Util.data_dir()
+
+  defp http_client() do
+    Application.get_env(:tzdata, :http_client, Tzdata.HTTPClient.Hackney)
+  end
 end
