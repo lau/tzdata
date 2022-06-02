@@ -39,9 +39,9 @@ defmodule Tzdata.HttpClient.Httpc do
     [{:verify, :verify_peer},
      {:cacertfile, local_storage},
      {:depth, 2},
-     #{:customize_hostname_check, [
-     #  {:match_fun, :public_key.pkix_verify_hostname_match_fun(:https)}
-     # ]}
+     {:customize_hostname_check, [
+       {:match_fun, :public_key.pkix_verify_hostname_match_fun(:https)}
+      ]}
     ]
   end
 

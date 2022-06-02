@@ -19,7 +19,7 @@ defmodule Tzdata.Mixfile do
 
   def application do
     [
-      extra_applications: [:logger, :inets],
+      extra_applications: [:logger, :inets, :public_key],
       env: env(),
       mod: {Tzdata.App, []}
     ]
