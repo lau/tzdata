@@ -13,7 +13,7 @@ defmodule Tzdata.DataBuilder do
 
     if release_version == current_version do
       # remove temporary tzdata dir
-      File.rm_rf(tzdata_dir)
+      DataLoader.cleanup(tzdata_dir)
 
       Logger.info(
         "Downloaded tzdata release from IANA is the same version as the version currently in use (#{
@@ -45,27 +45,35 @@ defmodule Tzdata.DataBuilder do
 
     map.zone_list
     |> Enum.each(fn zone_name ->
-         insert_periods_for_zone(table, map, zone_name)
-       end)
+      insert_periods_for_zone(table, map, zone_name)
+    end)
 
-    # remove temporary tzdata dir
-    File.rm_rf(tzdata_dir)
-    ets_tmp_file_name = "#{release_dir()}/#{release_version}.tmp"
-    ets_file_name = ets_file_name_for_release_version(release_version)
-    File.mkdir_p(release_dir())
-    # Create file using a .tmp line ending to avoid it being
-    # recognized as a complete file before writing to it is complete.
-    :ets.tab2file(table, :erlang.binary_to_list(ets_tmp_file_name))
-    :ets.delete(table)
-    # Then rename it, which should be an atomic operation.
-    :file.rename(ets_tmp_file_name, ets_file_name)
+    # cleanup temporary tzdata dir
+    DataLoader.cleanup(tzdata_dir)
+
+    case Application.fetch_env(:tzdata, :read_only_fs?) do
+      {:ok, true} ->
+        ets_tmp_file_name = "#{release_dir()}/#{release_version}.tmp"
+        ets_file_name = ets_file_name_for_release_version(release_version)
+        File.mkdir_p(release_dir())
+        # Create file using a .tmp line ending to avoid it being
+        # recognized as a complete file before writing to it is complete.
+        :ets.tab2file(table, :erlang.binary_to_list(ets_tmp_file_name))
+        :ets.delete(table)
+        # Then rename it, which should be an atomic operation.
+        :file.rename(ets_tmp_file_name, ets_file_name)
+
+      _ ->
+        :ok
+    end
+
     {:ok, content_length, release_version}
   end
 
   defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
 
   def ets_file_name_for_release_version(release_version) do
-    "#{release_dir()}/#{release_version}.v#{Tzdata.EtsHolder.file_version}.ets"
+    "#{release_dir()}/#{release_version}.v#{Tzdata.EtsHolder.file_version()}.ets"
   end
 
   def ets_table_name_for_release_version(release_version) do
@@ -79,10 +87,11 @@ defmodule Tzdata.DataBuilder do
     tuple_periods =
       periods
       |> Enum.map(fn period ->
-           period_to_tuple(key, period)
-         end)
+        period_to_tuple(key, period)
+      end)
 
-    tuple_periods |> Enum.each(fn tuple_period ->
+    tuple_periods
+    |> Enum.each(fn tuple_period ->
       :ets.insert(table, tuple_period)
     end)
   end
