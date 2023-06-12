@@ -1,5 +1,15 @@
 # Changelog for Tzdata
 
+## [dev]
+
+### Changed
+
+- tzdata release version shipped with this library is now 2023c instead of 2021e.
+
+### Fixed
+
+- Stop crash on aplications with paths with utf8 characters (Vítor Luís dos Santos Trindade)
+
 ## [1.1.1] - 2021-10-31
 
 ### Fixed
