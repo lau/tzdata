@@ -10,7 +10,7 @@ defmodule UtilTest do
     assert TzUtil.last_weekday_of_month(2014, 8, 4) == 28
     # last sunday of Aug 2014 should be on the 31st
     assert TzUtil.last_weekday_of_month(2014, 8, 7) == 31
-    # should also accept string with english abbrevations of weekdays
+    # should also accept string with english abbreviations of weekdays
     assert TzUtil.last_weekday_of_month(2014, 8, "sun") == 31
     assert TzUtil.last_weekday_of_month(2014, 8, "thu") == 28
   end
