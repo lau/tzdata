@@ -192,6 +192,18 @@ defmodule Tzdata do
       []
   """
   @spec periods_for_time(Calendar.time_zone, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period] | {:error, term}
+  def periods_for_time("Etc/UTC", _, _) do
+    [
+      %{
+        from: %{standard: :min, utc: :min, wall: :min},
+        std_off: 0,
+        until: %{standard: :max, utc: :max, wall: :max},
+        utc_off: 0,
+        zone_abbr: "UTC"
+      }
+    ]
+  end
+
   def periods_for_time(zone_name, time_point, time_type) do
     case possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
       {:ok, periods} ->
