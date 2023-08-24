@@ -147,6 +147,61 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
+  @tag :wip
+  test "can generate period for last rule before new zone line", %{map: map} do
+    periods = calc_periods(map, "Pacific/Apia")
+
+    assert [p1, p2, p3] = periods |> Enum.slice(5..7)
+
+    assert p1 == %{
+             until: %{
+               utc: ~G[2011-09-24T14:00:00],
+               standard: ~G[2011-09-24T03:00:00],
+               wall: ~G[2011-09-24T03:00:00]
+             },
+             zone_abbr: "SST",
+             from: %{
+               utc: ~G[2011-04-02T14:00:00],
+               standard: ~G[2011-04-02T03:00:00],
+               wall: ~G[2011-04-02T03:00:00]
+             },
+             std_off: 0,
+             utc_off: -39600
+           }
+
+    assert p2 == %{
+             until: %{
+               standard: ~G[2011-12-30T00:00:00],
+               utc: ~G[2011-12-30T11:00:00],
+               wall: ~G[2011-12-30T01:00:00]
+             },
+             zone_abbr: "SST",
+             from: %{
+               standard: ~G[2011-09-24T03:00:00],
+               utc: ~G[2011-09-24T14:00:00],
+               wall: ~G[2011-09-24T03:00:00]
+             },
+             std_off: 3600,
+             utc_off: -39600
+           }
+
+    assert p3 == %{
+             until: %{
+               standard: ~G[2012-04-01T03:00:00],
+               utc: ~G[2012-03-31T14:00:00],
+               wall: ~G[2012-04-01T04:00:00]
+             },
+             zone_abbr: "WSDT",
+             from: %{
+               standard: ~G[2011-12-31T00:00:00],
+               utc: ~G[2011-12-30T11:00:00],
+               wall: ~G[2011-12-31T01:00:00]
+             },
+             std_off: 3600,
+             utc_off: 46800
+           }
+  end
+
   test "can calculate for zones with static offset rules", %{map: map} do
     periods = calc_periods(map, "Atlantic/Cape_Verde")
     assert [_lmt, _cvt_1, cvst, cvt_2, _cvt_3] = periods

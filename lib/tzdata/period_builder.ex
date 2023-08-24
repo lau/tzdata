@@ -97,16 +97,23 @@ defmodule Tzdata.PeriodBuilder do
   def h_calc_next_zone_line(_btz_data, period, _, zone_line_tl, _) when zone_line_tl == [] do
     case period do
       nil -> []
-      _ -> [ period ]
+      [period, nil] -> [period]
+      [nil, trailing_period] -> [trailing_period]
+      [period, trailing_period] -> [period, trailing_period]
+      _ -> [period]
     end
   end
 
   # If there is a zone line tail, we recursively add to the list of periods with that zone line tail
   def h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter) do
     tail = calc_periods(btz_data, zone_line_tl, until_utc, hd(zone_line_tl).rules, letter)
+
     case period do
       nil -> tail
-      _ -> [ period | tail ]
+      [period, nil] -> [period | tail]
+      [nil, trailing_period] -> [trailing_period | tail]
+      [period, trailing_period] -> [period, trailing_period | tail]
+      _ -> [period | tail]
     end
   end
 
@@ -270,12 +277,12 @@ defmodule Tzdata.PeriodBuilder do
     rule = rules_for_year |> hd
     rules_tail = rules_for_year |> tl
 
-    upper_limit = datetime_to_utc(Map.get(zone_line, :until), utc_off, std_off)
+    zl_upper_limit = datetime_to_utc(Map.get(zone_line, :until), utc_off, std_off)
     # `from` is inferred from the end of the last period, the `upper_limit` can go back in time in
     # edge cases where the `std_off` has a negative delta and the `until` of the zone line occurs
     # in a time <= delta
-    upper_limit_before_from = is_integer(from) && is_integer(upper_limit) && from > upper_limit
-    upper_limit = if upper_limit_before_from, do: from, else: upper_limit
+    upper_limit_before_from = is_integer(from) && is_integer(zl_upper_limit) && from > zl_upper_limit
+    upper_limit = if upper_limit_before_from, do: from, else: zl_upper_limit
 
     # truncate start of period to within time range of zone line
     from_before_lower_limit = is_integer(lower_limit) && (from == :min || lower_limit > from)
@@ -311,10 +318,35 @@ defmodule Tzdata.PeriodBuilder do
     no_more_rules = rules_tail == []
     no_more_years = tl(years) == []
 
+    might_have_trailing_period = no_more_rules && no_more_years
+
+    trailing_period =
+      if period != nil and might_have_trailing_period and until_utc < zl_upper_limit do
+        %{
+          std_off: rule.save,
+          utc_off: utc_off,
+          from: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
+          until: %{
+            standard: standard_time_from_utc(zl_upper_limit, utc_off),
+            wall: wall_time_from_utc(zl_upper_limit, utc_off, rule.save),
+            utc: zl_upper_limit
+          },
+          zone_abbr: TzUtil.period_abbrevation(zone_line.format, rule.save, letter)
+        }
+      else
+        nil
+      end
+
     # If we've hit the upper time boundary of this zone line, we do not need to examine any more
     # rules for this rule set OR there are no more years to consider for this rule set
-    if last_included_rule || no_more_years && no_more_rules do
-      h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
+    if last_included_rule || (no_more_rules && no_more_years) do
+      h_calc_next_zone_line(
+        btz_data,
+        if(trailing_period != nil, do: [period, trailing_period], else: period),
+        if(trailing_period != nil, do: zl_upper_limit, else: until_utc),
+        zone_line_tl,
+        letter
+      )
     else
       tail = cond do
         # If there are no more rules for the year, continue with the next year
