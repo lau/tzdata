@@ -13,27 +13,74 @@ defmodule Tzdata.DataLoader do
     {:ok, last_modified} = last_modified_from_headers(headers)
 
     new_dir_name =
-      "#{data_dir()}/tmp_downloads/#{content_length}_#{:rand.uniform(100_000_000)}/"
+      case Application.fetch_env(:tzdata, :read_only_fs?) do
+        {:ok, true} ->
+          {:binary, body}
 
-    File.mkdir_p!(new_dir_name)
-    target_filename = "#{new_dir_name}latest.tar.gz"
-    File.write!(target_filename, body)
-    extract(target_filename, new_dir_name)
+        {:ok, false} ->
+          new_dir_name =
+            "#{data_dir()}/tmp_downloads/#{content_length}_#{:rand.uniform(100_000_000)}/"
+
+          File.mkdir_p!(new_dir_name)
+          target_filename = "#{new_dir_name}latest.tar.gz"
+          File.write!(target_filename, body)
+          extract(target_filename, new_dir_name)
+          new_dir_name
+      end
+
     release_version = release_version_for_dir(new_dir_name)
     Logger.debug("Tzdata data downloaded. Release version #{release_version}.")
     {:ok, content_length, release_version, new_dir_name, last_modified}
   end
 
-  defp extract(filename, target_dir) do
+  def stream_file(filename, target_dir) do
+    [{^filename, lines}] = file_lines([filename], target_dir)
+    lines
+  end
+
+  def file_lines(filenames, target_dir)
+
+  def file_lines(filenames, target_dir) when is_binary(target_dir) do
+    for filename <- filenames do
+      {filename, File.stream!(Path.join(target_dir, filename))}
+    end
+  end
+
+  def file_lines(filenames, {:binary, _} = body) do
+    filenames = Enum.map(filenames, &:binary.bin_to_list/1)
+    {:ok, extracted} = :erl_tar.extract(body, [:compressed, :memory, {:files, filenames}])
+
+    for {charlist, contents} <- extracted do
+      # split into lines, keeping the delimiters
+      lines =
+        ~r/[^\n]*\n/
+        |> Regex.scan(contents)
+        |> List.flatten()
+
+      {:binary.list_to_bin(charlist), lines}
+    end
+  end
+
+  defp extract(filename, target_dir) when is_binary(target_dir) do
     :erl_tar.extract(filename, [:compressed, {:cwd, target_dir}])
     # remove tar.gz file after extraction
     File.rm!(filename)
   end
 
+  def cleanup(dir_name)
+
+  def cleanup(dir_name) when is_binary(dir_name) do
+    File.rm_rf(dir_name)
+  end
+
+  def cleanup({:binary, _}) do
+    :ok
+  end
+
   def release_version_for_dir(dir_name) do
     [only_line_in_file] =
-      "#{dir_name}/version"
-      |> File.stream!()
+      "version"
+      |> stream_file(dir_name)
       |> Enum.to_list()
 
     only_line_in_file |> String.replace(~r/\s/, "")

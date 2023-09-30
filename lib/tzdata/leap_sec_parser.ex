@@ -8,7 +8,8 @@ defmodule Tzdata.LeapSecParser do
 
   @file_name "leap-seconds.list"
   def read_file(dir_prepend \\ "source_data", file_name \\ @file_name) do
-    File.stream!("#{dir_prepend}#{file_name}")
+    file_name
+    |> Tzdata.DataLoader.stream_file(dir_prepend)
     |> process_file
   end
 
