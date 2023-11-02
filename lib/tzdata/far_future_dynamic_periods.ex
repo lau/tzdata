@@ -12,7 +12,7 @@ defmodule Tzdata.FarFutureDynamicPeriods do
   alias Tzdata.Util
 
   # February 1st 30 years from compile time
-  @greg_sec_30_years_from_now :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + 30, 2, 1}, {0, 0, 0}}
+  @greg_sec_30_years_from_now :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time()|>elem(0)|>elem(0)) + 30, 2, 1}, {0, 0, 0}}
 
   # 30 years from compile time, is the zone in a period
   # that runs until :max ? Ie. it is not using DST
