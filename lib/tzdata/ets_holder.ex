@@ -87,10 +87,10 @@ defmodule Tzdata.EtsHolder do
     make_sure_a_release_dir_exists()
 
     cond do
-      release_files() == [] and Util.custom_data_dir_configured? ->
+      release_files() == [] and Util.custom_data_dir_configured?() ->
         Logger.info("No tzdata release files found in custom data dir. Copying release file from tzdata priv dir.")
         copy_release_dir_from_priv()
-      release_files() == [] and not Util.custom_data_dir_configured? ->
+      release_files() == [] and not Util.custom_data_dir_configured?() ->
         Logger.error("No tzdata release files found!")
       true ->
         nil

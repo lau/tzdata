@@ -63,7 +63,7 @@ defmodule TzdataTest do
       |> Kernel.+(3600 * 24 * 365 * 150)
 
     # This should not raise any exceptions
-    Tzdata.zone_list
+    Tzdata.zone_list()
     |> Enum.reject(&(Enum.member?(@moroccan_time_zones, &1)))
     |> Enum.map(fn(zone) -> Tzdata.periods_for_time(zone, point_in_time, :wall) end)
   end
@@ -71,9 +71,9 @@ defmodule TzdataTest do
   @tag :skip
   test "Get periods for point in time far away in the future. For all timezones except Moroccan ones." do
     # roughly 150 years from now
-    point_in_time = :calendar.universal_time |> :calendar.datetime_to_gregorian_seconds |> Kernel.+(3600*24*365*150)
+    point_in_time = :calendar.universal_time() |> :calendar.datetime_to_gregorian_seconds |> Kernel.+(3600*24*365*150)
     # This should not raise any exceptions
-    Tzdata.zone_list
+    Tzdata.zone_list()
     |> Enum.filter(&(Enum.member?(@moroccan_time_zones, &1)))
     |> Enum.map(fn(zone) -> Tzdata.periods_for_time(zone, point_in_time, :wall) end)
     Tzdata.zone_list() |> Enum.map(&Tzdata.periods_for_time(&1, point_in_time, :wall))
@@ -115,7 +115,7 @@ defmodule TzdataTest do
     # create random strings that will be used for zone names and could be turned into atoms
     time_zone_names =
       0..1000
-      |> Enum.map(&"Fake/#{&1}-#{:crypto.rand_uniform(1, 9_999_999)}")
+      |> Enum.map(&"Fake/#{&1}-#{:rand.uniform(9_999_999)}")
 
     time_zone_names
     |> Enum.map(&Tzdata.periods_for_time(&1, gregorian_seconds, :utc))
