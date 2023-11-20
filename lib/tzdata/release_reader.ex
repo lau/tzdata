@@ -22,7 +22,7 @@ end
 defmodule Tzdata.ReleaseReader do
 
   @behaviour Tzdata.ReleaseReader.Behavior
-  @provider Application.compile_env(:tzdata, :release_reader, Tzdata.ReleaseReader.Pt)
+  @provider Application.compile_env(:tzdata, :release_reader, Tzdata.ReleaseReader.Ets)
 
   @impl true
   defdelegate rules(), to: @provider
