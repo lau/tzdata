@@ -83,6 +83,18 @@ This feature can be disabled with the following configuration:
 config :tzdata, :autoupdate, :disabled
 ```
 
+## Min and Max Year configuration
+
+By default Tzdata will use 1900 for the min year to look at rules and 44 years + the current year
+for the max. This may be too much data for some (e.g. when using an embedded system), so
+we can configure the max and min years of data to use as well. This can greatly greatly reduce the
+size of the ets table created by `:tzdata`.
+
+```elixir
+config :tzdata, :max_year, 2030
+config :tzdata, :min_year, 2020
+```
+
 If the autoupdate setting is set to disabled, one has to manually put updated .ets files
 in the release_ets sub-dir of the "data_dir" (see the "Data directory and releases" section above).
 When IANA releases new versions of the time zone data, this Tzdata library can be used to generate
