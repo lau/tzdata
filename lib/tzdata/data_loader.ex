@@ -4,8 +4,11 @@ defmodule Tzdata.DataLoader do
   require Logger
   # Can poll for newest version of tz data and can download
   # and extract it.
+
+  @default_download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
+
   def download_url do
-    Application.fetch_env!(:tzdata, :download_url)
+    Application.get_env(:tzdata, :download_url, @default_download_url)
   end
 
   def download_new do

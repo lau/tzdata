@@ -88,6 +88,17 @@ in the release_ets sub-dir of the "data_dir" (see the "Data directory and releas
 When IANA releases new versions of the time zone data, this Tzdata library can be used to generate
 a new .ets file containing the new data.
 
+## Set IANA database updates origin
+
+It is also possible to override IANA database url in case you want to pin a specific database version.
+
+Available versions can be found at: https://data.iana.org/time-zones/releases
+
+```elixir
+config :tzdata, :download_url, "https://data.iana.org/time-zones/tzdata2024a.tar.gz"
+```
+
+
 ## Changes from 0.1.x to 0.5.x
 
 The 0.5.1+ versions uses ETS tables and automatically polls the IANA

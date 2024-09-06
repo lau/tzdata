@@ -34,7 +34,7 @@ defmodule Tzdata.Mixfile do
   defp docs do
     [
       main: "readme",
-      extras: ["README.md", "VERSION"],
+      extras: ["README.md"],
       source_ref: "v#{version()}"
     ]
   end
@@ -58,7 +58,7 @@ defmodule Tzdata.Mixfile do
       licenses: ["MIT"],
       maintainers: ["Lau Taarnskov"],
       links: %{"GitHub" => "https://github.com/lau/tzdata"},
-      files: ~w(lib priv mix.exs README* LICENSE*
+      files: ~w(lib priv mix.exs README* LICENSE* VERSION
                  CHANGELOG*)
     }
   end
