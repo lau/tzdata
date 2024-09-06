@@ -161,6 +161,7 @@ defmodule Tzdata.Util do
   defp cap_month_number_for_month_name("feb"), do: 2
   defp cap_month_number_for_month_name("mar"), do: 3
   defp cap_month_number_for_month_name("apr"), do: 4
+  defp cap_month_number_for_month_name("april"), do: 4
   defp cap_month_number_for_month_name("may"), do: 5
   defp cap_month_number_for_month_name("jun"), do: 6
   defp cap_month_number_for_month_name("jul"), do: 7
