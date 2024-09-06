@@ -4,3 +4,4 @@ erl_crash.dump
 *.ez
 /doc
 /priv/latest_remote_poll.txt
+/priv/tmp_downloads

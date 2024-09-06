@@ -1,13 +1,11 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
-  @version "1.1.1"
-
   def project do
     [
       app: :tzdata,
       name: "tzdata",
-      version: @version,
+      version: version(),
       elixir: "~> 1.8",
       package: package(),
       description: description(),
@@ -28,15 +26,16 @@ defmodule Tzdata.Mixfile do
   defp deps do
     [
       {:hackney, "~> 1.17"},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
+      {:mox, "~> 1.2", only: :test}
     ]
   end
 
   defp docs do
     [
       main: "readme",
-      extras: ["README.md"],
-      source_ref: "v#{@version}"
+      extras: ["README.md", "VERSION"],
+      source_ref: "v#{version()}"
     ]
   end
 
@@ -62,5 +61,11 @@ defmodule Tzdata.Mixfile do
       files: ~w(lib priv mix.exs README* LICENSE*
                  CHANGELOG*)
     }
+  end
+
+  defp version do
+    "./VERSION"
+    |> File.read!()
+    |> String.trim()
   end
 end

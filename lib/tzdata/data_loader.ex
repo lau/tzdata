@@ -4,8 +4,15 @@ defmodule Tzdata.DataLoader do
   require Logger
   # Can poll for newest version of tz data and can download
   # and extract it.
-  @download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
-  def download_new(url \\ @download_url) do
+  def download_url do
+    Application.fetch_env!(:tzdata, :download_url)
+  end
+
+  def download_new do
+    download_new(download_url())
+  end
+  
+  def download_new(url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
     {:ok, {200, headers, body}} = http_client().get(url, [], follow_redirect: true)
@@ -39,7 +46,11 @@ defmodule Tzdata.DataLoader do
     only_line_in_file |> String.replace(~r/\s/, "")
   end
 
-  def last_modified_of_latest_available(url \\ @download_url) do
+  def last_modified_of_latest_available do
+    last_modified_of_latest_available(download_url())
+  end
+  
+  def last_modified_of_latest_available(url) do
     set_latest_remote_poll_date()
 
     case http_client().head(url, [], []) do
@@ -51,7 +62,11 @@ defmodule Tzdata.DataLoader do
     end
   end
 
-  def latest_file_size(url \\ @download_url) do
+  def latest_file_size do
+    latest_file_size(download_url())
+  end
+
+  def latest_file_size(url) do
     set_latest_remote_poll_date()
 
     case latest_file_size_by_head(url) do
