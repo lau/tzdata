@@ -152,9 +152,14 @@ defmodule Tzdata.Util do
   def weekday_string_to_number!(parm), do: parm
 
   def month_number_for_month_name(string) do
-    string
-    |> String.downcase()
-    |> cap_month_number_for_month_name
+    if string =~ ~r/^\d+$/ do
+      to_int(string)
+    else
+      string
+      |> String.downcase()
+      |> String.slice(0..2)
+      |> cap_month_number_for_month_name()
+    end
   end
 
   defp cap_month_number_for_month_name("jan"), do: 1
@@ -169,7 +174,7 @@ defmodule Tzdata.Util do
   defp cap_month_number_for_month_name("oct"), do: 10
   defp cap_month_number_for_month_name("nov"), do: 11
   defp cap_month_number_for_month_name("dec"), do: 12
-  defp cap_month_number_for_month_name(string), do: to_int(string)
+  defp cap_month_number_for_month_name(other), do: {:error, {:bad_month, other}}
 
   @doc false &&
          """
