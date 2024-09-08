@@ -45,6 +45,7 @@ defmodule Tzdata.ReleaseUpdater do
         :do_nothing
 
       {:ok, false} ->
+        try do
         case Tzdata.DataBuilder.load_and_save_table() do
           {:ok, _, _} ->
             Tzdata.EtsHolder.new_release_has_been_downloaded()
@@ -52,7 +53,10 @@ defmodule Tzdata.ReleaseUpdater do
           {:error, error} ->
             {:error, error}
         end
-
+      rescue
+        error -> Logger.error("Unable to retrieve latest tz database due to unexpected error #{error}")
+        {:error, error}
+      end
       _ ->
         :do_nothing
     end
