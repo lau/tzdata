@@ -62,7 +62,7 @@ defmodule Tzdata.FarFutureDynamicPeriods do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: Util.period_abbrevation(zone_line.format, std_off, begin_rule.letter)
+      zone_abbr: Util.period_abbrevation(zone_line.format, std_off, utc_off, begin_rule.letter)
     }
 
     {{until_year_wall, _, _}, _} = :calendar.gregorian_seconds_to_datetime(until_wall_time)
@@ -100,7 +100,7 @@ defmodule Tzdata.FarFutureDynamicPeriods do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: Util.period_abbrevation(zone_line.format, std_off, letter)
+      zone_abbr: Util.period_abbrevation(zone_line.format, std_off, utc_off, letter)
     }
     %{period: period, rules: rules, zone_line: zone_line, rule_name: rule_name}
   end

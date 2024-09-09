@@ -470,16 +470,26 @@ defmodule Tzdata.Util do
   abbreviation will be returned.
 
   ## Examples
-      iex> period_abbrevation("CE%sT", 0, "-")
+      iex> period_abbrevation("CE%sT", 0, 0, "-")
       "CET"
-      iex> period_abbrevation("CE%sT", 3600, "S")
+      iex> period_abbrevation("CE%sT", 3600, 0, "S")
       "CEST"
-      iex> period_abbrevation("GMT/BST", 0, "-")
+      iex> period_abbrevation("GMT/BST", 0, 0, "-")
       "GMT"
-      iex> period_abbrevation("GMT/BST", 3600, "S")
+      iex> period_abbrevation("GMT/BST", 3600, 0, "S")
       "BST"
+      iex> period_abbrevation("%z", 39600, 0, "-")
+      "+11"
+      iex> period_abbrevation("%z", 7200, 0, "-")
+      "+02"
+      iex> period_abbrevation("%z", -9000, 0, "-")
+      "-0230"
   """
-  def period_abbrevation(zone_abbr, std_off, letter) do
+  def period_abbrevation("%z", std_off, utc_off, _) do
+    seconds_to_percentagez_string(std_off + utc_off)
+  end
+
+  def period_abbrevation(zone_abbr, std_off, utc_off, letter) do
     if Regex.match?(~r/\//, zone_abbr) do
       period_abbrevation_h(:slash, zone_abbr, std_off, letter)
     else
@@ -507,6 +517,29 @@ defmodule Tzdata.Util do
 
   defp period_abbrevation_h(:no_slash, zone_abbr, _, :undefined) do
     zone_abbr
+  end
+
+  defp seconds_to_percentagez_string(seconds) when is_integer(seconds) do
+    #hours_fractional = seconds/3600.0
+    #    string = hours_fractional
+    string = case rem(seconds, 3600) do
+      0 ->
+        "#{lpad_zero(floor(abs(seconds/3600.0)))}"
+      remaining_seconds ->
+        "#{lpad_zero(floor(abs(seconds/3600.0)))}"<>"#{lpad_zero(floor(abs(remaining_seconds/60)))}"
+    end
+    case seconds do
+      seconds when seconds > 0 ->
+        "+" <> "#{string}"
+      seconds when seconds < 0 ->
+        "-" <> "#{string}"
+      _ ->
+        string
+    end
+  end
+
+  defp lpad_zero(arg) do
+    String.pad_leading("#{arg}", 2, "0")
   end
 
   def strip_comment(line), do: Regex.replace(~r/[\s]*#.+/, line, "")
