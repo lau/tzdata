@@ -489,7 +489,7 @@ defmodule Tzdata.Util do
     seconds_to_percentagez_string(std_off + utc_off)
   end
 
-  def period_abbrevation(zone_abbr, std_off, utc_off, letter) do
+  def period_abbrevation(zone_abbr, std_off, _utc_off, letter) do
     if Regex.match?(~r/\//, zone_abbr) do
       period_abbrevation_h(:slash, zone_abbr, std_off, letter)
     else
