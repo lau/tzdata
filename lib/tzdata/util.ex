@@ -520,8 +520,6 @@ defmodule Tzdata.Util do
   end
 
   defp seconds_to_percentagez_string(seconds) when is_integer(seconds) do
-    #hours_fractional = seconds/3600.0
-    #    string = hours_fractional
     string = case rem(seconds, 3600) do
       0 ->
         "#{lpad_zero(floor(abs(seconds/3600.0)))}"
