@@ -1,5 +1,15 @@
 # Changelog for Tzdata
 
+## Dev
+
+### Fixed
+
+- Can handle months being spelled out instead of abbreveated to 3 letters as happened in one place in 2024b. (Moxley Stratton)
+
+### Changed
+
+- tzdata release version shipped with this library is now 2024b instead of 2021e.
+
 ## [1.1.1] - 2021-10-31
 
 ### Fixed
