@@ -1,6 +1,6 @@
 # Changelog for Tzdata
 
-## Dev
+## [1.1.2] - 2024-09-09
 
 ### Fixed
 
