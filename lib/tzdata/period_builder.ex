@@ -39,7 +39,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: zone_line_hd.format
+      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter)
     }
 
     h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
@@ -134,7 +134,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: zone_line_hd.format
+      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter)
     }
 
     h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
@@ -177,7 +177,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: :max, wall: :max, utc: :max},
-      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
     }
 
     [period]
@@ -208,7 +208,7 @@ defmodule Tzdata.PeriodBuilder do
         utc_off: utc_off,
         from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
         until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
       }
 
       [ period | tail ]
@@ -305,7 +305,7 @@ defmodule Tzdata.PeriodBuilder do
           utc_off: utc_off,
           from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
           until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-          zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, letter)
+          zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
         }
 
     no_more_rules = rules_tail == []
