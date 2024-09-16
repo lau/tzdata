@@ -32,20 +32,20 @@ defmodule Tzdata do
   DateTime. This includes aliases.
   """
   @spec zone_list() :: [Calendar.time_zone]
-  def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list
+  def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list()
 
   @doc """
   Like zone_list, but excludes aliases for zones.
   """
   @spec canonical_zone_list() :: [Calendar.time_zone]
-  def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list
+  def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list()
 
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
   @spec zone_alias_list() :: [Calendar.time_zone]
-  def zone_alias_list, do: Tzdata.ReleaseReader.link_list
+  def zone_alias_list, do: Tzdata.ReleaseReader.link_list()
 
   @doc """
   Takes the name of a zone. Returns true if zone exists. Otherwise false.
@@ -87,11 +87,11 @@ defmodule Tzdata do
   @doc """
   Returns a map of links. Also known as aliases.
 
-      iex> Tzdata.links["Europe/Jersey"]
+      iex> Tzdata.links()["Europe/Jersey"]
       "Europe/London"
   """
   @spec links() :: %{Calendar.time_zone => Calendar.time_zone}
-  def links, do: Tzdata.ReleaseReader.links
+  def links, do: Tzdata.ReleaseReader.links()
 
   @doc """
   Returns a map with keys being group names and the values lists of
@@ -99,7 +99,7 @@ defmodule Tzdata do
   database.
   """
   @spec zone_lists_grouped() :: %{atom() => [Calendar.time_zone]}
-  def zone_lists_grouped, do: Tzdata.ReleaseReader.by_group
+  def zone_lists_grouped, do: Tzdata.ReleaseReader.by_group()
 
   @doc """
   Returns tzdata release version as a string.
@@ -110,7 +110,7 @@ defmodule Tzdata do
       "2014i"
   """
   @spec tzdata_version() :: String.t
-  def tzdata_version, do: Tzdata.ReleaseReader.release_version
+  def tzdata_version, do: Tzdata.ReleaseReader.release_version()
 
   @doc """
   Returns a list of periods for the `zone_name` provided as an argument.
@@ -225,12 +225,12 @@ defmodule Tzdata do
 
   # Use dynamic periods for points in time that are about 40 years into the future
   @years_in_the_future_where_precompiled_periods_are_used 40
-  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
+  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time()|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
   defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) when time_point >= @point_from_which_to_use_dynamic_periods do
     if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
       periods(zone_name)
     else
-      link_status = Tzdata.ReleaseReader.links |> Map.get(zone_name)
+      link_status = Tzdata.ReleaseReader.links() |> Map.get(zone_name)
       if link_status == nil do
         Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
       else
@@ -264,13 +264,13 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds_with_tai_diff |> Enum.take(2)
+      iex> Tzdata.leap_seconds_with_tai_diff() |> Enum.take(2)
       [%{date_time: {{1972,  6, 30}, {23, 59, 60}}, tai_diff: 11},
        %{date_time: {{1972, 12, 31}, {23, 59, 60}}, tai_diff: 12}]
   """
   @spec leap_seconds_with_tai_diff() :: [%{date_time: :calendar.datetime(), tai_diff: integer}]
   def leap_seconds_with_tai_diff do
-    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
+    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data()
     leap_seconds_data.leap_seconds
   end
 
@@ -283,7 +283,7 @@ defmodule Tzdata do
 
   ## Example
 
-      iex> Tzdata.leap_seconds |> Enum.take(2)
+      iex> Tzdata.leap_seconds() |> Enum.take(2)
       [{{1972,  6, 30}, {23, 59, 60}},
        {{1972, 12, 31}, {23, 59, 60}}]
   """
@@ -305,7 +305,7 @@ defmodule Tzdata do
   """
   @spec leap_second_data_valid_until() :: :calendar.datetime()
   def leap_second_data_valid_until do
-    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data
+    leap_seconds_data = Tzdata.ReleaseReader.leap_sec_data()
     leap_seconds_data.valid_until
   end
 

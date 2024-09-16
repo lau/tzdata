@@ -65,7 +65,7 @@ defmodule Tzdata.DataBuilder do
   defp leap_sec_data(tzdata_dir), do: LeapSecParser.read_file(tzdata_dir)
 
   def ets_file_name_for_release_version(release_version) do
-    "#{release_dir()}/#{release_version}.v#{Tzdata.EtsHolder.file_version}.ets"
+    "#{release_dir()}/#{release_version}.v#{Tzdata.EtsHolder.file_version()}.ets"
   end
 
   def ets_table_name_for_release_version(release_version) do
