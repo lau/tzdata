@@ -72,6 +72,12 @@ containing the `20xxx.ets` file that ships with this library.
 For instance with this config: `config :tzdata, :data_dir, "/etc/elixir_tzdata_data"`
 an `.ets` file such as `/etc/elixir_tzdata_data/release_ets/2017b.ets` should be present.
 
+If you are running in an environment where there is no writeable directory (such as a read-only Docker filesystem), you can set the `read_only_fs?` configuration to true which will not write these update files. The automatic updater will still run if configured (see below).
+
+``` elixir
+config :tzdata, :read_only_fs?, true
+```
+
 ## Automatic data updates
 
 By default Tzdata will poll for timezone database updates every day.

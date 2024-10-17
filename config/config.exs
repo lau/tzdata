@@ -4,4 +4,5 @@ use Mix.Config
 
 config :logger, utc_log: true
 config :tzdata, :autoupdate, :enabled
+config :tzdata, :read_only_fs?, false
 # config :tzdata, :data_dir, "/etc/elixir_tzdata_storage"
