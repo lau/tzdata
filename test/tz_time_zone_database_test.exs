@@ -107,5 +107,11 @@ defmodule Tzdata.TimeZoneDatabaseTest do
                ~N[2019-01-01 10:59:59],
                "Pacific/Norfolk"
              )
+
+    assert {:error, :time_zone_not_found} ==
+             TimeZoneDatabase.time_zone_periods_from_wall_datetime(
+               ~N[2022-11-10 10:59:59],
+               "PST"
+             )
   end
 end
