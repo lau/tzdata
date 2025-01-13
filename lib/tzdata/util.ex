@@ -64,7 +64,7 @@ defmodule Tzdata.Util do
   def last_weekday_of_month(year, month, weekday) do
     weekday = weekday_string_to_number!(weekday)
     days_in_month = day_count_for_month(year, month)
-    day_list = Enum.to_list(days_in_month..1)
+    day_list = Enum.to_list(days_in_month..1//-1)
     {:ok, day} = first_matching_weekday_in_month(year, month, weekday, day_list)
     day
   end
@@ -96,7 +96,7 @@ defmodule Tzdata.Util do
   # Can be in the previous month if no matching date and weekday is found in the specified month
   defp first_weekday_of_month_at_most(year, month, weekday, maximum_date) do
     weekday = weekday_string_to_number!(weekday)
-    day_list = Enum.to_list(maximum_date..1)
+    day_list = Enum.to_list(maximum_date..1//-1)
 
     case first_matching_weekday_in_month(year, month, weekday, day_list) do
       {:ok, day} when is_integer(day) ->
