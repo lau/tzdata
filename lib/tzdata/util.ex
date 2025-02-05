@@ -1,6 +1,8 @@
 defmodule Tzdata.Util do
   @moduledoc false
 
+  @elixir_newer_1_12 Version.match?(System.version(), ">= 1.12.0")
+
   @doc """
     Take strings of amounts and convert them to ints of seconds.
     For instance useful for strings from TZ gmt offsets.
@@ -64,7 +66,7 @@ defmodule Tzdata.Util do
   def last_weekday_of_month(year, month, weekday) do
     weekday = weekday_string_to_number!(weekday)
     days_in_month = day_count_for_month(year, month)
-    day_list = Enum.to_list(days_in_month..1)
+    day_list = Enum.to_list(decreasing_range(days_in_month, 1))
     {:ok, day} = first_matching_weekday_in_month(year, month, weekday, day_list)
     day
   end
@@ -96,7 +98,7 @@ defmodule Tzdata.Util do
   # Can be in the previous month if no matching date and weekday is found in the specified month
   defp first_weekday_of_month_at_most(year, month, weekday, maximum_date) do
     weekday = weekday_string_to_number!(weekday)
-    day_list = Enum.to_list(maximum_date..1)
+    day_list = Enum.to_list(decreasing_range(maximum_date, 1))
 
     case first_matching_weekday_in_month(year, month, weekday, day_list) do
       {:ok, day} when is_integer(day) ->
@@ -563,6 +565,21 @@ defmodule Tzdata.Util do
       {:ok, nil} -> false
       {:ok, _dir} -> true
       _ -> false
+    end
+  end
+
+  if @elixir_newer_1_12 do
+    # See PR #154.
+    # Elixir 1.17 and 1.18 deprecated using decreasing Ranges without explicit steps.
+    # On the other hand, older elixir versions, before 1.12, don't know the `first..last//-1` syntax.
+    # As long as we want to support those versions, we need to compile conditionally.
+
+    defp decreasing_range(upper, lower) when upper >= lower do
+      upper..lower//-1
+    end
+  else
+    defp decreasing_range(upper, lower) when upper >= lower do
+      upper..lower
     end
   end
 end
