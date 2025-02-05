@@ -13,7 +13,7 @@ defmodule Tzdata.App do
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 
     # Make zone atoms exist so that when to_existing_atom is called, all of the zones exist
-    Tzdata.zone_list |> Enum.map(&(&1 |> String.to_atom))
+    Tzdata.zone_list() |> Enum.map(&(&1 |> String.to_atom()))
 
     {:ok, pid}
   end
