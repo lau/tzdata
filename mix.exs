@@ -1,14 +1,14 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
-  @version "1.1.2"
+  @version "1.1.3"
 
   def project do
     [
       app: :tzdata,
       name: "tzdata",
       version: @version,
-      elixir: "~> 1.8",
+      elixir: "~> 1.9",
       package: package(),
       description: description(),
       deps: deps(),

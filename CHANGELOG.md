@@ -1,5 +1,17 @@
 # Changelog for Tzdata
 
+## [1.1.3] - 2025-03-05
+
+### Fixed
+
+- Fix Elixir compiler warnings for decreasing ranges without explicit steps (Christoph Grothaus)
+- Fix various Elixir compiler warnings (Thomas Cioppettini)
+
+### Changed
+
+- Now requires Elixir 1.9 or greater instead of 1.8 or greater.
+- tzdata release version shipped with this library is now 2025a instead of 2024b.
+
 ## [1.1.2] - 2024-09-09
 
 ### Fixed

@@ -45,7 +45,7 @@ jobs:
         run: mix test
 
   test_older_elixir:
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-22.04
     env:
       MIX_ENV: test
     strategy:
@@ -53,8 +53,8 @@ jobs:
       matrix:
         include:
           - pair:
-              elixir: 1.8.1
-              otp: 20.0
+              elixir: 1.9.0
+              otp: 21.3.8
     steps:
       - uses: actions/checkout@v2
 
