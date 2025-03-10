@@ -23,6 +23,58 @@ defmodule Tzdata.PeriodBuilder do
     {:ok, Map.get(btz_data.rules, rules_name)}
   end
 
+  def max_year() do
+    case Application.fetch_env(:tzdata, :max_year) do
+      {:ok, nil} ->
+        @max_year
+
+      {:ok, max_year} ->
+        if is_valid_max_year?(max_year) do
+          max_year
+        else
+          @max_year
+        end
+
+      _ ->
+        @max_year
+    end
+  end
+
+  def min_year() do
+    case Application.fetch_env(:tzdata, :min_year) do
+      {:ok, nil} ->
+        @min_year
+
+      {:ok, min_year} ->
+        if is_valid_min_year?(min_year) do
+          min_year
+        else
+          @min_year
+        end
+
+      _ ->
+        @min_year
+    end
+  end
+
+  defp is_valid_max_year?(max_year) when is_integer(max_year) do
+    # don't allow greater than default max_year
+    max_year <= @max_year
+  end
+
+  defp is_valid_max_year?(_max_year) do
+    false
+  end
+
+  defp is_valid_min_year?(min_year) when is_integer(min_year) do
+    # don't allow lower than default min_year
+    min_year >= @min_year
+  end
+
+  defp is_valid_min_year?(_min_year) do
+    false
+  end
+
   def calc_periods(btz_data, [zone_line_hd | zone_line_tl], from, zone_hd_rules, letter)
       when zone_hd_rules == nil do
     # since there are no rules, there is no standard offset
@@ -51,6 +103,8 @@ defmodule Tzdata.PeriodBuilder do
     utc_off = zone_line_hd.gmtoff
     from_standard_time = standard_time_from_utc(from, utc_off)
     zone_line_limit = Map.get(zone_line_hd, :until)
+    min_year = min_year()
+    max_year = max_year()
 
     # Get the year of the "from" time. We use the standard time with utc offset
     # applied. If for instance we are ahead of UTC and the period starts at the
@@ -59,17 +113,29 @@ defmodule Tzdata.PeriodBuilder do
     from_standard_time_year =
       case from do
         :min ->
-          @min_year
+          min_year
 
         _ ->
           {{year, _, _}, _} = :calendar.gregorian_seconds_to_datetime(from_standard_time)
-          year
+
+          if year < min_year do
+            min_year
+          else
+            year
+          end
       end
 
     max_year_to_use =
       case zone_line_limit do
-        {{{year, _, _}, _}, _} -> year
-        nil -> @max_year
+        {{{year, _, _}, _}, _} ->
+          if year > max_year do
+            max_year
+          else
+            year
+          end
+
+        nil ->
+          max_year
       end
 
     years_to_use = from_standard_time_year..max_year_to_use |> Enum.to_list()
