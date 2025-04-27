@@ -1,4 +1,4 @@
 # Used by "mix format"
 [
-  inputs: ["lib/tzdata/period_builder.ex", "test/tz_period_builder_test.exs"]
+  inputs: ["*.{heex,ex,exs}", "{config,lib,test}/**/*.{heex,ex,exs}"]
 ]
