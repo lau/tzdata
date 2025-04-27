@@ -5,6 +5,14 @@ defmodule Tzdata.DataLoader do
   # Can poll for newest version of tz data and can download
   # and extract it.
   @download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
+  @spec download_new(String.t()) ::
+          {:ok,
+           %{
+             content_length: non_neg_integer,
+             release_version: String.t(),
+             tzdata_dir: String.t(),
+             modified_at: String.t()
+           }}
   def download_new(url \\ @download_url) do
     Logger.debug("Tzdata downloading new data from #{url}")
     set_latest_remote_poll_date()
@@ -21,7 +29,14 @@ defmodule Tzdata.DataLoader do
     extract(target_filename, new_dir_name)
     release_version = release_version_for_dir(new_dir_name)
     Logger.debug("Tzdata data downloaded. Release version #{release_version}.")
-    {:ok, content_length, release_version, new_dir_name, last_modified}
+
+    {:ok,
+     %{
+       content_length: content_length,
+       release_version: release_version,
+       tzdata_dir: new_dir_name,
+       modified_at: last_modified
+     }}
   end
 
   defp extract(filename, target_dir) do

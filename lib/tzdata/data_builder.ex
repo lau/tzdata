@@ -8,7 +8,14 @@ defmodule Tzdata.DataBuilder do
   # download new data releases, then parse them, build
   # periods and save the data in an ETS table
   def load_and_save_table do
-    {:ok, content_length, release_version, tzdata_dir, modified_at} = DataLoader.download_new()
+    {:ok,
+     %{
+       content_length: content_length,
+       release_version: release_version,
+       tzdata_dir: tzdata_dir,
+       modified_at: modified_at
+     }} = DataLoader.download_new()
+
     current_version = Tzdata.ReleaseReader.release_version()
 
     if release_version == current_version do
