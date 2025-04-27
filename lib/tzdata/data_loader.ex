@@ -25,7 +25,7 @@ defmodule Tzdata.DataLoader do
   end
 
   defp extract(filename, target_dir) do
-    :erl_tar.extract(filename, [:compressed, {:cwd, target_dir}])
+    :ok = :erl_tar.extract(filename, [:compressed, {:cwd, target_dir}])
     # remove tar.gz file after extraction
     File.rm!(filename)
   end
