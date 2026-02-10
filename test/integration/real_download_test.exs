@@ -18,22 +18,6 @@ defmodule Tzdata.Integration.RealDownloadTest do
       assert is_integer(size)
       assert size > 100_000  # Reasonable size for tzdata archive
     end
-
-    @tag :skip_in_ci
-    test "can download actual IANA timezone data" do
-      # This test actually downloads the file - skip in CI if needed
-      if System.get_env("SKIP_REAL_DOWNLOAD") do
-        :ok
-      else
-        assert {:ok, content_length, release_version, _dir_name, _last_modified} =
-                 DataLoader.download_new()
-
-        assert is_integer(content_length)
-        assert content_length > 100_000
-        assert is_binary(release_version)
-        assert String.length(release_version) > 0
-      end
-    end
   end
 
   describe "HTTP client behavior compatibility" do

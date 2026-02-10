@@ -1,5 +1,30 @@
 # Changelog for Tzdata
 
+## [Unreleased]
+
+### Changed
+- Replaced Hackney with Finch as the default HTTP client
+  - Addresses security concerns with Hackney (CVE-2018-1000007,
+    AIKIDO-2026-10122)
+  - See https://hexdocs.pm/hackney/news.html#3-0-0-2026-01-27
+  - See https://intel.aikido.dev/cve/AIKIDO-2026-10122
+  - Finch is now required dependency instead of Hackney
+  - Default `:http_client` config changed to `Tzdata.HTTPClient.Finch`
+  - Users who need Hackney can still configure it explicitly (see README)
+  - Hackney implementation remains available for backward compatibility
+
+### Added
+- New `Tzdata.HTTPClient.Finch` implementation with full SSL verification
+
+### Fixed
+- Pattern matching bug in `DataLoader.do_latest_file_size_by_head/1` to
+  handle new HTTP client response format
+
+### Migration Guide
+- Finch will be installed automatically when you update dependencies
+- No code changes needed unless you explicitly configured Hackney
+- If you want to continue using Hackney, see README for configuration
+
 ## [1.1.3] - 2025-03-05
 
 ### Fixed

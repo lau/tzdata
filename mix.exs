@@ -1,7 +1,7 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
-  @version "1.1.3"
+  @version "1.2.0"
 
   def project do
     [

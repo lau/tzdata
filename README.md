@@ -101,18 +101,7 @@ using version ~> 0.5.20
 
 Tzdata uses Finch (via the Mint HTTP client) for HTTPS requests to get new updates. Finch provides secure HTTPS connections with proper SSL certificate verification when downloading new tzdata releases from IANA.
 
-### Custom HTTP Client
-
-If you need to use a different HTTP client, you can configure one by implementing the `Tzdata.HTTPClient` behaviour and setting it in your config:
-
-```elixir
-config :tzdata, :http_client, MyApp.CustomHTTPClient
-```
-
-Your custom client must implement the `Tzdata.HTTPClient` behaviour with the following callbacks:
-
-- `get/3` - Takes `(url, headers, options)` and returns `{:ok, {status, headers, body}}` or `{:error, reason}`
-- `head/3` - Takes `(url, headers, options)` and returns `{:ok, {status, headers}}` or `{:error, reason}`
+If you need to use a different HTTP client, you can implement the `Tzdata.HTTPClient` behaviour and configure it. See the source code for details.
 
 ## Migrating from Hackney
 
