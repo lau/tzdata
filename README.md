@@ -97,9 +97,37 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
-## Hackney dependency and security
+## HTTP Client
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Tzdata uses Finch (via the Mint HTTP client) for HTTPS requests to get new updates. Finch provides secure HTTPS connections with proper SSL certificate verification when downloading new tzdata releases from IANA.
+
+### Custom HTTP Client
+
+If you need to use a different HTTP client, you can configure one by implementing the `Tzdata.HTTPClient` behaviour and setting it in your config:
+
+```elixir
+config :tzdata, :http_client, MyApp.CustomHTTPClient
+```
+
+Your custom client must implement the `Tzdata.HTTPClient` behaviour with the following callbacks:
+
+- `get/3` - Takes `(url, headers, options)` and returns `{:ok, {status, headers, body}}` or `{:error, reason}`
+- `head/3` - Takes `(url, headers, options)` and returns `{:ok, {status, headers}}` or `{:error, reason}`
+
+## Migrating from Hackney
+
+Previous versions of Tzdata used Hackney as the HTTP client. As of version 1.2.0, Finch is the default HTTP client.
+
+If you need to continue using Hackney, you can:
+
+1. Add `{:hackney, "~> 1.17"}` to your `mix.exs` dependencies
+2. Configure tzdata to use Hackney:
+
+```elixir
+config :tzdata, :http_client, Tzdata.HTTPClient.Hackney
+```
+
+The Hackney implementation is still included in tzdata for backward compatibility.
 
 ## Documentation
 

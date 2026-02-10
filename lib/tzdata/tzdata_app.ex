@@ -4,7 +4,10 @@ defmodule Tzdata.App do
   use Application
 
   def start(_type, _args) do
-    children = [Tzdata.EtsHolder]
+    children = [
+      {Finch, name: Tzdata.Finch},
+      Tzdata.EtsHolder
+    ]
     children = case Application.fetch_env(:tzdata, :autoupdate) do
       {:ok, :enabled} -> children ++ [Tzdata.ReleaseUpdater]
       {:ok, :disabled} -> children

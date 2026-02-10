@@ -171,6 +171,6 @@ defmodule Tzdata.DataLoader do
   defp data_dir, do: Tzdata.Util.data_dir()
 
   defp http_client() do
-    Application.get_env(:tzdata, :http_client, Tzdata.HTTPClient.Hackney)
+    Application.get_env(:tzdata, :http_client, Tzdata.HTTPClient.Finch)
   end
 end
