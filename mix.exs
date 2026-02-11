@@ -27,7 +27,7 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:finch, "~> 0.21"},
+      {:req, "~> 0.5"},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
