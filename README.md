@@ -99,24 +99,53 @@ using version ~> 0.5.20
 
 ## HTTP Client
 
-Tzdata uses Finch (via the Mint HTTP client) for HTTPS requests to get new updates. Finch provides secure HTTPS connections with proper SSL certificate verification when downloading new tzdata releases from IANA.
+Tzdata uses Req (via the Finch HTTP client) for HTTPS requests to get new updates. Req provides secure HTTPS connections with proper SSL certificate verification when downloading new tzdata releases from IANA.
 
-If you need to use a different HTTP client, you can implement the `Tzdata.HTTPClient` behaviour and configure it. See the source code for details.
+### Custom HTTP Client
 
-## Migrating from Hackney
-
-Previous versions of Tzdata used Hackney as the HTTP client. As of version 1.2.0, Finch is the default HTTP client.
-
-If you need to continue using Hackney, you can:
-
-1. Add `{:hackney, "~> 1.17"}` to your `mix.exs` dependencies
-2. Configure tzdata to use Hackney:
+If you want to use a different HTTP client, you can configure it in your application:
 
 ```elixir
-config :tzdata, :http_client, Tzdata.HTTPClient.Hackney
+# config/config.exs
+config :tzdata, http_client: MyApp.CustomHTTPClient
 ```
 
-The Hackney implementation is still included in tzdata for backward compatibility.
+Your custom client must implement the `Tzdata.HTTPClient` behaviour:
+
+```elixir
+defmodule MyApp.CustomHTTPClient do
+  @behaviour Tzdata.HTTPClient
+
+  @impl true
+  def get(url, headers, options) do
+    # Return {:ok, {status, headers, body}} or {:error, reason}
+  end
+
+  @impl true
+  def head(url, headers, options) do
+    # Return {:ok, {status, headers}} or {:error, reason}
+  end
+end
+```
+
+### Using Hackney (Legacy)
+
+If you need to continue using Hackney, you can configure it explicitly:
+
+```elixir
+# mix.exs
+defp deps do
+  [
+    {:tzdata, "~> 1.2"},
+    {:hackney, "~> 1.0"}
+  ]
+end
+
+# config/config.exs
+config :tzdata, http_client: Tzdata.HTTPClient.Hackney
+```
+
+Note: Hackney has known security vulnerabilities and is less actively maintained than Req/Finch.
 
 ## Documentation
 
