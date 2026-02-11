@@ -17,5 +17,27 @@ defmodule Tzdata.HTTPClient.ReqTest do
       assert is_binary(body)
       assert body =~ "httpbin"
     end
+
+    test "follows redirects when follow_redirect is true" do
+      url = "https://httpbin.org/redirect/1"
+      headers = []
+      options = [follow_redirect: true]
+
+      assert {:ok, {status, response_headers, body}} = ReqClient.get(url, headers, options)
+      assert status == 200
+      assert is_list(response_headers)
+      assert is_binary(body)
+    end
+
+    test "does not follow redirects when follow_redirect is false" do
+      url = "https://httpbin.org/redirect/1"
+      headers = []
+      options = [follow_redirect: false]
+
+      assert {:ok, {status, response_headers, _body}} = ReqClient.get(url, headers, options)
+      assert status in [301, 302, 307, 308]
+      # Should have location header
+      assert Enum.any?(response_headers, fn {k, _v} -> String.downcase(k) == "location" end)
+    end
   end
 end
