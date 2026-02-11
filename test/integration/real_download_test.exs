@@ -21,10 +21,10 @@ defmodule Tzdata.Integration.RealDownloadTest do
   end
 
   describe "HTTP client behavior compatibility" do
-    test "DataLoader.http_client/0 returns Finch client" do
-      # Access the configuration to verify Finch is set as default
+    test "DataLoader.http_client/0 returns Req client" do
+      # Access the configuration to verify Req is set as default
       http_client = Application.get_env(:tzdata, :http_client)
-      assert http_client == Tzdata.HTTPClient.Finch
+      assert http_client == Tzdata.HTTPClient.Req
     end
   end
 end
