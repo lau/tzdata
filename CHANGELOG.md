@@ -12,11 +12,9 @@
   - Default `:http_client` config changed to `Tzdata.HTTPClient.Req`
   - Users who need Hackney can still configure it explicitly (see README)
   - Hackney implementation remains available for backward compatibility
-  - Req provides redirect handling, retries, and better error handling out-of-the-box
-  - No native dependencies required (Brotli compression is optional and not used)
 
 ### Added
-- New `Tzdata.HTTPClient.Req` implementation with full SSL verification
+- New `Tzdata.HTTPClient.Req` implementation
 
 ### Fixed
 - Pattern matching bug in `DataLoader.do_latest_file_size_by_head/1` to

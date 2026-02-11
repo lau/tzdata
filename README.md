@@ -99,34 +99,7 @@ using version ~> 0.5.20
 
 ## HTTP Client
 
-Tzdata uses Req (via the Finch HTTP client) for HTTPS requests to get new updates. Req provides secure HTTPS connections with proper SSL certificate verification when downloading new tzdata releases from IANA.
-
-### Custom HTTP Client
-
-If you want to use a different HTTP client, you can configure it in your application:
-
-```elixir
-# config/config.exs
-config :tzdata, http_client: MyApp.CustomHTTPClient
-```
-
-Your custom client must implement the `Tzdata.HTTPClient` behaviour:
-
-```elixir
-defmodule MyApp.CustomHTTPClient do
-  @behaviour Tzdata.HTTPClient
-
-  @impl true
-  def get(url, headers, options) do
-    # Return {:ok, {status, headers, body}} or {:error, reason}
-  end
-
-  @impl true
-  def head(url, headers, options) do
-    # Return {:ok, {status, headers}} or {:error, reason}
-  end
-end
-```
+Tzdata uses Req (via the Finch HTTP client) for HTTPS requests to get new updates.
 
 ### Using Hackney (Legacy)
 
