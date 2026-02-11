@@ -44,7 +44,7 @@ defmodule Tzdata.Mixfile do
     [
       autoupdate: :enabled,
       data_dir: nil,
-      http_client: Tzdata.HTTPClient.Finch
+      http_client: Tzdata.HTTPClient.Req
     ]
   end
 
