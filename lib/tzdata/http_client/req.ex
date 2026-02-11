@@ -25,8 +25,14 @@ defmodule Tzdata.HTTPClient.Req do
   end
 
   @impl true
-  def head(_url, _headers, _options) do
-    # Stub for now - will implement in Task 4
-    {:error, :not_implemented}
+  def head(url, headers, _options) do
+    case Req.request(method: :head, url: url, headers: headers) do
+      {:ok, %Req.Response{status: status, headers: response_headers}} ->
+        headers_list = Enum.map(response_headers, fn {k, v} -> {k, List.first(v) || v} end)
+        {:ok, {status, headers_list}}
+
+      {:error, reason} ->
+        {:error, reason}
+    end
   end
 end

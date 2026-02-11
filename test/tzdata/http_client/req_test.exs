@@ -40,4 +40,24 @@ defmodule Tzdata.HTTPClient.ReqTest do
       assert Enum.any?(response_headers, fn {k, _v} -> String.downcase(k) == "location" end)
     end
   end
+
+  describe "head/3" do
+    test "successfully performs HEAD request" do
+      url = "https://httpbin.org/get"
+      headers = []
+      options = []
+
+      assert {:ok, {status, response_headers}} = ReqClient.head(url, headers, options)
+      assert status == 200
+      assert is_list(response_headers)
+    end
+
+    test "returns error for invalid URL" do
+      url = "https://this-domain-does-not-exist-12345.com"
+      headers = []
+      options = []
+
+      assert {:error, _reason} = ReqClient.head(url, headers, options)
+    end
+  end
 end
