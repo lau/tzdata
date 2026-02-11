@@ -39,6 +39,17 @@ defmodule Tzdata.HTTPClient.ReqTest do
       # Should have location header
       assert Enum.any?(response_headers, fn {k, _v} -> String.downcase(k) == "location" end)
     end
+
+    test "sends custom headers in request" do
+      url = "https://httpbin.org/headers"
+      headers = [{"X-Custom-Header", "test-value"}]
+      options = []
+
+      assert {:ok, {status, _response_headers, body}} = ReqClient.get(url, headers, options)
+      assert status == 200
+      assert body =~ "X-Custom-Header"
+      assert body =~ "test-value"
+    end
   end
 
   describe "head/3" do
