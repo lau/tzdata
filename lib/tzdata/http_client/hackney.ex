@@ -6,8 +6,7 @@ defmodule Tzdata.HTTPClient.Hackney do
   if Code.ensure_loaded?(:hackney) do
     @impl true
     def get(url, headers, options) do
-      with {:ok, status, headers, client_ref} <- :hackney.get(url, headers, "", options),
-           {:ok, body} <- :hackney.body(client_ref) do
+      with {:ok, status, headers, body} <- :hackney.get(url, headers, "", options) do
         {:ok, {status, headers, body}}
       end
     end
@@ -28,7 +27,7 @@ defmodule Tzdata.HTTPClient.Hackney do
     In order to use the built-in adapter based on Hackney HTTP client, add the
     following to your mix.exs dependencies list:
 
-        {:hackney, "~> 1.0"}
+        {:hackney, "~> 4.0"}
 
     See README for more information.
     """
