@@ -370,15 +370,15 @@ defmodule Tzdata.PeriodBuilder do
   end
 
   def datetime_to_utc({datetime, modifier}, _, _) when modifier == :utc do
-    :calendar.datetime_to_gregorian_seconds(datetime)
+    TzUtil.datetime_to_gregorian_seconds(datetime)
   end
 
   def datetime_to_utc({datetime, modifier}, utc_off, _) when modifier == :standard do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
+    TzUtil.datetime_to_gregorian_seconds(datetime) - utc_off
   end
 
   def datetime_to_utc({datetime, modifier}, utc_off, std_off) when modifier == :wall do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
+    TzUtil.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
   end
 
   def standard_time_from_utc(:min, _), do: :min
