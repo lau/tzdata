@@ -1,5 +1,13 @@
 # Changelog for Tzdata
 
+### Fixed
+
+- Fix :calendar crash on OTP 29 for IANA "24:00" transition times (Patrick Olsen)
+
+### Changed
+
+- tzdata release version shipped with this library is now 2026b instead of 2025a.
+
 ## [1.1.3] - 2025-03-05
 
 ### Fixed
