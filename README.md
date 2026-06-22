@@ -97,9 +97,28 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
-## Hackney dependency and security
+## HTTP Client
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Tzdata uses Req (via the Finch HTTP client) for HTTPS requests to get new updates.
+
+### Using Hackney (Legacy)
+
+If you need to continue using Hackney, you can configure it explicitly:
+
+```elixir
+# mix.exs
+defp deps do
+  [
+    {:tzdata, "~> 1.2"},
+    {:hackney, "~> 1.0"}
+  ]
+end
+
+# config/config.exs
+config :tzdata, http_client: Tzdata.HTTPClient.Hackney
+```
+
+Note: Hackney has known security vulnerabilities and is less actively maintained than Req/Finch.
 
 ## Documentation
 

@@ -27,7 +27,7 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.17"},
+      {:req, "~> 0.5"},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
@@ -44,7 +44,7 @@ defmodule Tzdata.Mixfile do
     [
       autoupdate: :enabled,
       data_dir: nil,
-      http_client: Tzdata.HTTPClient.Hackney
+      http_client: Tzdata.HTTPClient.Req
     ]
   end
 
