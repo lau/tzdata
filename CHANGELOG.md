@@ -1,5 +1,7 @@
 # Changelog for Tzdata
 
+## [1.1.4] - 2026-06-22
+
 ### Fixed
 
 - Fix :calendar crash on OTP 29 for IANA "24:00" transition times (Patrick Olsen)
