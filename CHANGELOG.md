@@ -1,5 +1,9 @@
 # Changelog for Tzdata
 
+### Changed
+
+- Now supports version 4.x of hackney as well as 1.x
+
 ## [1.1.4] - 2026-06-22
 
 ### Fixed
