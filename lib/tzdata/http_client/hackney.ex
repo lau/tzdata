@@ -6,10 +6,19 @@ defmodule Tzdata.HTTPClient.Hackney do
   if Code.ensure_loaded?(:hackney) do
     @impl true
     def get(url, headers, options) do
-      with {:ok, status, headers, client_ref} <- :hackney.get(url, headers, "", options),
-           {:ok, body} <- :hackney.body(client_ref) do
+      with {:ok, status, headers, result} <- :hackney.get(url, headers, "", options),
+           {:ok, body} <- get_body(result) do
         {:ok, {status, headers, body}}
       end
+    end
+
+    defp get_body(result) when is_binary(result) do
+      # Hackney 4.x returns the body as a binary in the result from :hackney.get
+      {:ok, result}
+    end
+    defp get_body(client_ref) do
+      # Hackney 1.x returns a client_ref that we can fetch the body from
+      :hackney.body(client_ref)
     end
 
     @impl true
@@ -28,7 +37,7 @@ defmodule Tzdata.HTTPClient.Hackney do
     In order to use the built-in adapter based on Hackney HTTP client, add the
     following to your mix.exs dependencies list:
 
-        {:hackney, "~> 1.0"}
+        {:hackney, "~> 4.0"}
 
     See README for more information.
     """
