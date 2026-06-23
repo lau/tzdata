@@ -24,9 +24,9 @@ defmodule Tzdata.LeapSecParser do
     |> organize_into_map
   end
 
-  @expiry_line_regex ~r/\#\@[\s]+(?<expiry_timestamp>[\d]+)/
   defp uncomment_expiry_line(line) do
-    map = Regex.named_captures(@expiry_line_regex, line)
+    expiry_line_regex = ~r/\#\@[\s]+(?<expiry_timestamp>[\d]+)/
+    map = Regex.named_captures(expiry_line_regex, line)
     if map do
       "#{map["expiry_timestamp"]}"
     else
@@ -34,9 +34,9 @@ defmodule Tzdata.LeapSecParser do
     end
   end
 
-  @line_regex ~r/(?<ntp_timestamp>[\d]+)[\s]+(?<tai_diff>[^\s]+)/
   defp process_line(line) do
-    map = Regex.named_captures(@line_regex, line)
+    line_regex = ~r/(?<ntp_timestamp>[\d]+)[\s]+(?<tai_diff>[^\s]+)/
+    map = Regex.named_captures(line_regex, line)
     h_process_line(map, line)
   end
   defp h_process_line(_matches_leap_line_regex = nil, line) do
