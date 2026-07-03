@@ -33,7 +33,9 @@ defmodule Tzdata.PeriodBuilderTest do
 
   def convert(utc) do
     case utc do
-      atom when is_atom(utc) -> atom
+      atom when is_atom(utc) ->
+        atom
+
       utc ->
         :calendar.gregorian_seconds_to_datetime(utc)
         |> NaiveDateTime.from_erl!()
@@ -41,29 +43,38 @@ defmodule Tzdata.PeriodBuilderTest do
   end
 
   def test_for_overlaps(map, location) do
-    result = calc_periods(map, location)
-    |> Enum.reduce_while(nil, fn period, last ->
-      %{from: %{utc: from_utc}, until: %{utc: until_utc}, zone_abbr: zone_abbr} = period
-      # preconditions
-      assert from_utc != :max # period can't start at :max
-      assert until_utc != :min # period can't finish at :min
-      assert from_utc == :min || until_utc == :max || from_utc < until_utc,
-        "#{location}: #{convert(from_utc)}UTC >= #{convert(until_utc)}UTC" # 'from' must precede 'until' time
-      case last do
-        nil -> {:cont, {:ok, period}}
-        {:ok, last} ->
-          # check if this period overlaps with prior period
-          if last.until.utc != from_utc do
-            {:halt, {:error,
-              "Location #{location}: #{convert(last.from.utc)}UTC..#{convert(last.until.utc)}UTC #{last.zone_abbr}"
-              <> "... is non-sequential with ..."
-              <> "#{convert(from_utc)}UTC..#{convert(until_utc)}UTC #{zone_abbr}"
-            }}
-          else
+    result =
+      calc_periods(map, location)
+      |> Enum.reduce_while(nil, fn period, last ->
+        %{from: %{utc: from_utc}, until: %{utc: until_utc}, zone_abbr: zone_abbr} = period
+        # preconditions
+        # period can't start at :max
+        assert from_utc != :max
+        # period can't finish at :min
+        assert until_utc != :min
+
+        assert from_utc == :min || until_utc == :max || from_utc < until_utc,
+               # 'from' must precede 'until' time
+               "#{location}: #{convert(from_utc)}UTC >= #{convert(until_utc)}UTC"
+
+        case last do
+          nil ->
             {:cont, {:ok, period}}
-          end
-      end
-    end)
+
+          {:ok, last} ->
+            # check if this period overlaps with prior period
+            if last.until.utc != from_utc do
+              {:halt,
+               {:error,
+                "Location #{location}: #{convert(last.from.utc)}UTC..#{convert(last.until.utc)}UTC #{last.zone_abbr}" <>
+                  "... is non-sequential with ..." <>
+                  "#{convert(from_utc)}UTC..#{convert(until_utc)}UTC #{zone_abbr}"}}
+            else
+              {:cont, {:ok, period}}
+            end
+        end
+      end)
+
     assert {:ok, _last} = result
   end
 
@@ -72,7 +83,10 @@ defmodule Tzdata.PeriodBuilderTest do
       {:ok, map} = Tzdata.BasicDataMap.from_single_file_in_dir(@fixtures_dir, "rule_overlap")
       {:ok, %{map: map}}
     end
-    test "will handle coincidence of a rule time change with a subsequent time change", %{map: map} do
+
+    test "will handle coincidence of a rule time change with a subsequent time change", %{
+      map: map
+    } do
       [
         "America/Whitehorse",
         "America/Santiago",
@@ -83,13 +97,13 @@ defmodule Tzdata.PeriodBuilderTest do
         "Africa/Cairo",
         "America/Argentina/Buenos_Aires"
       ]
-      |> Enum.each(&(test_for_overlaps(map, &1)))
+      |> Enum.each(&test_for_overlaps(map, &1))
     end
   end
 
   test "source data has no time period overlaps", %{map: map} do
     map.zone_list
-    |> Enum.each(&(test_for_overlaps(map, &1)))
+    |> Enum.each(&test_for_overlaps(map, &1))
   end
 
   test "can calculate for zones with one line", %{map: map} do
