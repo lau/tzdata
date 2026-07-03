@@ -28,7 +28,7 @@ defmodule Tzdata.HTTPClient.Hackney do
     In order to use the built-in adapter based on Hackney HTTP client, add the
     following to your mix.exs dependencies list:
 
-        {:hackney, "~> 1.0"}
+        {:hackney, "~> 4.4"}
 
     See README for more information.
     """
