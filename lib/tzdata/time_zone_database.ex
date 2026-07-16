@@ -1,7 +1,7 @@
 defmodule Tzdata.TimeZoneDatabase do
   @behaviour Calendar.TimeZoneDatabase
   @moduledoc """
-  Module for interfacing with the standard library time zone related functions of Elixir 1.8+.
+  Module for interfacing with the standard library time zone related functions of Elixir 1.16+.
 
   Implements the `Calendar.TimeZoneDatabase` behaviour.
   """

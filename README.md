@@ -23,7 +23,7 @@ iex> Tzdata.tzdata_version
 
 ## Getting started
 
-To use the Tzdata library with Elixir 1.8+, add it to the dependencies in your mix file:
+To use the Tzdata library with Elixir 1.16+, add it to the dependencies in your mix file:
 
 ```elixir
 defp deps do

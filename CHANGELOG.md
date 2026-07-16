@@ -3,6 +3,7 @@
 ### Changed
 
 - Now supports version 4.x of hackney as well as 1.x
+- Now requires Elixir 1.16 or greater instead of 1.9 or greater.
 
 ## [1.1.4] - 2026-06-22
 

@@ -1,8 +1,6 @@
 defmodule Tzdata.Util do
   @moduledoc false
 
-  @elixir_newer_1_12 Version.match?(System.version(), ">= 1.12.0")
-
   @doc """
     Take strings of amounts and convert them to ints of seconds.
     For instance useful for strings from TZ gmt offsets.
@@ -581,18 +579,9 @@ defmodule Tzdata.Util do
     end
   end
 
-  if @elixir_newer_1_12 do
-    # See PR #154.
-    # Elixir 1.17 and 1.18 deprecated using decreasing Ranges without explicit steps.
-    # On the other hand, older elixir versions, before 1.12, don't know the `first..last//-1` syntax.
-    # As long as we want to support those versions, we need to compile conditionally.
-
-    defp decreasing_range(upper, lower) when upper >= lower do
-      upper..lower//-1
-    end
-  else
-    defp decreasing_range(upper, lower) when upper >= lower do
-      upper..lower
-    end
+  # See PR #154. The explicit `//-1` step avoids Elixir 1.17+ deprecation
+  # warnings on decreasing ranges without steps.
+  defp decreasing_range(upper, lower) when upper >= lower do
+    upper..lower//-1
   end
 end
