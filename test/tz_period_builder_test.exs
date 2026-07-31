@@ -472,6 +472,78 @@ defmodule Tzdata.PeriodBuilderTest do
     assert invalid_periods == []
   end
 
+  describe "zone line whose rules end before the zone line does (tzdata 2026c Morocco)" do
+    setup do
+      {:ok, map} = Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "morocco_2026c")
+      {:ok, %{map: map}}
+    end
+
+    # In 2026c, Morocco's DST rules stop in March 2026, but the zone line using them
+    # runs until 20 September 2026, when Morocco switches to permanent UTC. Previously
+    # the builder ended the zone line at the last rule transition (March), dropping the
+    # +01 span from March to September and starting permanent UTC six months too early.
+    test "keeps the +01 span after the last rule and switches to permanent UTC on 2026-09-20", %{map: map} do
+      for zone <- ["Africa/Casablanca", "Africa/El_Aaiun"] do
+        [ramadan, west, permanent] = calc_periods(map, zone) |> Enum.take(-3)
+
+        # Ramadan 2026: back to +00 until the last Morocco rule fires
+        assert ramadan.utc_off + ramadan.std_off == 0
+        assert ramadan.until.utc == ~G[2026-03-22T02:00:00]
+
+        # The previously-dropped span: +01 from the last rule until the zone line ends
+        assert west == %{
+                 std_off: 0,
+                 utc_off: 3600,
+                 zone_abbr: "+01",
+                 from: %{
+                   utc: ~G[2026-03-22T02:00:00],
+                   standard: ~G[2026-03-22T03:00:00],
+                   wall: ~G[2026-03-22T03:00:00]
+                 },
+                 until: %{
+                   utc: ~G[2026-09-20T01:00:00],
+                   standard: ~G[2026-09-20T02:00:00],
+                   wall: ~G[2026-09-20T02:00:00]
+                 }
+               }
+
+        # Permanent UTC from the zone line's end, forever
+        assert permanent == %{
+                 std_off: 0,
+                 utc_off: 0,
+                 zone_abbr: "00",
+                 from: %{
+                   utc: ~G[2026-09-20T01:00:00],
+                   standard: ~G[2026-09-20T01:00:00],
+                   wall: ~G[2026-09-20T01:00:00]
+                 },
+                 until: %{utc: :max, standard: :max, wall: :max}
+               }
+      end
+    end
+
+    test "reports +01 (not UTC) in the middle of the dropped span", %{map: map} do
+      # 2026-06-15T12:00:00 UTC falls between the last rule (March) and the switch (September).
+      instant = ~G[2026-06-15T12:00:00]
+
+      for zone <- ["Africa/Casablanca", "Africa/El_Aaiun"] do
+        period =
+          calc_periods(map, zone)
+          |> Enum.find(fn p ->
+            p.from.utc != :min and p.until.utc != :max and
+              p.from.utc <= instant and instant < p.until.utc
+          end)
+
+        assert period.utc_off + period.std_off == 3600
+      end
+    end
+
+    test "produces no overlapping or backwards periods", %{map: map} do
+      test_for_overlaps(map, "Africa/Casablanca")
+      test_for_overlaps(map, "Africa/El_Aaiun")
+    end
+  end
+
   test "Dublin with negative DST is handled correctly", %{map: map} do
     periods = calc_periods(map, "Europe/Dublin")
 
