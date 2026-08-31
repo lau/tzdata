@@ -5,10 +5,17 @@ defmodule Tzdata.App do
 
   def start(_type, _args) do
     children = [Tzdata.EtsHolder]
-    children = case Application.fetch_env(:tzdata, :autoupdate) do
-      {:ok, :enabled} -> children ++ [Tzdata.ReleaseUpdater]
-      {:ok, :disabled} -> children
-    end
+
+    children =
+      case Application.fetch_env!(:tzdata, :autoupdate) do
+        :enabled ->
+          # Getting the HTTP client also ensures that it exists and raises if not.
+          Tzdata.Util.http_client!()
+          children ++ [Tzdata.ReleaseUpdater]
+
+        :disabled ->
+          children
+      end
 
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 

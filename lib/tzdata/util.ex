@@ -581,6 +581,47 @@ defmodule Tzdata.Util do
     end
   end
 
+  def http_client! do
+    case Application.get_env(:tzdata, :http_client) do
+      nil ->
+        cond do
+          Code.ensure_loaded?(Tzdata.HTTPClient.Req) -> Tzdata.HTTPClient.Req
+          Code.ensure_loaded?(Tzdata.HTTPClient.Hackney) -> Tzdata.HTTPClient.Hackney
+          true -> nil
+        end
+
+      module ->
+        if Code.ensure_loaded?(module) do
+          module
+        end
+    end
+    |> check_http_client!()
+  end
+
+  defp check_http_client!(module) do
+    if !(module && Code.ensure_loaded?(module)) do
+      raise """
+      missing dependency (or custom HTTP client)
+
+      Tzdata requires a HTTP client in order to automatically update timezone
+      database.
+
+      In order to use a built-in HTTP Client adapter, add the
+      following to your mix.exs dependencies list:
+
+          {:req, "~> 0.7"}
+
+      or
+
+          {:hackney, "~> 4.0"}
+
+      See README for more information, including how to use a custom HTTP Client.
+      """
+    end
+
+    module
+  end
+
   if @elixir_newer_1_12 do
     # See PR #154.
     # Elixir 1.17 and 1.18 deprecated using decreasing Ranges without explicit steps.

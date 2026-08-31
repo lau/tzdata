@@ -1,8 +1,7 @@
 Tzdata
 ======
 
-[![Build
-Status](https://travis-ci.org/lau/tzdata.svg?branch=master)](https://travis-ci.org/lau/tzdata)
+[![Build Status](https://github.com/lau/tzdata/actions/workflows/ci.yml/badge.svg)](https://github.com/lau/tzdata/actions/workflows/ci.yml)
 [![Hex.pm version](https://img.shields.io/hexpm/v/tzdata.svg)](http://hex.pm/packages/tzdata)
 [![Hex.pm downloads](https://img.shields.io/hexpm/dt/tzdata.svg)](https://hex.pm/packages/tzdata)
 
@@ -23,13 +22,23 @@ iex> Tzdata.tzdata_version
 
 ## Getting started
 
-To use the Tzdata library with Elixir 1.8+, add it to the dependencies in your mix file:
+To use the Tzdata library with Elixir 1.15+, add it to the dependencies in your mix file.
+Tzdata also needs an HTTP client to download timezone data updates: add either
+[Req](https://hex.pm/packages/req) or [Hackney](https://hex.pm/packages/hackney)
+(see the "HTTP client" section below):
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 1.1"},  ]
+  [
+    {:tzdata, "~> 1.2"},
+    {:req, "~> 0.7"},
+  ]
 end
 ```
+
+Instead of Req, you can use `{:hackney, "~> 1.17 or ~> 4.0"}`. If automatic data
+updates are disabled (see the "Automatic data updates" section below), no HTTP
+client is needed.
 
 In your application you can choose to globally configure Elixir to use Tzdata.
 This can be done by putting the following line in the config file of your application:
@@ -97,9 +106,38 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
-## Hackney dependency and security
+## HTTP client
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Tzdata uses an HTTP client to poll IANA for new timezone data releases and download them.
+Both [Req](https://hex.pm/packages/req) and [Hackney](https://hex.pm/packages/hackney) are
+supported out of the box as optional dependencies — add one of them to your mix file:
+
+```elixir
+{:req, "~> 0.7"}
+```
+
+or
+
+```elixir
+{:hackney, "~> 1.17 or ~> 4.0"}
+```
+
+If both are present, Req is preferred. If neither is available and automatic data updates
+are enabled, an error is raised when Tzdata tries to fetch updates.
+
+The client can also be selected explicitly with the `http_client` config option:
+
+```elixir
+config :tzdata, :http_client, Tzdata.HTTPClient.Hackney
+```
+
+The same option can be used to supply a custom client: any module implementing the
+`Tzdata.HTTPClient` behaviour (its `get/3` and `head/3` callbacks).
+
+An HTTP client that verifies SSL certificates is used instead of Erlang's built in
+HTTP client `httpc`, because `httpc` does not verify SSL certificates when doing
+HTTPS requests. Req and Hackney verify the certificate of IANA when getting new
+tzdata releases from IANA.
 
 ## Documentation
 
