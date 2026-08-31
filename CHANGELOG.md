@@ -1,5 +1,11 @@
 # Changelog for Tzdata
 
+### Fixed
+
+- Fix Africa/Casablanca and Africa/El_Aaiun switching to permanent UTC six
+  months early in tzdata 2026c, and similar errors in some historical
+  transitions, caused by a zone line whose rules end before the line does.
+
 ### Changed
 
 - Now supports version 4.x of hackney as well as 1.x
