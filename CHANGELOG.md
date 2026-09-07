@@ -1,5 +1,7 @@
 # Changelog for Tzdata
 
+## [1.1.5] - 2026-09-06
+
 ### Fixed
 
 - Fix Africa/Casablanca and Africa/El_Aaiun switching to permanent UTC six
@@ -8,6 +10,7 @@
 
 ### Changed
 
+- tzdata release version shipped with this library is now 2026c instead of 2026b.
 - Now supports version 4.x of hackney as well as 1.x
 
 ## [1.1.4] - 2026-06-22
