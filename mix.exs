@@ -19,7 +19,7 @@ defmodule Tzdata.Mixfile do
 
   def application do
     [
-      extra_applications: [:logger],
+      extra_applications: [:logger, :inets, :ssl],
       env: env(),
       mod: {Tzdata.App, []}
     ]
@@ -27,7 +27,7 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.17 or ~> 4.0"},
+      {:hackney, "~> 1.17 or ~> 4.0", optional: true},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ]
   end
@@ -43,8 +43,7 @@ defmodule Tzdata.Mixfile do
   defp env do
     [
       autoupdate: :enabled,
-      data_dir: nil,
-      http_client: Tzdata.HTTPClient.Hackney
+      data_dir: nil
     ]
   end
 

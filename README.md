@@ -101,6 +101,50 @@ using version ~> 0.5.20
 
 Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
 
+### New unreleased feature
+
+The following describes an unreleased change: Hackney is becoming an
+optional dependency. This section documents how it will work once
+released; until then, in the released version, Hackney is still a
+required dependency as described above.
+
+Tzdata needs to do HTTPS requests in order to check for and download new
+tzdata releases from IANA, and it takes care to verify the certificate of
+the server it talks to.
+
+By default, if you don't configure `:http_client` yourself, Tzdata picks
+one automatically:
+
+1. If Erlang's built-in `:httpc` client can verify certificates on the
+   running Erlang/OTP version — i.e. `:public_key.cacerts_get/0` is
+   available (OTP 25+) and actually returns the operating system's trusted
+   CA certificates — Tzdata uses it. This requires no extra dependencies.
+2. Otherwise, if Hackney is present as a dependency, Tzdata uses
+   `Tzdata.HTTPClient.Hackney` instead.
+3. Otherwise, Tzdata falls back to the `:httpc` client anyway, but since it
+   cannot verify certificates it will skip automatic updates and log a
+   warning rather than download without verification.
+
+So on Erlang/OTP 25+ you don't need Hackney at all. On older Erlang/OTP
+versions, add Hackney (or another HTTP client) as a dependency and Tzdata
+will pick it up automatically — or configure it explicitly:
+
+```elixir
+defp deps do
+  [
+    {:tzdata, "~> 1.1"},
+    {:hackney, "~> 1.17 or ~> 4.0"}
+  ]
+end
+```
+
+```elixir
+config :tzdata, :http_client, Tzdata.HTTPClient.Hackney
+```
+
+A different HTTP client can also be plugged in by implementing the
+`Tzdata.HTTPClient` behaviour and configuring `:http_client` accordingly.
+
 ## Documentation
 
 Documentation can be found at http://hexdocs.pm/tzdata/

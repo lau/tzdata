@@ -6,6 +6,8 @@ defmodule Tzdata.HTTPClient.Hackney do
   if Code.ensure_loaded?(:hackney) do
     @impl true
     def get(url, headers, options) do
+      ensure_started!()
+
       with {:ok, status, headers, result} <- :hackney.get(url, headers, "", options),
            {:ok, body} <- get_body(result) do
         {:ok, {status, headers, body}}
@@ -23,8 +25,21 @@ defmodule Tzdata.HTTPClient.Hackney do
 
     @impl true
     def head(url, headers, options) do
+      ensure_started!()
+
       with {:ok, status, headers} <- :hackney.head(url, headers, "", options) do
         {:ok, {status, headers}}
+      end
+    end
+
+    # Hackney is an optional dependency of Tzdata, so it is not automatically
+    # included in Tzdata's own `:applications` list and won't be started
+    # just because it's compiled and available. Start it lazily here instead
+    # of requiring users to add `:hackney` to their own `extra_applications`.
+    defp ensure_started! do
+      case Application.ensure_all_started(:hackney) do
+        {:ok, _apps} -> :ok
+        {:error, reason} -> raise "failed to start :hackney application: #{inspect(reason)}"
       end
     end
   else
