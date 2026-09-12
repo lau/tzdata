@@ -1,5 +1,18 @@
 # Changelog for Tzdata
 
+## Unreleased
+
+### Changed
+
+- Hackney is no longer a mandatory dependency. When `:http_client` isn't
+  configured explicitly, Tzdata now automatically picks the best available
+  HTTP client: the built-in `:httpc`, verifying certificates via
+  `:public_key.cacerts_get/0` (the OS-trusted CA bundle), when that's
+  usable (Erlang/OTP 25+); otherwise Hackney, if it's present as a
+  dependency; otherwise `:httpc` is still used but automatic updates are
+  skipped with a warning rather than downloading without verification. See
+  the README's "HTTP client and security" section for details.
+
 ## [1.1.5] - 2026-09-06
 
 ### Fixed
