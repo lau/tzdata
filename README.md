@@ -97,7 +97,16 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
-## HTTP client and security
+## Hackney dependency and security
+
+Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+
+### New unreleased feature
+
+The following describes an unreleased change: Hackney is becoming an
+optional dependency. This section documents how it will work once
+released; until then, in the released version, Hackney is still a
+required dependency as described above.
 
 Tzdata needs to do HTTPS requests in order to check for and download new
 tzdata releases from IANA, and it takes care to verify the certificate of
