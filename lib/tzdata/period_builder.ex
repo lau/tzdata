@@ -12,7 +12,32 @@ defmodule Tzdata.PeriodBuilder do
 
   def calc_periods(btz_data, zone_name) do
     {:ok, zone} = zone(btz_data, zone_name)
-    calc_periods(btz_data, zone.zone_lines, :min, Map.get(hd(zone.zone_lines), :rules), "")
+
+    btz_data
+    |> calc_periods(zone.zone_lines, :min, Map.get(hd(zone.zone_lines), :rules), nil)
+    |> merge_redundant_periods()
+  end
+
+  # A zone line boundary (or a rule taking effect) doesn't always produce an
+  # observable change: e.g. a zone line can switch from a fixed "CST" format
+  # to a named rule set formatted as "C%sT" that, at that point in time,
+  # isn't observing DST yet and so still resolves to "CST" with the same UTC
+  # offset. Adjacent periods that are identical in every way that matters to
+  # an observer (abbreviation and offsets) are merged into one, so a period
+  # boundary always corresponds to a real, observable transition.
+  defp merge_redundant_periods([a, b | rest]) do
+    if mergeable?(a, b) do
+      merge_redundant_periods([%{a | until: b.until} | rest])
+    else
+      [a | merge_redundant_periods([b | rest])]
+    end
+  end
+
+  defp merge_redundant_periods(periods), do: periods
+
+  defp mergeable?(a, b) do
+    a.until.utc == b.from.utc and a.zone_abbr == b.zone_abbr and a.std_off == b.std_off and
+      a.utc_off == b.utc_off
   end
 
   defp zone(btz_data, zone_name) do
@@ -39,7 +64,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter || "")
     }
 
     h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
@@ -134,7 +159,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter || "")
     }
 
     h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
@@ -168,7 +193,7 @@ defmodule Tzdata.PeriodBuilder do
   # At the last zone line, which should last until "max".
   # An example of this is Asia/Tokyo where at the time this is written
   # the current period starts in 1951 and is still in effect.
-  def calc_rule_periods(_btz_data, [zone_line], from, utc_off, std_off, [], _, letter) do
+  def calc_rule_periods(_btz_data, [zone_line], from, utc_off, std_off, [], zone_rules, letter) do
     from_standard_time = standard_time_from_utc(from, utc_off)
     from_wall_time = wall_time_from_utc(from, utc_off, std_off)
 
@@ -177,7 +202,7 @@ defmodule Tzdata.PeriodBuilder do
       utc_off: utc_off,
       from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
       until: %{standard: :max, wall: :max, utc: :max},
-      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
+      zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, resolve_letter(letter, zone_rules))
     }
 
     [period]
@@ -190,7 +215,7 @@ defmodule Tzdata.PeriodBuilder do
         utc_off,
         std_off,
         [],
-        _,
+        zone_rules,
         letter
       ) do
     until_utc = datetime_to_utc(Map.get(zone_line, :until), utc_off, std_off)
@@ -208,7 +233,7 @@ defmodule Tzdata.PeriodBuilder do
         utc_off: utc_off,
         from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
         until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
+        zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, resolve_letter(letter, zone_rules))
       }
 
       [ period | tail ]
@@ -305,7 +330,13 @@ defmodule Tzdata.PeriodBuilder do
           utc_off: utc_off,
           from: %{utc: from, wall: from_wall_time, standard: from_standard_time},
           until: %{standard: until_standard_time, wall: until_wall_time, utc: until_utc},
-          zone_abbr: TzUtil.period_abbrevation(zone_line.format, std_off, utc_off, letter)
+          zone_abbr:
+            TzUtil.period_abbrevation(
+              zone_line.format,
+              std_off,
+              utc_off,
+              resolve_letter(letter, zone_rules)
+            )
         }
 
     no_more_rules = rules_tail == []
@@ -375,6 +406,24 @@ defmodule Tzdata.PeriodBuilder do
             )
         end
         if period == nil, do: tail, else: [ period | tail ]
+    end
+  end
+
+  # `letter` is `nil` when no rule of the current named rule set has taken
+  # effect yet (e.g. a zone line's start predates the earliest rule in the
+  # rule set it references). In that case we fall back to the rule set's own
+  # standard-time (SAVE == 0) letter, rather than an arbitrary/blank one, so
+  # that e.g. America/Regina is "MST" (not "MT") and Antarctica/Troll is
+  # "UTC" (not "") before their first rule ever fires. Once any rule has
+  # actually applied, `letter` is always that rule's own (non-nil) letter,
+  # so this fallback never overrides a real, continuing DST/standard state.
+  defp resolve_letter(nil, zone_rules), do: default_letter(zone_rules)
+  defp resolve_letter(letter, _zone_rules), do: letter
+
+  defp default_letter(zone_rules) do
+    case zone_rules |> Enum.filter(&(&1.save == 0)) |> Enum.sort_by(& &1.from) do
+      [rule | _] -> rule.letter
+      [] -> ""
     end
   end
 

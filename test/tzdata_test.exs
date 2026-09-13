@@ -68,7 +68,6 @@ defmodule TzdataTest do
     |> Enum.map(fn(zone) -> Tzdata.periods_for_time(zone, point_in_time, :wall) end)
   end
 
-  @tag :skip
   test "Get periods for point in time far away in the future. For all timezones except Moroccan ones." do
     # roughly 150 years from now
     point_in_time = :calendar.universal_time() |> :calendar.datetime_to_gregorian_seconds |> Kernel.+(3600*24*365*150)
