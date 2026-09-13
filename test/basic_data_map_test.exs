@@ -10,8 +10,8 @@ defmodule BasicDataMapTest do
 
   test "Existing zone" do
     {:ok, map} = BasicDataMap.from_files_in_dir("test/tzdata_fixtures/source_data")
-    result = map[:zones]["Europe/Copenhagen"]
-    assert result[:name] == "Europe/Copenhagen"
+    result = map[:zones]["Europe/London"]
+    assert result[:name] == "Europe/London"
   end
 
   test "trying to get non existing zone should result in error" do

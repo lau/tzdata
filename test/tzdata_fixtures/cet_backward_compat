@@ -1,0 +1,30 @@
+# The `CET` zone and the `C-Eur` rules it used, extracted verbatim from IANA
+# tzdata's "europe" file. Through tzdata 2020a, "europe" defined `CET` as its
+# own standalone zone line (`Zone CET  1:00 C-Eur CE%sT`) with no LMT prefix,
+# applying the `C-Eur` rule from time immemorial. Starting with a later
+# release, upstream turned `CET`/`MET`/`WET`/`EET` into plain links (e.g.
+# `Link Europe/Brussels CET` in "backward") instead of standalone zone lines,
+# so a real-world zone that "starts with a named rule" (no earlier fixed
+# offset period) is no longer available in current tzdata. This fixture keeps
+# that shape locally so PeriodBuilder's handling of it stays covered.
+
+Rule	C-Eur	1916	only	-	Apr	30	23:00	1:00	S
+Rule	C-Eur	1916	only	-	Oct	 1	 1:00	0	-
+Rule	C-Eur	1917	1918	-	Apr	Mon>=15	 2:00s	1:00	S
+Rule	C-Eur	1917	1918	-	Sep	Mon>=15	 2:00s	0	-
+Rule	C-Eur	1940	only	-	Apr	 1	 2:00s	1:00	S
+Rule	C-Eur	1942	only	-	Nov	 2	 2:00s	0	-
+Rule	C-Eur	1943	only	-	Mar	29	 2:00s	1:00	S
+Rule	C-Eur	1943	only	-	Oct	 4	 2:00s	0	-
+Rule	C-Eur	1944	1945	-	Apr	Mon>=1	 2:00s	1:00	S
+Rule	C-Eur	1944	only	-	Oct	 2	 2:00s	0	-
+Rule	C-Eur	1945	only	-	Sep	16	 2:00s	0	-
+Rule	C-Eur	1977	1980	-	Apr	Sun>=1	 2:00s	1:00	S
+Rule	C-Eur	1977	only	-	Sep	lastSun	 2:00s	0	-
+Rule	C-Eur	1978	only	-	Oct	 1	 2:00s	0	-
+Rule	C-Eur	1979	1995	-	Sep	lastSun	 2:00s	0	-
+Rule	C-Eur	1981	max	-	Mar	lastSun	 2:00s	1:00	S
+Rule	C-Eur	1996	max	-	Oct	lastSun	 2:00s	0	-
+
+# Zone	NAME		STDOFF	RULES	FORMAT
+Zone	CET		1:00	C-Eur	CE%sT

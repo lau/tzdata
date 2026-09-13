@@ -33,9 +33,10 @@ defmodule LeapSecParserTest do
                %{date_time: {{2005, 12, 31}, {23, 59, 60}}, tai_diff: 33},
                %{date_time: {{2008, 12, 31}, {23, 59, 60}}, tai_diff: 34},
                %{date_time: {{2012, 6, 30}, {23, 59, 60}}, tai_diff: 35},
-               %{date_time: {{2015, 6, 30}, {23, 59, 60}}, tai_diff: 36}
+               %{date_time: {{2015, 6, 30}, {23, 59, 60}}, tai_diff: 36},
+               %{date_time: {{2016, 12, 31}, {23, 59, 60}}, tai_diff: 37}
              ],
-             valid_until: {{2016, 6, 28}, {0, 0, 0}}
+             valid_until: {{2027, 6, 28}, {0, 0, 0}}
            }
   end
 end

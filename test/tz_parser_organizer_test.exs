@@ -13,13 +13,16 @@ defmodule TzParserOrganizerTest do
   test "Rule map" do
     europe = TzParser.read_file("europe", @source_data_dir)
     rules = Organizer.rules(europe)
-    assert hd(rules["Denmark"]) == %{at: {{23, 0, 0}, :wall}, from: 1916, in: 5, letter: "S", name: "Denmark", on: "14", record_type: :rule, save: 3600, to: :only, type: "-"}
+    assert hd(rules["GB-Eire"]) == %{at: {{2, 0, 0}, :standard}, from: 1916, in: 5, letter: "BST", name: "GB-Eire", on: "21", record_type: :rule, save: 3600, to: :only, type: "-"}
   end
 
   test "Link map. Should have alias name as key. And canonical zone as value" do
     backward = TzParser.read_file("backward", @source_data_dir)
     links = Organizer.links(backward)
-    assert links["Iceland"] == "Atlantic/Reykjavik"
+    # Iceland has kept UTC year-round with no DST since 1968, same as
+    # Africa/Abidjan, so upstream tzdata links it there instead of keeping
+    # a separate Atlantic/Reykjavik zone line.
+    assert links["Iceland"] == "Africa/Abidjan"
   end
 
   # We want a list of all the zone names.

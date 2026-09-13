@@ -32,11 +32,11 @@ defmodule UtilTest do
 
   test "rules that apply for a certain year" do
     {:ok, map} = BasicDataMap.from_files_in_dir("test/tzdata_fixtures/source_data")
-    rules = map[:rules]["Denmark"]
+    rules = map[:rules]["GB-Eire"]
     assert TzUtil.rules_for_year(rules, 1800) == []
     assert TzUtil.rules_for_year(rules, 1915) |> length == 0
     assert TzUtil.rules_for_year(rules, 1916) |> length == 2
-    assert TzUtil.rules_for_year(rules, 1917) |> length == 0
+    assert TzUtil.rules_for_year(rules, 1917) |> length == 2
   end
 
   test "Time for rule applying" do

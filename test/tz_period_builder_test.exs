@@ -111,7 +111,7 @@ defmodule Tzdata.PeriodBuilderTest do
              %{
                std_off: 0,
                utc_off: 36000,
-               zone_abbr: "GMT-10",
+               zone_abbr: "+10",
                from: %{utc: :min, standard: :min, wall: :min},
                until: %{utc: :max, standard: :max, wall: :max}
              }
@@ -154,7 +154,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert cvst == %{
              std_off: 3600,
              utc_off: -7200,
-             zone_abbr: "CVST",
+             zone_abbr: "-01",
              from: %{
                utc: ~G[1942-09-01T02:00:00],
                standard: ~G[1942-09-01T00:00:00],
@@ -170,7 +170,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert cvt_2 == %{
              std_off: 0,
              utc_off: -7200,
-             zone_abbr: "CVT",
+             zone_abbr: "-02",
              from: %{
                utc: ~G[1945-10-15T01:00:00],
                standard: ~G[1945-10-14T23:00:00],
@@ -191,7 +191,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert std_1 == %{
              std_off: 0,
              utc_off: 0,
-             zone_abbr: "UTC",
+             zone_abbr: "+00",
              from: %{
                utc: ~G[2005-02-12T00:00:00],
                standard: ~G[2005-02-12T00:00:00],
@@ -207,7 +207,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert dst_1 == %{
              std_off: 7200,
              utc_off: 0,
-             zone_abbr: "CEST",
+             zone_abbr: "+02",
              from: %{
                utc: ~G[2005-03-27T01:00:00],
                standard: ~G[2005-03-27T01:00:00],
@@ -223,7 +223,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert std_2 == %{
              std_off: 0,
              utc_off: 0,
-             zone_abbr: "UTC",
+             zone_abbr: "+00",
              from: %{
                utc: ~G[2005-10-30T01:00:00],
                standard: ~G[2005-10-30T01:00:00],
@@ -353,8 +353,11 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  test "can calculate zones which start with a named rule", %{map: map} do
-    # also before GMT, so 1901-01-0T00:00:00 is actually 1900-12-31T23:00:00 UTC
+  test "can calculate zones which start with a named rule" do
+    # `CET` is no longer a standalone zone line in current tzdata (see
+    # test/tzdata_fixtures/cet_backward_compat), so it's loaded from its own
+    # fixture here instead of the shared `map`.
+    {:ok, map} = Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "cet_backward_compat")
     [cet, cest | _] = calc_periods(map, "CET")
 
     assert cet == %{
@@ -395,14 +398,14 @@ defmodule Tzdata.PeriodBuilderTest do
              utc_off: 32400,
              zone_abbr: "JDT",
              from: %{
-               wall: ~G[1951-05-06T03:00:00],
-               standard: ~G[1951-05-06T02:00:00],
-               utc: ~G[1951-05-05T17:00:00]
+               wall: ~G[1951-05-06T01:00:00],
+               standard: ~G[1951-05-06T00:00:00],
+               utc: ~G[1951-05-05T15:00:00]
              },
              until: %{
-               wall: ~G[1951-09-08T02:00:00],
-               standard: ~G[1951-09-08T01:00:00],
-               utc: ~G[1951-09-07T16:00:00]
+               wall: ~G[1951-09-09T01:00:00],
+               standard: ~G[1951-09-09T00:00:00],
+               utc: ~G[1951-09-08T15:00:00]
              }
            }
 
@@ -411,9 +414,9 @@ defmodule Tzdata.PeriodBuilderTest do
              utc_off: 32400,
              zone_abbr: "JST",
              from: %{
-               wall: ~G[1951-09-08T01:00:00],
-               standard: ~G[1951-09-08T01:00:00],
-               utc: ~G[1951-09-07T16:00:00]
+               wall: ~G[1951-09-09T00:00:00],
+               standard: ~G[1951-09-09T00:00:00],
+               utc: ~G[1951-09-08T15:00:00]
              },
              until: %{wall: :max, standard: :max, utc: :max}
            }
@@ -429,7 +432,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert Enum.at(periods, 55) == %{
              std_off: 0,
              utc_off: -10800,
-             zone_abbr: "ART",
+             zone_abbr: "-03",
              from: %{
                utc: ~G[1993-03-07T02:00:00],
                standard: ~G[1993-03-06T23:00:00],
@@ -445,7 +448,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert Enum.at(periods, 56) == %{
              std_off: 3600,
              utc_off: -14400,
-             zone_abbr: "ARST",
+             zone_abbr: "-03",
              from: %{
                utc: ~G[1999-10-03T03:00:00],
                standard: ~G[1999-10-02T23:00:00],
