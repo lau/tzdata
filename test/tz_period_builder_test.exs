@@ -184,7 +184,6 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  @tag :skip
   test "can calculate simple DST rules going into the future", %{map: map} do
     periods = calc_periods(map, "Antarctica/Troll")
     [_zzz, std_1, dst_1, std_2 | _] = periods
@@ -245,7 +244,6 @@ defmodule Tzdata.PeriodBuilderTest do
     assert [_, _] = calc_periods(map, "Africa/Abidjan")
   end
 
-  @tag :skip
   test "calculates correct abbreviation when changing no rule", %{map: map} do
     periods = calc_periods(map, "America/Chihuahua")
     # changed from static CST to CST/CDT at the start of 1996
@@ -301,7 +299,6 @@ defmodule Tzdata.PeriodBuilderTest do
              }
   end
 
-  @tag :skip
   test "can handle DST rules that aren't active for a year", %{map: map} do
     periods = calc_periods(map, "America/Regina")
     # -7:00 (no offset) in Sep 1905, since there was no Canadian DST utnil 1918
@@ -422,11 +419,14 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  @tag :skip
   test "handles DST transitions at the same time as zone transitions", %{map: map} do
     periods = calc_periods(map, "America/Argentina/Buenos_Aires")
 
-    assert Enum.at(periods, 53) == %{
+    # On 1999-10-03 the zone line's base offset changes from -3:00 to -4:00
+    # at the exact same wall-clock instant a DST rule adds back +1:00 (net
+    # offset unchanged) - real IANA data (verified via `zdump`) shows a
+    # direct -03(std) -> -03(dst) transition with no intermediate offset.
+    assert Enum.at(periods, 55) == %{
              std_off: 0,
              utc_off: -10800,
              zone_abbr: "ART",
@@ -442,7 +442,7 @@ defmodule Tzdata.PeriodBuilderTest do
              }
            }
 
-    assert Enum.at(periods, 54) == %{
+    assert Enum.at(periods, 56) == %{
              std_off: 3600,
              utc_off: -14400,
              zone_abbr: "ARST",

@@ -13,6 +13,10 @@
   skipped with a warning rather than downloading without verification. See
   the README's "HTTP client and security" section for details.
 
+### Fixed
+
+- Fix incorrect or spurious historical time zone periods (wrong or blank abbreviations before a zone's earliest rule, and redundant zero-effect periods at zone-line boundaries) affecting many zones, including America/Regina, America/Chicago, America/Edmonton, America/Inuvik, Antarctica/Troll, America/Chihuahua, America/Argentina/Buenos_Aires, Europe/Dublin, Europe/Vienna, Europe/Istanbul, and most former Soviet zones.
+
 ## [1.1.5] - 2026-09-06
 
 ### Fixed
