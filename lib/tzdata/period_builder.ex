@@ -67,7 +67,13 @@ defmodule Tzdata.PeriodBuilder do
       zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter || "")
     }
 
-    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
+    # A zone line with no rules always has std_off 0 - it never carries a
+    # meaningful "currently in effect" DST letter of its own. Whatever
+    # `letter` we received (possibly a real rule's letter, inherited from
+    # some earlier, unrelated zone line/rule set) must not be forwarded past
+    # this point: the next zone line, if it has its own rule set, needs to
+    # resolve its own default rather than inherit a stale one.
+    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, nil)
   end
 
   def calc_periods(btz_data, [zone_line_hd | zone_line_tl], from, zone_hd_rules, letter) do
@@ -135,6 +141,90 @@ defmodule Tzdata.PeriodBuilder do
     end
   end
 
+  # Like h_calc_next_zone_line/5, but for when `rule` already took effect at
+  # the exact instant (`until_utc`) the next zone line begins. We seed the
+  # next zone line's starting std_off/letter from `rule` (instead of the
+  # usual std_off=0, letter=nil).
+  #
+  # If the next zone line references the very same rule set `rule` came
+  # from, `remaining_rules_for_year` (the rules for `coincidence_year` that
+  # come chronologically after `rule` - already known to the caller, since
+  # it just finished popping rules off that same list) is reused as-is
+  # instead of re-deriving "this year's rules" from scratch. Re-deriving
+  # from scratch would re-include rules that already fired earlier in
+  # `coincidence_year` under the *old* zone line (e.g. an April DST-start
+  # rule, when `rule` itself is a later, one-off same-year rule) and apply
+  # their save/letter a second time, producing a spurious extra period -
+  # exactly the bug this whole fix is for.
+  defp h_calc_next_zone_line_with_rule(_btz_data, _until_utc, [], _rule, _coincidence_year, _remaining_rules_for_year) do
+    []
+  end
+
+  defp h_calc_next_zone_line_with_rule(
+         btz_data,
+         until_utc,
+         [next_zone_line | rest],
+         rule,
+         coincidence_year,
+         remaining_rules_for_year
+       ) do
+    case Map.get(next_zone_line, :rules) do
+      {:named_rules, rules_value} ->
+        {:ok, zone_rules} = get_rules(btz_data, rules_value)
+        utc_off = next_zone_line.gmtoff
+        max_year_to_use =
+          case Map.get(next_zone_line, :until) do
+            {{{year, _, _}, _}, _} -> year
+            nil -> @max_year
+          end
+
+        years_to_use = coincidence_year..max_year_to_use |> Enum.to_list()
+
+        same_rule_set = Enum.any?(zone_rules, &(&1.name == rule.name))
+
+        rules_for_first_year =
+          if same_rule_set do
+            remaining_rules_for_year
+          else
+            TzUtil.rules_for_year(zone_rules, coincidence_year) |> sort_rules_by_time(coincidence_year)
+          end
+
+        case rules_for_first_year do
+          [] ->
+            calc_rule_periods(
+              btz_data,
+              [next_zone_line | rest],
+              until_utc,
+              utc_off,
+              rule.save,
+              tl(years_to_use),
+              zone_rules,
+              rule.letter
+            )
+
+          rules_for_year ->
+            calc_periods_for_year(
+              btz_data,
+              [next_zone_line | rest],
+              until_utc,
+              utc_off,
+              rule.save,
+              years_to_use,
+              zone_rules,
+              rules_for_year,
+              rule.letter,
+              until_utc
+            )
+        end
+
+      _ ->
+        # The next zone line doesn't reference a named rule set, so there's
+        # no candidate rule search to deduplicate against - just hand off
+        # normally, seeded with this rule's letter.
+        calc_periods(btz_data, [next_zone_line | rest], until_utc, Map.get(next_zone_line, :rules), rule.letter)
+    end
+  end
+
   defp calc_rule_periods_h(
          btz_data,
          :amount,
@@ -162,7 +252,10 @@ defmodule Tzdata.PeriodBuilder do
       zone_abbr: TzUtil.period_abbrevation(zone_line_hd.format, std_off, utc_off, letter || "")
     }
 
-    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, letter)
+    # As with the no-rules clause above: a fixed-amount zone line has no
+    # rule-derived letter of its own, so don't forward a possibly-stale one
+    # to the next zone line.
+    h_calc_next_zone_line(btz_data, period, until_utc, zone_line_tl, nil)
   end
 
   defp calc_rule_periods_h(
@@ -314,6 +407,15 @@ defmodule Tzdata.PeriodBuilder do
     until_before_lower_limit = is_integer(lower_limit) && is_integer(until_utc) && lower_limit > until_utc
     until_utc = if until_before_lower_limit, do: lower_limit, else: until_utc
     last_included_rule = is_integer(upper_limit) && is_integer(until_utc) && upper_limit <= until_utc
+    # A rule can take effect at the exact same wall-clock instant the zone
+    # line itself ends (e.g. a country redefines its base UTC offset at the
+    # same moment a DST rule starts, so the net observed offset doesn't
+    # change - see America/Argentina/Buenos_Aires in 1999). When that
+    # happens we must hand the rule's effect (save/letter) to the next zone
+    # line instead of silently dropping it, or the next zone line will
+    # re-derive this same rule's effective time using its own (different)
+    # offset and produce a spurious extra period.
+    rule_coincides_with_boundary = last_included_rule && upper_limit == until_utc
     until_utc = if last_included_rule, do: upper_limit, else: until_utc
     # derive standard and wall time for 'until'
     until_standard_time = standard_time_from_utc(until_utc, utc_off)
@@ -343,6 +445,14 @@ defmodule Tzdata.PeriodBuilder do
     no_more_years = tl(years) == []
 
     cond do
+      # The rule fires at the exact same instant the zone line ends: hand its
+      # effect off to the next zone line rather than dropping it.
+      rule_coincides_with_boundary ->
+        tail =
+          h_calc_next_zone_line_with_rule(btz_data, until_utc, zone_line_tl, rule, year, rules_tail)
+
+        if period == nil, do: tail, else: [period | tail]
+
       # If we've hit the upper time boundary of this zone line, we do not need to examine any more
       # rules for this rule set.
       last_included_rule ->

@@ -419,25 +419,14 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  # Known bug, not yet fixed: on 1999-10-03 the zone line's base offset
-  # changes from -3:00 to -4:00 at the exact same wall-clock instant a DST
-  # rule adds back +1:00 (net offset unchanged). Real IANA data (verified
-  # via `zdump`) shows a direct -03(std) -> -03(dst) transition with no
-  # intermediate offset, but PeriodBuilder computes the new zone line's
-  # first rule using its own base offset before any of its rules have
-  # fired, producing a spurious extra 1-hour period at -4:00 that
-  # shouldn't exist. Fixing this requires reasoning about which offset
-  # governs a rule's wall-clock time across a zone-line boundary when a
-  # rule and a zone-line change coincide - real "core algorithm" territory,
-  # which is exactly the kind of change that caused the Dublin regression
-  # this file's other skips date back to (see git blame). Left skipped
-  # rather than risk a similar regression without much more extensive
-  # verification across the whole real tzdata set.
-  @tag :skip
   test "handles DST transitions at the same time as zone transitions", %{map: map} do
     periods = calc_periods(map, "America/Argentina/Buenos_Aires")
 
-    assert Enum.at(periods, 53) == %{
+    # On 1999-10-03 the zone line's base offset changes from -3:00 to -4:00
+    # at the exact same wall-clock instant a DST rule adds back +1:00 (net
+    # offset unchanged) - real IANA data (verified via `zdump`) shows a
+    # direct -03(std) -> -03(dst) transition with no intermediate offset.
+    assert Enum.at(periods, 55) == %{
              std_off: 0,
              utc_off: -10800,
              zone_abbr: "ART",
@@ -453,7 +442,7 @@ defmodule Tzdata.PeriodBuilderTest do
              }
            }
 
-    assert Enum.at(periods, 54) == %{
+    assert Enum.at(periods, 56) == %{
              std_off: 3600,
              utc_off: -14400,
              zone_abbr: "ARST",
