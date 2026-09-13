@@ -20,6 +20,12 @@ defmodule Tzdata.HTTPClient do
               {:ok, {status(), headers()}} | {:error, term()}
 
   @doc false
+  # Short, log-friendly name for a HTTP client module.
+  def name(Tzdata.HTTPClient.Httpc), do: "httpc"
+  def name(Tzdata.HTTPClient.Hackney), do: "hackney"
+  def name(other), do: inspect(other)
+
+  @doc false
   # Picks a HTTP client when the user has not configured one explicitly.
   # Prefers the dependency-free `:httpc`-based client when it can verify
   # certificates on the running Erlang/OTP version, falls back to Hackney

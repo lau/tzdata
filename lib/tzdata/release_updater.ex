@@ -37,7 +37,7 @@ defmodule Tzdata.ReleaseUpdater do
   end
 
   def poll_for_update do
-    Logger.debug("Tzdata polling for update.")
+    Logger.debug("Tzdata polling for update. (#{DataLoader.http_client_name()})")
 
     case loaded_tzdata_matches_newest_one?() do
       {:ok, true} ->
