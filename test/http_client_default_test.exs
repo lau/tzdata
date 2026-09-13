@@ -5,7 +5,11 @@ defmodule Tzdata.HTTPClientDefaultTest do
     if Tzdata.HTTPClient.Httpc.safe_to_use?() do
       assert Tzdata.HTTPClient.default() == Tzdata.HTTPClient.Httpc
     else
-      expected = if Code.ensure_loaded?(:hackney), do: Tzdata.HTTPClient.Hackney, else: Tzdata.HTTPClient.Httpc
+      expected =
+        if Code.ensure_loaded?(:hackney),
+          do: Tzdata.HTTPClient.Hackney,
+          else: Tzdata.HTTPClient.Httpc
+
       assert Tzdata.HTTPClient.default() == expected
     end
   end

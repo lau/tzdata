@@ -1,9 +1,10 @@
 defmodule Tzdata.HTTPClient do
-  @moduledoc false && """
-  Behaviour for HTTP client used by Tzdata.
+  @moduledoc false &&
+               """
+               Behaviour for HTTP client used by Tzdata.
 
-  See "HTTP Client" section in README.md for more information.
-  """
+               See "HTTP Client" section in README.md for more information.
+               """
 
   @type status() :: non_neg_integer()
 

@@ -535,17 +535,23 @@ defmodule Tzdata.Util do
   end
 
   defp seconds_to_percentagez_string(seconds) when is_integer(seconds) do
-    string = case rem(seconds, 3600) do
-      0 ->
-        "#{lpad_zero(floor(abs(seconds/3600.0)))}"
-      remaining_seconds ->
-        "#{lpad_zero(floor(abs(seconds/3600.0)))}"<>"#{lpad_zero(floor(abs(remaining_seconds/60)))}"
-    end
+    string =
+      case rem(seconds, 3600) do
+        0 ->
+          "#{lpad_zero(floor(abs(seconds / 3600.0)))}"
+
+        remaining_seconds ->
+          "#{lpad_zero(floor(abs(seconds / 3600.0)))}" <>
+            "#{lpad_zero(floor(abs(remaining_seconds / 60)))}"
+      end
+
     case seconds do
       seconds when seconds > 0 ->
         "+" <> "#{string}"
+
       seconds when seconds < 0 ->
         "-" <> "#{string}"
+
       _ ->
         string
     end

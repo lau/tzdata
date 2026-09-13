@@ -18,6 +18,7 @@ defmodule Tzdata.HTTPClient.Hackney do
       # Hackney 4.x returns the body as a binary in the result from :hackney.get
       {:ok, result}
     end
+
     defp get_body(client_ref) do
       # Hackney 1.x returns a client_ref that we can fetch the body from
       :hackney.body(client_ref)

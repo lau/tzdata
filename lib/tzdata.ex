@@ -31,20 +31,20 @@ defmodule Tzdata do
   zone_list provides a list of all the zone names that can be used with
   DateTime. This includes aliases.
   """
-  @spec zone_list() :: [Calendar.time_zone]
+  @spec zone_list() :: [Calendar.time_zone()]
   def zone_list, do: Tzdata.ReleaseReader.zone_and_link_list()
 
   @doc """
   Like zone_list, but excludes aliases for zones.
   """
-  @spec canonical_zone_list() :: [Calendar.time_zone]
+  @spec canonical_zone_list() :: [Calendar.time_zone()]
   def canonical_zone_list, do: Tzdata.ReleaseReader.zone_list()
 
   @doc """
   A list of aliases for zone names. For instance Europe/Jersey
   is an alias for Europe/London. Aliases are also known as linked zones.
   """
-  @spec zone_alias_list() :: [Calendar.time_zone]
+  @spec zone_alias_list() :: [Calendar.time_zone()]
   def zone_alias_list, do: Tzdata.ReleaseReader.link_list()
 
   @doc """
@@ -57,7 +57,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_exists? "Europe/Jersey"
       true
   """
-  @spec zone_exists?(String.t) :: boolean()
+  @spec zone_exists?(String.t()) :: boolean()
   def zone_exists?(name), do: Enum.member?(zone_list(), name)
 
   @doc """
@@ -69,7 +69,7 @@ defmodule Tzdata do
       iex> Tzdata.canonical_zone? "Europe/Jersey"
       false
   """
-  @spec canonical_zone?(Calendar.time_zone) :: boolean()
+  @spec canonical_zone?(Calendar.time_zone()) :: boolean()
   def canonical_zone?(name), do: Enum.member?(canonical_zone_list(), name)
 
   @doc """
@@ -81,7 +81,7 @@ defmodule Tzdata do
       iex> Tzdata.zone_alias? "Europe/London"
       false
   """
-  @spec zone_alias?(Calendar.time_zone) :: boolean()
+  @spec zone_alias?(Calendar.time_zone()) :: boolean()
   def zone_alias?(name), do: Enum.member?(zone_alias_list(), name)
 
   @doc """
@@ -90,7 +90,7 @@ defmodule Tzdata do
       iex> Tzdata.links()["Europe/Jersey"]
       "Europe/London"
   """
-  @spec links() :: %{Calendar.time_zone => Calendar.time_zone}
+  @spec links() :: %{Calendar.time_zone() => Calendar.time_zone()}
   def links, do: Tzdata.ReleaseReader.links()
 
   @doc """
@@ -98,7 +98,7 @@ defmodule Tzdata do
   time zone names. The group names mirror the file names used by the tzinfo
   database.
   """
-  @spec zone_lists_grouped() :: %{atom() => [Calendar.time_zone]}
+  @spec zone_lists_grouped() :: %{atom() => [Calendar.time_zone()]}
   def zone_lists_grouped, do: Tzdata.ReleaseReader.by_group()
 
   @doc """
@@ -109,7 +109,7 @@ defmodule Tzdata do
       Tzdata.tzdata_version
       "2014i"
   """
-  @spec tzdata_version() :: String.t
+  @spec tzdata_version() :: String.t()
   def tzdata_version, do: Tzdata.ReleaseReader.release_version()
 
   @doc """
@@ -138,12 +138,14 @@ defmodule Tzdata do
       iex> Tzdata.periods("Not existing")
       {:error, :not_found}
   """
-  @spec periods(Calendar.time_zone) :: {:ok, [time_zone_period]} | {:error, atom()}
+  @spec periods(Calendar.time_zone()) :: {:ok, [time_zone_period]} | {:error, atom()}
   def periods(zone_name) do
     {tag, p} = Tzdata.ReleaseReader.periods_for_zone_or_link(zone_name)
+
     case tag do
       :ok ->
-        mapped_p = for {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} <- p do
+        mapped_p =
+          for {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} <- p do
             %{
               std_off: std_off,
               utc_off: utc_off,
@@ -152,8 +154,11 @@ defmodule Tzdata do
               zone_abbr: zone_abbr
             }
           end
+
         {:ok, mapped_p}
-      _ -> {:error, p}
+
+      _ ->
+        {:error, p}
     end
   end
 
@@ -191,7 +196,8 @@ defmodule Tzdata do
       iex> Tzdata.periods_for_time("Europe/Copenhagen", 63594816000, :wall)
       []
   """
-  @spec periods_for_time(Calendar.time_zone, gregorian_seconds, :standard | :wall | :utc) :: [time_zone_period] | {:error, term}
+  @spec periods_for_time(Calendar.time_zone(), gregorian_seconds, :standard | :wall | :utc) ::
+          [time_zone_period] | {:error, term}
   def periods_for_time(zone_name, time_point, time_type) do
     case possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
       {:ok, periods} ->
@@ -199,7 +205,9 @@ defmodule Tzdata do
           smaller_than_or_equals(Map.get(from, time_type), time_point) &&
             bigger_than(Map.get(until, time_type), time_point)
         end
+
         do_consecutive_matching(periods, match_fn, [], false)
+
       {:error, _} = error ->
         error
     end
@@ -210,14 +218,16 @@ defmodule Tzdata do
   # remaining list.
   defp do_consecutive_matching([], _fun, [], _did_last_match), do: []
   defp do_consecutive_matching([], _fun, matched, _did_last_match), do: matched
+
   defp do_consecutive_matching(_list, _fun, matched, false) when matched != [] do
     # If there are matches and previous did not match then the matches are no
     # long consecutive. So we return the result.
-    matched |> Enum.reverse
+    matched |> Enum.reverse()
   end
-  defp do_consecutive_matching([h|t], fun, matched, _did_last_match) do
+
+  defp do_consecutive_matching([h | t], fun, matched, _did_last_match) do
     if fun.(h) == true do
-      do_consecutive_matching(t, fun, [h|matched], true)
+      do_consecutive_matching(t, fun, [h | matched], true)
     else
       do_consecutive_matching(t, fun, matched, false)
     end
@@ -225,12 +235,18 @@ defmodule Tzdata do
 
   # Use dynamic periods for points in time that are about 40 years into the future
   @years_in_the_future_where_precompiled_periods_are_used 40
-  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds {{(:calendar.universal_time()|>elem(0)|>elem(0)) + @years_in_the_future_where_precompiled_periods_are_used, 1, 1}, {0, 0, 0}}
-  defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) when time_point >= @point_from_which_to_use_dynamic_periods do
+  @point_from_which_to_use_dynamic_periods :calendar.datetime_to_gregorian_seconds(
+                                             {{(:calendar.universal_time() |> elem(0) |> elem(0)) +
+                                                 @years_in_the_future_where_precompiled_periods_are_used,
+                                               1, 1}, {0, 0, 0}}
+                                           )
+  defp possible_periods_for_zone_and_time(zone_name, time_point, time_type)
+       when time_point >= @point_from_which_to_use_dynamic_periods do
     if Tzdata.FarFutureDynamicPeriods.zone_in_30_years_in_eternal_period?(zone_name) do
       periods(zone_name)
     else
       link_status = Tzdata.ReleaseReader.links() |> Map.get(zone_name)
+
       if link_status == nil do
         Tzdata.FarFutureDynamicPeriods.periods_for_point_in_time(time_point, zone_name)
       else
@@ -238,21 +254,26 @@ defmodule Tzdata do
       end
     end
   end
+
   defp possible_periods_for_zone_and_time(zone_name, time_point, time_type) do
-    {:ok, periods} = Tzdata.ReleaseReader.periods_for_zone_time_and_type(zone_name, time_point, time_type)
-    mapped_periods = periods
-    |> Enum.sort_by(fn {_, from_utc, _, _, _, _, _, _, _, _} -> -(from_utc |> Tzdata.ReleaseReader.delimiter_to_number) end)
-    |> Enum.map(
-      fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} ->
-            %{
-              std_off: std_off,
-              utc_off: utc_off,
-              from: %{utc: f_utc, wall: f_wall, standard: f_std},
-              until: %{utc: u_utc, standard: u_std, wall: u_wall},
-              zone_abbr: zone_abbr
-            }
-          end
-    )
+    {:ok, periods} =
+      Tzdata.ReleaseReader.periods_for_zone_time_and_type(zone_name, time_point, time_type)
+
+    mapped_periods =
+      periods
+      |> Enum.sort_by(fn {_, from_utc, _, _, _, _, _, _, _, _} ->
+        -(from_utc |> Tzdata.ReleaseReader.delimiter_to_number())
+      end)
+      |> Enum.map(fn {_, f_utc, f_wall, f_std, u_utc, u_wall, u_std, utc_off, std_off, zone_abbr} ->
+        %{
+          std_off: std_off,
+          utc_off: utc_off,
+          from: %{utc: f_utc, wall: f_wall, standard: f_std},
+          until: %{utc: u_utc, standard: u_std, wall: u_wall},
+          zone_abbr: zone_abbr
+        }
+      end)
+
     {:ok, mapped_periods}
   end
 

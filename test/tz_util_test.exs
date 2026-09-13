@@ -16,12 +16,20 @@ defmodule UtilTest do
   end
 
   test "transform 'until' date-time" do
-    assert TzUtil.transform_until_datetime("1918 Nov 11 11:00u") == {{{1918,11,11}, {11,0,0}}, :utc}
-    assert TzUtil.transform_until_datetime("1940 May 20  2:00s") == {{{1940,5,20}, {2,0,0}}, :standard}
-    assert TzUtil.transform_until_datetime("1944 Sep  3") == {{{1944,9,3}, {0,0,0}}, :wall}
-    assert TzUtil.transform_until_datetime("1977") == {{{1977,1,1}, {0,0,0}}, :wall}
-    assert TzUtil.transform_until_datetime("1992 Sep lastSat 23:00") == {{{1992,9,26}, {23,0,0}}, :wall}
-    assert TzUtil.transform_until_datetime("1992 Sep lastSat") == {{{1992,9,26}, {0,0,0}}, :wall}
+    assert TzUtil.transform_until_datetime("1918 Nov 11 11:00u") ==
+             {{{1918, 11, 11}, {11, 0, 0}}, :utc}
+
+    assert TzUtil.transform_until_datetime("1940 May 20  2:00s") ==
+             {{{1940, 5, 20}, {2, 0, 0}}, :standard}
+
+    assert TzUtil.transform_until_datetime("1944 Sep  3") == {{{1944, 9, 3}, {0, 0, 0}}, :wall}
+    assert TzUtil.transform_until_datetime("1977") == {{{1977, 1, 1}, {0, 0, 0}}, :wall}
+
+    assert TzUtil.transform_until_datetime("1992 Sep lastSat 23:00") ==
+             {{{1992, 9, 26}, {23, 0, 0}}, :wall}
+
+    assert TzUtil.transform_until_datetime("1992 Sep lastSat") ==
+             {{{1992, 9, 26}, {0, 0, 0}}, :wall}
   end
 
   test "month_number_for_month_name" do
@@ -40,11 +48,35 @@ defmodule UtilTest do
   end
 
   test "Time for rule applying" do
-    rule = %{at: {{1, 0, 0}, :utc}, from: 1979, in: 9, letter: "-", name: "EU", on: "lastSun", record_type: :rule, save: 0, to: 1995, type: "-"}
-    assert TzUtil.time_for_rule(rule, 1990) == {{{1990, 9, 30}, {1,0,0}}, :utc}
+    rule = %{
+      at: {{1, 0, 0}, :utc},
+      from: 1979,
+      in: 9,
+      letter: "-",
+      name: "EU",
+      on: "lastSun",
+      record_type: :rule,
+      save: 0,
+      to: 1995,
+      type: "-"
+    }
 
-    rule = %{at: {{1, 0, 0}, :wall}, from: 1917, in: 10, letter: "-", name: "Iceland", on: "21", record_type: :rule, save: 0, to: :only, type: "-"}
-    assert TzUtil.time_for_rule(rule, 1917) == {{{1917, 10, 21}, {1,0,0}}, :wall}
+    assert TzUtil.time_for_rule(rule, 1990) == {{{1990, 9, 30}, {1, 0, 0}}, :utc}
+
+    rule = %{
+      at: {{1, 0, 0}, :wall},
+      from: 1917,
+      in: 10,
+      letter: "-",
+      name: "Iceland",
+      on: "21",
+      record_type: :rule,
+      save: 0,
+      to: :only,
+      type: "-"
+    }
+
+    assert TzUtil.time_for_rule(rule, 1917) == {{{1917, 10, 21}, {1, 0, 0}}, :wall}
   end
 
   test "datetime_to_utc handles end-of-day 24:00 transition times" do

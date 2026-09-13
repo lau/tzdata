@@ -16,9 +16,7 @@ defmodule Tzdata.DataBuilder do
       File.rm_rf(tzdata_dir)
 
       Logger.info(
-        "Downloaded tzdata release from IANA is the same version as the version currently in use (#{
-          current_version
-        })."
+        "Downloaded tzdata release from IANA is the same version as the version currently in use (#{current_version})."
       )
 
       {:error, :downloaded_version_same_as_current_version}
@@ -45,8 +43,8 @@ defmodule Tzdata.DataBuilder do
 
     map.zone_list
     |> Enum.each(fn zone_name ->
-         insert_periods_for_zone(table, map, zone_name)
-       end)
+      insert_periods_for_zone(table, map, zone_name)
+    end)
 
     # remove temporary tzdata dir
     File.rm_rf(tzdata_dir)
@@ -79,10 +77,11 @@ defmodule Tzdata.DataBuilder do
     tuple_periods =
       periods
       |> Enum.map(fn period ->
-           period_to_tuple(key, period)
-         end)
+        period_to_tuple(key, period)
+      end)
 
-    tuple_periods |> Enum.each(fn tuple_period ->
+    tuple_periods
+    |> Enum.each(fn tuple_period ->
       :ets.insert(table, tuple_period)
     end)
   end

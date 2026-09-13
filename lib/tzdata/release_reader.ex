@@ -1,17 +1,17 @@
 defmodule Tzdata.ReleaseReader do
   @moduledoc false
 
-  def rules,                  do: simple_lookup(:rules) |> hd |> elem(1)
-  def zones,                  do: simple_lookup(:zones) |> hd |> elem(1)
-  def links,                  do: simple_lookup(:links) |> hd |> elem(1)
-  def zone_list,              do: simple_lookup(:zone_list) |> hd |> elem(1)
-  def link_list,              do: simple_lookup(:link_list) |> hd |> elem(1)
-  def zone_and_link_list,     do: simple_lookup(:zone_and_link_list) |> hd |> elem(1)
+  def rules, do: simple_lookup(:rules) |> hd |> elem(1)
+  def zones, do: simple_lookup(:zones) |> hd |> elem(1)
+  def links, do: simple_lookup(:links) |> hd |> elem(1)
+  def zone_list, do: simple_lookup(:zone_list) |> hd |> elem(1)
+  def link_list, do: simple_lookup(:link_list) |> hd |> elem(1)
+  def zone_and_link_list, do: simple_lookup(:zone_and_link_list) |> hd |> elem(1)
   def archive_content_length, do: simple_lookup(:archive_content_length) |> hd |> elem(1)
-  def release_version,        do: simple_lookup(:release_version) |> hd |> elem(1)
-  def leap_sec_data,          do: simple_lookup(:leap_sec_data) |> hd |> elem(1)
-  def by_group,               do: simple_lookup(:by_group) |> hd |> elem(1)
-  def modified_at,            do: simple_lookup(:modified_at) |> hd |> elem(1)
+  def release_version, do: simple_lookup(:release_version) |> hd |> elem(1)
+  def leap_sec_data, do: simple_lookup(:leap_sec_data) |> hd |> elem(1)
+  def by_group, do: simple_lookup(:by_group) |> hd |> elem(1)
+  def modified_at, do: simple_lookup(:modified_at) |> hd |> elem(1)
 
   defp simple_lookup(key) do
     :ets.lookup(current_release_from_table() |> table_name_for_release_name, key)

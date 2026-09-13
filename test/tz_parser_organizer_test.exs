@@ -13,7 +13,19 @@ defmodule TzParserOrganizerTest do
   test "Rule map" do
     europe = TzParser.read_file("europe", @source_data_dir)
     rules = Organizer.rules(europe)
-    assert hd(rules["GB-Eire"]) == %{at: {{2, 0, 0}, :standard}, from: 1916, in: 5, letter: "BST", name: "GB-Eire", on: "21", record_type: :rule, save: 3600, to: :only, type: "-"}
+
+    assert hd(rules["GB-Eire"]) == %{
+             at: {{2, 0, 0}, :standard},
+             from: 1916,
+             in: 5,
+             letter: "BST",
+             name: "GB-Eire",
+             on: "21",
+             record_type: :rule,
+             save: 3600,
+             to: :only,
+             type: "-"
+           }
   end
 
   test "Link map. Should have alias name as key. And canonical zone as value" do
@@ -32,8 +44,8 @@ defmodule TzParserOrganizerTest do
     europe = TzParser.read_file("europe_shortened", "test/tzdata_fixtures")
     zone_list = Organizer.zone_list(europe)
     assert length(zone_list) == 21
-    assert zone_list|>hd == "Atlantic/Faroe"
-    assert zone_list|>Enum.at(20) == "WET"
+    assert zone_list |> hd == "Atlantic/Faroe"
+    assert zone_list |> Enum.at(20) == "WET"
   end
 
   # For zone links. Zone links are links to canonical zones.
@@ -43,8 +55,8 @@ defmodule TzParserOrganizerTest do
     europe = TzParser.read_file("europe_shortened", "test/tzdata_fixtures")
     link_list = Organizer.link_list(europe)
     assert length(link_list) == 4
-    assert link_list|>hd == "Europe/Busingen"
-    assert link_list|>Enum.at(3) == "Europe/Jersey"
+    assert link_list |> hd == "Europe/Busingen"
+    assert link_list |> Enum.at(3) == "Europe/Jersey"
   end
 
   # We want a list both zone and link names.
@@ -53,7 +65,7 @@ defmodule TzParserOrganizerTest do
     europe = TzParser.read_file("europe_shortened", "test/tzdata_fixtures")
     list = Organizer.zone_and_link_list(europe)
     assert length(list) == 25
-    assert list|>hd == "Atlantic/Faroe"
-    assert list|>Enum.at(15) == "Europe/Jersey"
+    assert list |> hd == "Atlantic/Faroe"
+    assert list |> Enum.at(15) == "Europe/Jersey"
   end
 end
