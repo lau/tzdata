@@ -1,9 +1,15 @@
 # Changelog for Tzdata
 
-## Unreleased
+## [1.2.0] - 2026-09-13
+
+### Added
+
+- Parse the IANA `factory` source file, adding the placeholder `Factory`
+  zone (previously omitted) to the zone list.
 
 ### Changed
 
+- Now requires Elixir 1.12 or greater instead of 1.9 or greater.
 - Hackney is no longer a mandatory dependency. When `:http_client` isn't
   configured explicitly, Tzdata now automatically picks the best available
   HTTP client: the built-in `:httpc`, verifying certificates via
@@ -12,6 +18,16 @@
   dependency; otherwise `:httpc` is still used but automatic updates are
   skipped with a warning rather than downloading without verification. See
   the README's "HTTP client and security" section for details.
+- Debug log messages for downloading new data now include the name of the
+  HTTP client in use (e.g. `httpc` or `hackney`).
+- tzdata release version shipped with this library is now 2026d instead of 2026c.
+
+### Deprecated
+
+- Hackney support is deprecated and will be removed in a future release.
+  Using `Tzdata.HTTPClient.Hackney` now logs a warning. It is strongly
+  recommended to use Erlang/OTP 25 or higher, where the built-in `:httpc`
+  client is used by default and no HTTP client dependency is needed.
 
 ### Fixed
 
