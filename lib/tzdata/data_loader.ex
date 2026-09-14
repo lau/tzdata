@@ -6,7 +6,7 @@ defmodule Tzdata.DataLoader do
   # and extract it.
   @download_url "https://data.iana.org/time-zones/tzdata-latest.tar.gz"
   def download_new(url \\ @download_url) do
-    Logger.debug("Tzdata downloading new data from #{url}")
+    Logger.debug("Tzdata downloading new data from #{url} (#{http_client_name()})")
     set_latest_remote_poll_date()
     {:ok, {200, headers, body}} = http_client().get(url, [], follow_redirect: true)
     content_length = byte_size(body)
@@ -170,7 +170,11 @@ defmodule Tzdata.DataLoader do
 
   defp data_dir, do: Tzdata.Util.data_dir()
 
-  defp http_client() do
-    Application.get_env(:tzdata, :http_client, Tzdata.HTTPClient.Hackney)
+  def http_client() do
+    Application.get_env(:tzdata, :http_client) || Tzdata.HTTPClient.default()
+  end
+
+  def http_client_name() do
+    Tzdata.HTTPClient.name(http_client())
   end
 end

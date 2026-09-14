@@ -10,7 +10,7 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 1.1.3 the tz release 2025a is included in the package.
+As of version 1.2.0 the tz release 2026d is included in the package.
 
 When a new release is out, it will be automatically downloaded at runtime.
 
@@ -18,16 +18,16 @@ The tz release version in use can be verified with the following function:
 
 ```elixir
 iex> Tzdata.tzdata_version
-"2024b"
+"2026d"
 ```
 
 ## Getting started
 
-To use the Tzdata library with Elixir 1.8+, add it to the dependencies in your mix file:
+To use the Tzdata library with Elixir 1.12+, add it to the dependencies in your mix file:
 
 ```elixir
 defp deps do
-  [  {:tzdata, "~> 1.1"},  ]
+  [  {:tzdata, "~> 1.2"},  ]
 end
 ```
 
@@ -97,9 +97,16 @@ For use with [Calendar](https://github.com/lau/calendar) you can still
 specify tzdata ~> 0.1.7 in your mix.exs file in case you experience problems
 using version ~> 0.5.20
 
-## Hackney dependency and security
+## HTTP client and security
 
-Tzdata depends on Hackney in order to do HTTPS requests to get new updates. This is done because Erlang's built in HTTP client `httpc` does not verify SSL certificates when doing HTTPS requests. Hackney verifies the certificate of IANA when getting new tzdata releases from IANA.
+Hackney is no longer a required dependency. It is strongly recommended to
+use Erlang/OTP 25 or higher for security reasons. With OTP 25+, Tzdata
+uses the built-in `httpc` client by default, which can verify certificates
+without any extra dependencies.
+
+Hackney can still be used on older OTP versions, but this is not
+recommended. Hackney support is deprecated and will be removed in a future
+release.
 
 ## Documentation
 

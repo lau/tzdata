@@ -33,7 +33,9 @@ defmodule Tzdata.PeriodBuilderTest do
 
   def convert(utc) do
     case utc do
-      atom when is_atom(utc) -> atom
+      atom when is_atom(utc) ->
+        atom
+
       utc ->
         :calendar.gregorian_seconds_to_datetime(utc)
         |> NaiveDateTime.from_erl!()
@@ -41,29 +43,38 @@ defmodule Tzdata.PeriodBuilderTest do
   end
 
   def test_for_overlaps(map, location) do
-    result = calc_periods(map, location)
-    |> Enum.reduce_while(nil, fn period, last ->
-      %{from: %{utc: from_utc}, until: %{utc: until_utc}, zone_abbr: zone_abbr} = period
-      # preconditions
-      assert from_utc != :max # period can't start at :max
-      assert until_utc != :min # period can't finish at :min
-      assert from_utc == :min || until_utc == :max || from_utc < until_utc,
-        "#{location}: #{convert(from_utc)}UTC >= #{convert(until_utc)}UTC" # 'from' must precede 'until' time
-      case last do
-        nil -> {:cont, {:ok, period}}
-        {:ok, last} ->
-          # check if this period overlaps with prior period
-          if last.until.utc != from_utc do
-            {:halt, {:error,
-              "Location #{location}: #{convert(last.from.utc)}UTC..#{convert(last.until.utc)}UTC #{last.zone_abbr}"
-              <> "... is non-sequential with ..."
-              <> "#{convert(from_utc)}UTC..#{convert(until_utc)}UTC #{zone_abbr}"
-            }}
-          else
+    result =
+      calc_periods(map, location)
+      |> Enum.reduce_while(nil, fn period, last ->
+        %{from: %{utc: from_utc}, until: %{utc: until_utc}, zone_abbr: zone_abbr} = period
+        # preconditions
+        # period can't start at :max
+        assert from_utc != :max
+        # period can't finish at :min
+        assert until_utc != :min
+
+        assert from_utc == :min || until_utc == :max || from_utc < until_utc,
+               # 'from' must precede 'until' time
+               "#{location}: #{convert(from_utc)}UTC >= #{convert(until_utc)}UTC"
+
+        case last do
+          nil ->
             {:cont, {:ok, period}}
-          end
-      end
-    end)
+
+          {:ok, last} ->
+            # check if this period overlaps with prior period
+            if last.until.utc != from_utc do
+              {:halt,
+               {:error,
+                "Location #{location}: #{convert(last.from.utc)}UTC..#{convert(last.until.utc)}UTC #{last.zone_abbr}" <>
+                  "... is non-sequential with ..." <>
+                  "#{convert(from_utc)}UTC..#{convert(until_utc)}UTC #{zone_abbr}"}}
+            else
+              {:cont, {:ok, period}}
+            end
+        end
+      end)
+
     assert {:ok, _last} = result
   end
 
@@ -72,7 +83,10 @@ defmodule Tzdata.PeriodBuilderTest do
       {:ok, map} = Tzdata.BasicDataMap.from_single_file_in_dir(@fixtures_dir, "rule_overlap")
       {:ok, %{map: map}}
     end
-    test "will handle coincidence of a rule time change with a subsequent time change", %{map: map} do
+
+    test "will handle coincidence of a rule time change with a subsequent time change", %{
+      map: map
+    } do
       [
         "America/Whitehorse",
         "America/Santiago",
@@ -83,13 +97,13 @@ defmodule Tzdata.PeriodBuilderTest do
         "Africa/Cairo",
         "America/Argentina/Buenos_Aires"
       ]
-      |> Enum.each(&(test_for_overlaps(map, &1)))
+      |> Enum.each(&test_for_overlaps(map, &1))
     end
   end
 
   test "source data has no time period overlaps", %{map: map} do
     map.zone_list
-    |> Enum.each(&(test_for_overlaps(map, &1)))
+    |> Enum.each(&test_for_overlaps(map, &1))
   end
 
   test "can calculate for zones with one line", %{map: map} do
@@ -111,7 +125,7 @@ defmodule Tzdata.PeriodBuilderTest do
              %{
                std_off: 0,
                utc_off: 36000,
-               zone_abbr: "GMT-10",
+               zone_abbr: "+10",
                from: %{utc: :min, standard: :min, wall: :min},
                until: %{utc: :max, standard: :max, wall: :max}
              }
@@ -154,7 +168,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert cvst == %{
              std_off: 3600,
              utc_off: -7200,
-             zone_abbr: "CVST",
+             zone_abbr: "-01",
              from: %{
                utc: ~G[1942-09-01T02:00:00],
                standard: ~G[1942-09-01T00:00:00],
@@ -170,7 +184,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert cvt_2 == %{
              std_off: 0,
              utc_off: -7200,
-             zone_abbr: "CVT",
+             zone_abbr: "-02",
              from: %{
                utc: ~G[1945-10-15T01:00:00],
                standard: ~G[1945-10-14T23:00:00],
@@ -184,7 +198,6 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  @tag :skip
   test "can calculate simple DST rules going into the future", %{map: map} do
     periods = calc_periods(map, "Antarctica/Troll")
     [_zzz, std_1, dst_1, std_2 | _] = periods
@@ -192,7 +205,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert std_1 == %{
              std_off: 0,
              utc_off: 0,
-             zone_abbr: "UTC",
+             zone_abbr: "+00",
              from: %{
                utc: ~G[2005-02-12T00:00:00],
                standard: ~G[2005-02-12T00:00:00],
@@ -208,7 +221,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert dst_1 == %{
              std_off: 7200,
              utc_off: 0,
-             zone_abbr: "CEST",
+             zone_abbr: "+02",
              from: %{
                utc: ~G[2005-03-27T01:00:00],
                standard: ~G[2005-03-27T01:00:00],
@@ -224,7 +237,7 @@ defmodule Tzdata.PeriodBuilderTest do
     assert std_2 == %{
              std_off: 0,
              utc_off: 0,
-             zone_abbr: "UTC",
+             zone_abbr: "+00",
              from: %{
                utc: ~G[2005-10-30T01:00:00],
                standard: ~G[2005-10-30T01:00:00],
@@ -245,7 +258,6 @@ defmodule Tzdata.PeriodBuilderTest do
     assert [_, _] = calc_periods(map, "Africa/Abidjan")
   end
 
-  @tag :skip
   test "calculates correct abbreviation when changing no rule", %{map: map} do
     periods = calc_periods(map, "America/Chihuahua")
     # changed from static CST to CST/CDT at the start of 1996
@@ -301,7 +313,6 @@ defmodule Tzdata.PeriodBuilderTest do
              }
   end
 
-  @tag :skip
   test "can handle DST rules that aren't active for a year", %{map: map} do
     periods = calc_periods(map, "America/Regina")
     # -7:00 (no offset) in Sep 1905, since there was no Canadian DST utnil 1918
@@ -356,8 +367,13 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
-  test "can calculate zones which start with a named rule", %{map: map} do
-    # also before GMT, so 1901-01-0T00:00:00 is actually 1900-12-31T23:00:00 UTC
+  test "can calculate zones which start with a named rule" do
+    # `CET` is no longer a standalone zone line in current tzdata (see
+    # test/tzdata_fixtures/cet_backward_compat), so it's loaded from its own
+    # fixture here instead of the shared `map`.
+    {:ok, map} =
+      Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "cet_backward_compat")
+
     [cet, cest | _] = calc_periods(map, "CET")
 
     assert cet == %{
@@ -398,14 +414,14 @@ defmodule Tzdata.PeriodBuilderTest do
              utc_off: 32400,
              zone_abbr: "JDT",
              from: %{
-               wall: ~G[1951-05-06T03:00:00],
-               standard: ~G[1951-05-06T02:00:00],
-               utc: ~G[1951-05-05T17:00:00]
+               wall: ~G[1951-05-06T01:00:00],
+               standard: ~G[1951-05-06T00:00:00],
+               utc: ~G[1951-05-05T15:00:00]
              },
              until: %{
-               wall: ~G[1951-09-08T02:00:00],
-               standard: ~G[1951-09-08T01:00:00],
-               utc: ~G[1951-09-07T16:00:00]
+               wall: ~G[1951-09-09T01:00:00],
+               standard: ~G[1951-09-09T00:00:00],
+               utc: ~G[1951-09-08T15:00:00]
              }
            }
 
@@ -414,22 +430,25 @@ defmodule Tzdata.PeriodBuilderTest do
              utc_off: 32400,
              zone_abbr: "JST",
              from: %{
-               wall: ~G[1951-09-08T01:00:00],
-               standard: ~G[1951-09-08T01:00:00],
-               utc: ~G[1951-09-07T16:00:00]
+               wall: ~G[1951-09-09T00:00:00],
+               standard: ~G[1951-09-09T00:00:00],
+               utc: ~G[1951-09-08T15:00:00]
              },
              until: %{wall: :max, standard: :max, utc: :max}
            }
   end
 
-  @tag :skip
   test "handles DST transitions at the same time as zone transitions", %{map: map} do
     periods = calc_periods(map, "America/Argentina/Buenos_Aires")
 
-    assert Enum.at(periods, 53) == %{
+    # On 1999-10-03 the zone line's base offset changes from -3:00 to -4:00
+    # at the exact same wall-clock instant a DST rule adds back +1:00 (net
+    # offset unchanged) - real IANA data (verified via `zdump`) shows a
+    # direct -03(std) -> -03(dst) transition with no intermediate offset.
+    assert Enum.at(periods, 55) == %{
              std_off: 0,
              utc_off: -10800,
-             zone_abbr: "ART",
+             zone_abbr: "-03",
              from: %{
                utc: ~G[1993-03-07T02:00:00],
                standard: ~G[1993-03-06T23:00:00],
@@ -442,10 +461,10 @@ defmodule Tzdata.PeriodBuilderTest do
              }
            }
 
-    assert Enum.at(periods, 54) == %{
+    assert Enum.at(periods, 56) == %{
              std_off: 3600,
              utc_off: -14400,
-             zone_abbr: "ARST",
+             zone_abbr: "-03",
              from: %{
                utc: ~G[1999-10-03T03:00:00],
                standard: ~G[1999-10-02T23:00:00],
@@ -470,6 +489,82 @@ defmodule Tzdata.PeriodBuilderTest do
       end
 
     assert invalid_periods == []
+  end
+
+  describe "zone line whose rules end before the zone line does (tzdata 2026c Morocco)" do
+    setup do
+      {:ok, map} =
+        Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "morocco_2026c")
+
+      {:ok, %{map: map}}
+    end
+
+    # In 2026c, Morocco's DST rules stop in March 2026, but the zone line using them
+    # runs until 20 September 2026, when Morocco switches to permanent UTC. Previously
+    # the builder ended the zone line at the last rule transition (March), dropping the
+    # +01 span from March to September and starting permanent UTC six months too early.
+    test "keeps the +01 span after the last rule and switches to permanent UTC on 2026-09-20", %{
+      map: map
+    } do
+      for zone <- ["Africa/Casablanca", "Africa/El_Aaiun"] do
+        [ramadan, west, permanent] = calc_periods(map, zone) |> Enum.take(-3)
+
+        # Ramadan 2026: back to +00 until the last Morocco rule fires
+        assert ramadan.utc_off + ramadan.std_off == 0
+        assert ramadan.until.utc == ~G[2026-03-22T02:00:00]
+
+        # The previously-dropped span: +01 from the last rule until the zone line ends
+        assert west == %{
+                 std_off: 0,
+                 utc_off: 3600,
+                 zone_abbr: "+01",
+                 from: %{
+                   utc: ~G[2026-03-22T02:00:00],
+                   standard: ~G[2026-03-22T03:00:00],
+                   wall: ~G[2026-03-22T03:00:00]
+                 },
+                 until: %{
+                   utc: ~G[2026-09-20T01:00:00],
+                   standard: ~G[2026-09-20T02:00:00],
+                   wall: ~G[2026-09-20T02:00:00]
+                 }
+               }
+
+        # Permanent UTC from the zone line's end, forever
+        assert permanent == %{
+                 std_off: 0,
+                 utc_off: 0,
+                 zone_abbr: "00",
+                 from: %{
+                   utc: ~G[2026-09-20T01:00:00],
+                   standard: ~G[2026-09-20T01:00:00],
+                   wall: ~G[2026-09-20T01:00:00]
+                 },
+                 until: %{utc: :max, standard: :max, wall: :max}
+               }
+      end
+    end
+
+    test "reports +01 (not UTC) in the middle of the dropped span", %{map: map} do
+      # 2026-06-15T12:00:00 UTC falls between the last rule (March) and the switch (September).
+      instant = ~G[2026-06-15T12:00:00]
+
+      for zone <- ["Africa/Casablanca", "Africa/El_Aaiun"] do
+        period =
+          calc_periods(map, zone)
+          |> Enum.find(fn p ->
+            p.from.utc != :min and p.until.utc != :max and
+              p.from.utc <= instant and instant < p.until.utc
+          end)
+
+        assert period.utc_off + period.std_off == 3600
+      end
+    end
+
+    test "produces no overlapping or backwards periods", %{map: map} do
+      test_for_overlaps(map, "Africa/Casablanca")
+      test_for_overlaps(map, "Africa/El_Aaiun")
+    end
   end
 
   test "Dublin with negative DST is handled correctly", %{map: map} do

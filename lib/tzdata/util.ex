@@ -450,19 +450,32 @@ defmodule Tzdata.Util do
 
   @doc "Converts a datetime and a type (:utc | :standard | wall) to a number of gregorian seconds"
   def datetime_to_utc({datetime, :utc}, _, _) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime)
+    datetime_to_gregorian_seconds(datetime)
   end
 
   def datetime_to_utc({datetime, :standard}, utc_off, _) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off
+    datetime_to_gregorian_seconds(datetime) - utc_off
   end
 
   def datetime_to_utc({datetime, :wall}, utc_off, std_off) when is_tuple(datetime) do
-    :calendar.datetime_to_gregorian_seconds(datetime) - utc_off - std_off
+    datetime_to_gregorian_seconds(datetime) - utc_off - std_off
   end
 
   def datetime_to_utc(datetime, _, _) when datetime in [:min, :max] do
     datetime
+  end
+
+  @doc """
+  Like `:calendar.datetime_to_gregorian_seconds/1`, but tolerant of the
+  end-of-day "24:00" times the IANA tz database uses for transition boundaries
+  (e.g. `{{2024, 3, 31}, {24, 0, 0}}`). Erlang/OTP 29 tightened
+  `:calendar.time_to_seconds/1` to reject hours outside 0..23, which would
+  otherwise crash period building for any zone whose rules use 24:00. Computing
+  the value directly treats 24:00 as the equivalent next-day 00:00 and matches
+  the result produced by OTP 28 and earlier.
+  """
+  def datetime_to_gregorian_seconds({date, {hour, minute, second}}) do
+    :calendar.date_to_gregorian_days(date) * 86_400 + hour * 3600 + minute * 60 + second
   end
 
   @doc """
@@ -522,17 +535,23 @@ defmodule Tzdata.Util do
   end
 
   defp seconds_to_percentagez_string(seconds) when is_integer(seconds) do
-    string = case rem(seconds, 3600) do
-      0 ->
-        "#{lpad_zero(floor(abs(seconds/3600.0)))}"
-      remaining_seconds ->
-        "#{lpad_zero(floor(abs(seconds/3600.0)))}"<>"#{lpad_zero(floor(abs(remaining_seconds/60)))}"
-    end
+    string =
+      case rem(seconds, 3600) do
+        0 ->
+          "#{lpad_zero(floor(abs(seconds / 3600.0)))}"
+
+        remaining_seconds ->
+          "#{lpad_zero(floor(abs(seconds / 3600.0)))}" <>
+            "#{lpad_zero(floor(abs(remaining_seconds / 60)))}"
+      end
+
     case seconds do
       seconds when seconds > 0 ->
         "+" <> "#{string}"
+
       seconds when seconds < 0 ->
         "-" <> "#{string}"
+
       _ ->
         string
     end

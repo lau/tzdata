@@ -71,7 +71,7 @@ defmodule Tzdata.TimeZoneDatabaseTest do
 
     assert {:ok,
             %{
-              from_wall: ~N[1978-10-15 02:00:00],
+              from_wall: ~N[1978-06-29 00:00:00],
               std_offset: 0,
               until_wall: ~N[1983-07-31 02:00:00],
               utc_offset: 10800,
@@ -99,7 +99,7 @@ defmodule Tzdata.TimeZoneDatabaseTest do
             %{
               from_wall: ~N[2015-10-04 01:30:00],
               std_offset: 0,
-              until_wall: ~N[2019-07-01 00:00:00],
+              until_wall: ~N[2019-10-06 02:00:00],
               utc_offset: 39600,
               zone_abbr: "+11"
             }} ==

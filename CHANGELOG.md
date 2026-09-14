@@ -1,5 +1,61 @@
 # Changelog for Tzdata
 
+## [1.2.0] - 2026-09-13
+
+### Added
+
+- Parse the IANA `factory` source file, adding the placeholder `Factory`
+  zone (previously omitted) to the zone list.
+
+### Changed
+
+- Now requires Elixir 1.12 or greater instead of 1.9 or greater.
+- Hackney is no longer a mandatory dependency. When `:http_client` isn't
+  configured explicitly, Tzdata now automatically picks the best available
+  HTTP client: the built-in `:httpc`, verifying certificates via
+  `:public_key.cacerts_get/0` (the OS-trusted CA bundle), when that's
+  usable (Erlang/OTP 25+); otherwise Hackney, if it's present as a
+  dependency; otherwise `:httpc` is still used but automatic updates are
+  skipped with a warning rather than downloading without verification. See
+  the README's "HTTP client and security" section for details.
+- Debug log messages for downloading new data now include the name of the
+  HTTP client in use (e.g. `httpc` or `hackney`).
+- tzdata release version shipped with this library is now 2026d instead of 2026c.
+
+### Deprecated
+
+- Hackney support is deprecated and will be removed in a future release.
+  Using `Tzdata.HTTPClient.Hackney` now logs a warning. It is strongly
+  recommended to use Erlang/OTP 25 or higher, where the built-in `:httpc`
+  client is used by default and no HTTP client dependency is needed.
+
+### Fixed
+
+- Fix incorrect or spurious historical time zone periods (wrong or blank abbreviations before a zone's earliest rule, and redundant zero-effect periods at zone-line boundaries) affecting many zones, including America/Regina, America/Chicago, America/Edmonton, America/Inuvik, Antarctica/Troll, America/Chihuahua, America/Argentina/Buenos_Aires, Europe/Dublin, Europe/Vienna, Europe/Istanbul, and most former Soviet zones.
+
+## [1.1.5] - 2026-09-06
+
+### Fixed
+
+- Fix Africa/Casablanca and Africa/El_Aaiun switching to permanent UTC six
+  months early in tzdata 2026c, and similar errors in some historical
+  transitions, caused by a zone line whose rules end before the line does.
+
+### Changed
+
+- tzdata release version shipped with this library is now 2026c instead of 2026b.
+- Now supports version 4.x of hackney as well as 1.x
+
+## [1.1.4] - 2026-06-22
+
+### Fixed
+
+- Fix :calendar crash on OTP 29 for IANA "24:00" transition times (Patrick Olsen)
+
+### Changed
+
+- tzdata release version shipped with this library is now 2026b instead of 2025a.
+
 ## [1.1.3] - 2025-03-05
 
 ### Fixed

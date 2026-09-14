@@ -5,10 +5,12 @@ defmodule Tzdata.App do
 
   def start(_type, _args) do
     children = [Tzdata.EtsHolder]
-    children = case Application.fetch_env(:tzdata, :autoupdate) do
-      {:ok, :enabled} -> children ++ [Tzdata.ReleaseUpdater]
-      {:ok, :disabled} -> children
-    end
+
+    children =
+      case Application.fetch_env(:tzdata, :autoupdate) do
+        {:ok, :enabled} -> children ++ [Tzdata.ReleaseUpdater]
+        {:ok, :disabled} -> children
+      end
 
     {:ok, pid} = Supervisor.start_link(children, strategy: :one_for_one)
 
