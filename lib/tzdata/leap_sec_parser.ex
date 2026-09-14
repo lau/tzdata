@@ -29,7 +29,7 @@ defmodule Tzdata.LeapSecParser do
   defp uncomment_expiry_line(line) do
     expiry_line_regex = ~r/\#\@[\s]+(?<expiry_timestamp>[\d]+)/
     map = Regex.named_captures(expiry_line_regex, line)
-    
+
     if map do
       "#{map["expiry_timestamp"]}"
     else
