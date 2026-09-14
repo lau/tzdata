@@ -22,9 +22,14 @@ defmodule Tzdata.HTTPClientTest do
     # Hackney support is deprecated: call it via `apply/3` so the compiler's
     # static `@deprecated` check doesn't fire, and capture the runtime
     # deprecation log it emits, since triggering both here is expected.
-    {result, log} =
-      with_log(fn -> apply(Tzdata.HTTPClient.Hackney, :head, [@url, [], []]) end)
+    # `capture_log/2` (rather than `with_log/1`, added in Elixir 1.13) keeps
+    # this working on the oldest Elixir version this library supports.
+    log =
+      capture_log(fn ->
+        send(self(), {:head_result, apply(Tzdata.HTTPClient.Hackney, :head, [@url, [], []])})
+      end)
 
+    assert_received {:head_result, result}
     assert {:ok, {200, headers}} = result
     assert Enum.any?(headers, fn {k, _v} -> String.downcase(k) == "content-length" end)
     assert log =~ "Hackney"
