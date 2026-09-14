@@ -1,10 +1,21 @@
 defmodule Tzdata.HTTPClient.Hackney do
-  @moduledoc false
+  @moduledoc """
+  HTTP client adapter based on the Hackney library.
+
+  Deprecated: Hackney support is deprecated and will be removed in a
+  future release. Upgrade to Erlang/OTP 25 or later to use the built-in
+  `Tzdata.HTTPClient.Httpc` client instead, which requires no extra
+  dependencies. See the README's "HTTP client and security" section for
+  details.
+  """
+
+  require Logger
 
   @behaviour Tzdata.HTTPClient
 
   if Code.ensure_loaded?(:hackney) do
     @impl true
+    @deprecated "Hackney support is deprecated, upgrade to Erlang/OTP 25+ to use Tzdata.HTTPClient.Httpc instead"
     def get(url, headers, options) do
       ensure_started!()
 
@@ -25,6 +36,7 @@ defmodule Tzdata.HTTPClient.Hackney do
     end
 
     @impl true
+    @deprecated "Hackney support is deprecated, upgrade to Erlang/OTP 25+ to use Tzdata.HTTPClient.Httpc instead"
     def head(url, headers, options) do
       ensure_started!()
 
@@ -38,6 +50,15 @@ defmodule Tzdata.HTTPClient.Hackney do
     # just because it's compiled and available. Start it lazily here instead
     # of requiring users to add `:hackney` to their own `extra_applications`.
     defp ensure_started! do
+      Logger.warning("""
+      Tzdata is using Hackney as its HTTP client. Hackney support is
+      deprecated and will be removed in a future release.
+
+      Upgrade to Erlang/OTP 25 or later to use the built-in :httpc client
+      instead, which requires no extra dependencies. See the README's
+      "HTTP client and security" section for details.
+      """)
+
       case Application.ensure_all_started(:hackney) do
         {:ok, _apps} -> :ok
         {:error, reason} -> raise "failed to start :hackney application: #{inspect(reason)}"
