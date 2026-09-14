@@ -1,5 +1,12 @@
 # Changelog for Tzdata
 
+## [Unreleased]
+
+### Fixed
+
+- Fix a compile error on Erlang/OTP 28+ caused by regexes compiled into
+  module attributes in the leap seconds parser. (Thijs Klaver)
+
 ## [1.2.0] - 2026-09-13
 
 ### Added
