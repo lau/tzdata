@@ -2,6 +2,8 @@
 
 ## [Unreleased]
 
+## [1.2.1] - 2026-09-15
+
 ### Fixed
 
 - Fix a compile error on Erlang/OTP 28+ caused by regexes compiled into
