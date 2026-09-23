@@ -9,11 +9,11 @@ defmodule Tzdata.HTTPClient.Hackney do
   details.
   """
 
-  require Logger
-
   @behaviour Tzdata.HTTPClient
 
   if Code.ensure_loaded?(:hackney) do
+    require Logger
+
     @impl true
     @deprecated "Hackney support is deprecated, upgrade to Erlang/OTP 25+ to use Tzdata.HTTPClient.Httpc instead"
     def get(url, headers, options) do
