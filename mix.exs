@@ -28,10 +28,22 @@ defmodule Tzdata.Mixfile do
   defp deps do
     [
       {:hackney, "~> 1.17 or ~> 4.0", optional: true},
-      {:ex_doc, "~> 0.21", only: :dev, runtime: false},
-      {:sham, "~> 1.2", only: :test},
-      {:bandit, "~> 1.0", only: :test}
-    ]
+      {:ex_doc, "~> 0.21", only: :dev, runtime: false}
+    ] ++ test_only_deps()
+  end
+
+  # Sham and its Bandit adapter require PartitionSupervisor (Elixir 1.13+),
+  # which doesn't exist on the oldest Elixir version this library supports.
+  # Only pull them in when they're actually usable.
+  defp test_only_deps do
+    if Version.match?(System.version(), ">= 1.13.0") do
+      [
+        {:sham, "~> 1.2", only: :test},
+        {:bandit, "~> 1.0", only: :test}
+      ]
+    else
+      []
+    end
   end
 
   defp docs do
