@@ -2,6 +2,12 @@
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix a pattern match bug in `latest_file_size/1` that caused the HEAD
+  request used to check the latest tzdata file size to always fail,
+  silently falling back to a GET request instead. (Matt Wynne)
+
 ## [1.2.1] - 2026-09-15
 
 ### Fixed

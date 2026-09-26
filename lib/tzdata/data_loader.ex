@@ -81,10 +81,10 @@ defmodule Tzdata.DataLoader do
 
   defp do_latest_file_size_by_head({:error, error}), do: {:error, error}
 
-  defp do_latest_file_size_by_head({_tag, resp_code, _headers}) when resp_code != 200,
+  defp do_latest_file_size_by_head({:ok, {resp_code, _headers}}) when resp_code != 200,
     do: {:error, :did_not_get_ok_response}
 
-  defp do_latest_file_size_by_head({_tag, _resp_code, headers}) do
+  defp do_latest_file_size_by_head({:ok, {_resp_code, headers}}) do
     headers
     |> content_length_from_headers
   end
