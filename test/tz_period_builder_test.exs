@@ -567,6 +567,98 @@ defmodule Tzdata.PeriodBuilderTest do
     end
   end
 
+  # Periods overlapping [from, until), as {from_utc, until_utc, utc_off, std_off, zone_abbr}
+  defp periods_between(map, zone, from, until) do
+    calc_periods(map, zone)
+    |> Enum.filter(fn p ->
+      (p.until.utc == :max or p.until.utc > from) and (p.from.utc == :min or p.from.utc < until)
+    end)
+    |> Enum.map(&{&1.from.utc, &1.until.utc, &1.utc_off, &1.std_off, &1.zone_abbr})
+  end
+
+  describe "tzdata 2026e/2026f changes" do
+    # In 2026e Manitoba moves to permanent -05 (EST). It is modelled with a temporary
+    # "CDT" zone line ending on 2026-11-01 at 02:00 wall time, the same moment the
+    # Canada fall-back rule fires, so no CST hour may appear in between.
+    test "America/Winnipeg stays on -05 from CDT into permanent EST" do
+      {:ok, map} =
+        Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "winnipeg_2026f")
+
+      assert periods_between(map, "America/Winnipeg", ~G[2026-01-01T00:00:00], :max) == [
+               {~G[2025-11-02T07:00:00], ~G[2026-03-08T08:00:00], -21600, 0, "CST"},
+               {~G[2026-03-08T08:00:00], ~G[2026-11-01T07:00:00], -21600, 3600, "CDT"},
+               {~G[2026-11-01T07:00:00], :max, -18000, 0, "EST"}
+             ]
+
+      test_for_overlaps(map, "America/Winnipeg")
+    end
+
+    # In 2026f Cuba does not fall back on 2026-11-01 and stays on -04 until 2027-11-07.
+    test "America/Havana stays on CDT through 2027-11-07" do
+      {:ok, map} =
+        Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "cuba_2026f")
+
+      assert periods_between(
+               map,
+               "America/Havana",
+               ~G[2026-01-01T00:00:00],
+               ~G[2028-11-01T00:00:00]
+             ) == [
+               {~G[2025-11-02T05:00:00], ~G[2026-03-08T05:00:00], -18000, 0, "CST"},
+               {~G[2026-03-08T05:00:00], ~G[2027-11-07T05:00:00], -18000, 3600, "CDT"},
+               {~G[2027-11-07T05:00:00], ~G[2028-03-12T05:00:00], -18000, 0, "CST"},
+               {~G[2028-03-12T05:00:00], ~G[2028-11-05T05:00:00], -18000, 3600, "CDT"}
+             ]
+
+      test_for_overlaps(map, "America/Havana")
+    end
+
+    # In 2026f Brazil ended DST on 1965-03-31 at 24:00 and on 1966-03-01 at 01:00.
+    test "America/Sao_Paulo 1965-1967 transitions, including 24:00 rule times" do
+      {:ok, map} =
+        Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "brazil_2026f")
+
+      assert periods_between(
+               map,
+               "America/Sao_Paulo",
+               ~G[1965-01-01T00:00:00],
+               ~G[1967-06-01T00:00:00]
+             ) == [
+               {~G[1964-03-01T02:00:00], ~G[1965-01-31T03:00:00], -10800, 0, "-03"},
+               {~G[1965-01-31T03:00:00], ~G[1965-04-01T02:00:00], -10800, 3600, "-02"},
+               {~G[1965-04-01T02:00:00], ~G[1965-12-01T03:00:00], -10800, 0, "-03"},
+               {~G[1965-12-01T03:00:00], ~G[1966-03-01T03:00:00], -10800, 3600, "-02"},
+               {~G[1966-03-01T03:00:00], ~G[1966-11-01T03:00:00], -10800, 0, "-03"},
+               {~G[1966-11-01T03:00:00], ~G[1967-03-01T02:00:00], -10800, 3600, "-02"},
+               {~G[1967-03-01T02:00:00], ~G[1967-11-01T03:00:00], -10800, 0, "-03"}
+             ]
+
+      test_for_overlaps(map, "America/Sao_Paulo")
+    end
+
+    # In 2026e Ireland fell back on 1925-09-20, via a zone line UNTIL of
+    # "1925 Sep Sun>=16 2:00s".
+    test "Europe/Dublin falls back on 1925-09-20" do
+      {:ok, map} =
+        Tzdata.BasicDataMap.from_single_file_in_dir("test/tzdata_fixtures", "dublin_2026e")
+
+      assert periods_between(
+               map,
+               "Europe/Dublin",
+               ~G[1925-01-01T00:00:00],
+               ~G[1926-12-31T00:00:00]
+             ) == [
+               {~G[1924-09-21T02:00:00], ~G[1925-04-19T02:00:00], 0, 0, "GMT"},
+               {~G[1925-04-19T02:00:00], ~G[1925-09-20T02:00:00], 0, 3600, "IST"},
+               {~G[1925-09-20T02:00:00], ~G[1926-04-18T02:00:00], 0, 0, "GMT"},
+               {~G[1926-04-18T02:00:00], ~G[1926-10-03T02:00:00], 0, 3600, "IST"},
+               {~G[1926-10-03T02:00:00], ~G[1927-04-10T02:00:00], 0, 0, "GMT"}
+             ]
+
+      test_for_overlaps(map, "Europe/Dublin")
+    end
+  end
+
   test "Dublin with negative DST is handled correctly", %{map: map} do
     periods = calc_periods(map, "Europe/Dublin")
 

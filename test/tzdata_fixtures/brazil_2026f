@@ -1,0 +1,66 @@
+# Brazil rules and the America/Sao_Paulo zone extracted verbatim from IANA tzdata 2026f
+# (southamerica file). Fixture for regression-testing the 1965/1966 changes in 2026f,
+# which use 24:00 transition times.
+
+Rule	Brazil	1931	only	-	Oct	 3	11:00	1:00	-
+Rule	Brazil	1932	1933	-	Mar	31	24:00	0	-
+Rule	Brazil	1932	only	-	Oct	 3	 0:00	1:00	-
+Rule	Brazil	1949	1952	-	Dec	 1	 0:00	1:00	-
+Rule	Brazil	1950	only	-	Apr	16	 1:00	0	-
+Rule	Brazil	1951	1952	-	Mar	31	24:00	0	-
+Rule	Brazil	1953	only	-	Feb	28	24:00	0	-
+Rule	Brazil	1963	only	-	Dec	 9	 0:00	1:00	-
+Rule	Brazil	1964	only	-	Mar	 1	 0:00	0	-
+Rule	Brazil	1965	only	-	Jan	31	 0:00	1:00	-
+Rule	Brazil	1965	only	-	Mar	31	24:00	0	-
+Rule	Brazil	1965	only	-	Nov	30	24:00	1:00	-
+Rule	Brazil	1966	only	-	Mar	 1	 1:00	0	-
+Rule	Brazil	1966	1967	-	Nov	 1	 0:00	1:00	-
+Rule	Brazil	1967	1968	-	Mar	 1	 0:00	0	-
+Rule	Brazil	1985	only	-	Nov	 2	 0:00	1:00	-
+Rule	Brazil	1986	only	-	Mar	15	 0:00	0	-
+Rule	Brazil	1986	only	-	Oct	25	 0:00	1:00	-
+Rule	Brazil	1987	only	-	Feb	14	 0:00	0	-
+Rule	Brazil	1987	only	-	Oct	25	 0:00	1:00	-
+Rule	Brazil	1988	only	-	Feb	 7	 0:00	0	-
+Rule	Brazil	1988	only	-	Oct	16	 0:00	1:00	-
+Rule	Brazil	1989	only	-	Jan	29	 0:00	0	-
+Rule	Brazil	1989	only	-	Oct	15	 0:00	1:00	-
+Rule	Brazil	1990	only	-	Feb	11	 0:00	0	-
+Rule	Brazil	1990	only	-	Oct	21	 0:00	1:00	-
+Rule	Brazil	1991	only	-	Feb	17	 0:00	0	-
+Rule	Brazil	1991	only	-	Oct	20	 0:00	1:00	-
+Rule	Brazil	1992	only	-	Feb	 9	 0:00	0	-
+Rule	Brazil	1992	only	-	Oct	25	 0:00	1:00	-
+Rule	Brazil	1993	only	-	Jan	31	 0:00	0	-
+Rule	Brazil	1993	1995	-	Oct	Sun>=11	 0:00	1:00	-
+Rule	Brazil	1994	1995	-	Feb	Sun>=15	 0:00	0	-
+Rule	Brazil	1996	only	-	Feb	11	 0:00	0	-
+Rule	Brazil	1996	only	-	Oct	 6	 0:00	1:00	-
+Rule	Brazil	1997	only	-	Feb	16	 0:00	0	-
+Rule	Brazil	1997	only	-	Oct	 6	 0:00	1:00	-
+Rule	Brazil	1998	only	-	Mar	 1	 0:00	0	-
+Rule	Brazil	1998	only	-	Oct	11	 0:00	1:00	-
+Rule	Brazil	1999	only	-	Feb	21	 0:00	0	-
+Rule	Brazil	1999	only	-	Oct	 3	 0:00	1:00	-
+Rule	Brazil	2000	only	-	Feb	27	 0:00	0	-
+Rule	Brazil	2000	2001	-	Oct	Sun>=8	 0:00	1:00	-
+Rule	Brazil	2001	2006	-	Feb	Sun>=15	 0:00	0	-
+Rule	Brazil	2002	only	-	Nov	 3	 0:00	1:00	-
+Rule	Brazil	2003	only	-	Oct	19	 0:00	1:00	-
+Rule	Brazil	2004	only	-	Nov	 2	 0:00	1:00	-
+Rule	Brazil	2005	only	-	Oct	16	 0:00	1:00	-
+Rule	Brazil	2006	only	-	Nov	 5	 0:00	1:00	-
+Rule	Brazil	2007	only	-	Feb	25	 0:00	0	-
+Rule	Brazil	2007	only	-	Oct	Sun>=8	 0:00	1:00	-
+Rule	Brazil	2008	2017	-	Oct	Sun>=15	0:00	1:00	-
+Rule	Brazil	2008	2011	-	Feb	Sun>=15	0:00	0	-
+Rule	Brazil	2012	only	-	Feb	Sun>=22	0:00	0	-
+Rule	Brazil	2013	2014	-	Feb	Sun>=15	0:00	0	-
+Rule	Brazil	2015	only	-	Feb	Sun>=22	0:00	0	-
+Rule	Brazil	2016	2019	-	Feb	Sun>=15	0:00	0	-
+Rule	Brazil	2018	only	-	Nov	Sun>=1	0:00	1:00	-
+Zone America/Sao_Paulo	-3:06:28 -	LMT	1914
+			-3:00	Brazil	%z	1963 Oct 23  0:00
+			-3:00	1:00	%z	1964
+			-3:00	Brazil	%z

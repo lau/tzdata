@@ -22,7 +22,22 @@ defmodule Tzdata.HTTPClient.Httpc do
   # Erlang/OTP: `:public_key.cacerts_get/0` must exist and actually return
   # a non-empty list of OS-trusted CA certificates.
   def safe_to_use? do
-    match?([_ | _], safe_cacerts())
+    unsafe_reason() == nil
+  end
+
+  @doc false
+  # Why this client cannot verify TLS certificates on the running
+  # Erlang/OTP, or `nil` if it can:
+  #
+  #   * `:otp_too_old` - `:public_key.cacerts_get/0` does not exist
+  #     (Erlang/OTP < 25).
+  #   * `:no_cacerts` - it exists but returned no OS-trusted CA certificates.
+  def unsafe_reason do
+    cond do
+      not cacerts_get_available?() -> :otp_too_old
+      safe_cacerts() == [] -> :no_cacerts
+      true -> nil
+    end
   end
 
   defp request(method, url, headers, options) do
@@ -61,25 +76,9 @@ defmodule Tzdata.HTTPClient.Httpc do
          ]}
 
       [] ->
-        Logger.warning("""
-        Tzdata cannot verify TLS certificates on this Erlang/OTP version.
-
-        The built-in HTTP client verifies certificates using the OS-trusted
-        CA bundle via `:public_key.cacerts_get/0`, which is only available
-        (and populated) on Erlang/OTP 25 and later.
-
-        To fix this, either:
-
-          1. Upgrade to Erlang/OTP 25 or later, or
-          2. Add a HTTP client dependency such as Hackney to your mix.exs and
-             configure Tzdata to use it:
-
-                 {:hackney, "~> 1.17 or ~> 4.0"}
-
-             config :tzdata, :http_client, Tzdata.HTTPClient.Hackney
-
-        See the README for more information.
-        """)
+        # `Tzdata.ReleaseUpdater` warns about this and skips automatic
+        # updates, so this is only reached when calling the client directly.
+        Logger.debug("Tzdata cannot verify TLS certificates on this Erlang/OTP version.")
 
         {:error, :unsupported_otp_release}
     end
@@ -88,7 +87,7 @@ defmodule Tzdata.HTTPClient.Httpc do
   # Returns the OS-trusted CA certificates, or `[]` if they are unavailable
   # (older OTP release, or OTP unable to locate/read the OS trust store).
   defp safe_cacerts do
-    if Code.ensure_loaded?(:public_key) and function_exported?(:public_key, :cacerts_get, 0) do
+    if cacerts_get_available?() do
       try do
         :public_key.cacerts_get()
       rescue
@@ -97,6 +96,10 @@ defmodule Tzdata.HTTPClient.Httpc do
     else
       []
     end
+  end
+
+  defp cacerts_get_available? do
+    Code.ensure_loaded?(:public_key) and function_exported?(:public_key, :cacerts_get, 0)
   end
 
   defp to_charlist_headers(headers) do
