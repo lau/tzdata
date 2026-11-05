@@ -10,7 +10,7 @@ Tzdata. The [timezone database](https://www.iana.org/time-zones) in Elixir.
 
 Extracted from the [Calendar](https://github.com/lau/calendar) library.
 
-As of version 1.2.0 the tz release 2026d is included in the package.
+As of version 1.3.0 the tz release 2026f is included in the package.
 
 When a new release is out, it will be automatically downloaded at runtime.
 
@@ -18,7 +18,7 @@ The tz release version in use can be verified with the following function:
 
 ```elixir
 iex> Tzdata.tzdata_version
-"2026d"
+"2026f"
 ```
 
 ## Getting started
@@ -99,14 +99,18 @@ using version ~> 0.5.20
 
 ## HTTP client and security
 
-Hackney is no longer a required dependency. It is strongly recommended to
-use Erlang/OTP 25 or higher for security reasons. With OTP 25+, Tzdata
-uses the built-in `httpc` client by default, which can verify certificates
-without any extra dependencies.
+Tzdata uses the HTTP client built into Erlang/OTP (`:httpc`) to check for and
+download new tz releases. No HTTP client dependency is needed. Hackney support
+was removed in version 1.3.0.
 
-Hackney can still be used on older OTP versions, but this is not
-recommended. Hackney support is deprecated and will be removed in a future
-release.
+Erlang/OTP 27.3.4.19 or newer is recommended. The built-in client verifies TLS
+certificates using the operating system's trusted CA certificates via
+`:public_key.cacerts_get/0`, which requires Erlang/OTP 25 or newer.
+
+On Erlang/OTP versions where certificates cannot be verified, Tzdata does not
+check for or download updates. It logs a warning at startup and keeps using the
+tz release it already has. To silence the warning, disable automatic updates
+(see "Automatic data updates" above) and ship updated `.ets` files yourself.
 
 ## Documentation
 

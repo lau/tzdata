@@ -1,0 +1,46 @@
+# Canada and Winn rules and the America/Winnipeg zone extracted verbatim from IANA
+# tzdata 2026f (northamerica file). Fixture for regression-testing Manitoba's move to
+# permanent -05 (EST) in 2026e, modelled with a temporary zone line ending on 2026-11-01
+# at 02:00, the same moment the Canada fall-back rule fires.
+
+Rule	Canada	1918	only	-	Apr	14	2:00	1:00	D
+Rule	Canada	1918	only	-	Oct	27	2:00	0	S
+Rule	Canada	1942	only	-	Feb	 9	2:00	1:00	W # War
+Rule	Canada	1945	only	-	Aug	14	23:00u	1:00	P # Peace
+Rule	Canada	1945	only	-	Sep	30	2:00	0	S
+Rule	Canada	1974	1986	-	Apr	lastSun	2:00	1:00	D
+Rule	Canada	1974	2006	-	Oct	lastSun	2:00	0	S
+Rule	Canada	1987	2006	-	Apr	Sun>=1	2:00	1:00	D
+Rule	Canada	2007	max	-	Mar	Sun>=8	2:00	1:00	D
+Rule	Canada	2007	max	-	Nov	Sun>=1	2:00	0	S
+Rule	Winn	1916	only	-	Apr	23	0:00	1:00	D
+Rule	Winn	1916	only	-	Sep	17	0:00	0	S
+Rule	Winn	1918	only	-	Apr	14	2:00	1:00	D
+Rule	Winn	1918	only	-	Oct	27	2:00	0	S
+Rule	Winn	1937	only	-	May	16	2:00	1:00	D
+Rule	Winn	1937	only	-	Sep	26	2:00	0	S
+Rule	Winn	1942	only	-	Feb	 9	2:00	1:00	W # War
+Rule	Winn	1945	only	-	Aug	14	23:00u	1:00	P # Peace
+Rule	Winn	1945	only	-	Sep	lastSun	2:00	0	S
+Rule	Winn	1946	only	-	May	12	2:00	1:00	D
+Rule	Winn	1946	only	-	Oct	13	2:00	0	S
+Rule	Winn	1947	1949	-	Apr	lastSun	2:00	1:00	D
+Rule	Winn	1947	1949	-	Sep	lastSun	2:00	0	S
+Rule	Winn	1950	only	-	May	 1	2:00	1:00	D
+Rule	Winn	1950	only	-	Sep	30	2:00	0	S
+Rule	Winn	1951	1960	-	Apr	lastSun	2:00	1:00	D
+Rule	Winn	1951	1958	-	Sep	lastSun	2:00	0	S
+Rule	Winn	1959	only	-	Oct	lastSun	2:00	0	S
+Rule	Winn	1960	only	-	Sep	lastSun	2:00	0	S
+Rule	Winn	1963	only	-	Apr	lastSun	2:00	1:00	D
+Rule	Winn	1963	only	-	Sep	22	2:00	0	S
+Rule	Winn	1966	1986	-	Apr	lastSun	2:00s	1:00	D
+Rule	Winn	1966	2005	-	Oct	lastSun	2:00s	0	S
+Rule	Winn	1987	2005	-	Apr	Sun>=1	2:00s	1:00	D
+Zone America/Winnipeg	-6:28:36 -	LMT	1887 Jul 16
+			-6:00	Winn	C%sT	2006
+			-6:00	Canada	C%sT	2026 Oct 31
+			# Temporary hack; see above.
+			-6:00	Canada	CDT	2026 Nov  1  2:00
+			# End of temporary hack.
+			-5:00	-	EST
