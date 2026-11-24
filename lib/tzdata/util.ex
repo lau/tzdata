@@ -499,6 +499,8 @@ defmodule Tzdata.Util do
       "+02"
       iex> period_abbrevation("%z", -9000, 0, "-")
       "-0230"
+      iex> period_abbrevation("%z", -3600, 3600, "-")
+      "+00"
   """
   def period_abbrevation("%z", std_off, utc_off, _) do
     seconds_to_percentagez_string(std_off + utc_off)
@@ -545,15 +547,11 @@ defmodule Tzdata.Util do
             "#{lpad_zero(floor(abs(remaining_seconds / 60)))}"
       end
 
-    case seconds do
-      seconds when seconds > 0 ->
-        "+" <> "#{string}"
-
-      seconds when seconds < 0 ->
-        "-" <> "#{string}"
-
-      _ ->
-        string
+    # zic writes a zero offset as "+00", like every other non-negative offset.
+    if seconds < 0 do
+      "-" <> string
+    else
+      "+" <> string
     end
   end
 

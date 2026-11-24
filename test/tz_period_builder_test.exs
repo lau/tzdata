@@ -132,6 +132,14 @@ defmodule Tzdata.PeriodBuilderTest do
            ]
   end
 
+  test "uses +00 as the %z abbreviation for a zero offset", %{map: map} do
+    periods = calc_periods(map, "Atlantic/Azores")
+    abbrs = periods |> Enum.filter(&(&1.utc_off + &1.std_off == 0)) |> Enum.map(& &1.zone_abbr)
+
+    assert "+00" in abbrs
+    refute "00" in abbrs
+  end
+
   test "can calculate for zones with multiple lines", %{map: map} do
     periods = calc_periods(map, "Africa/Abidjan")
     assert [first, second] = periods
@@ -534,7 +542,7 @@ defmodule Tzdata.PeriodBuilderTest do
         assert permanent == %{
                  std_off: 0,
                  utc_off: 0,
-                 zone_abbr: "00",
+                 zone_abbr: "+00",
                  from: %{
                    utc: ~G[2026-09-20T01:00:00],
                    standard: ~G[2026-09-20T01:00:00],
