@@ -486,6 +486,34 @@ defmodule Tzdata.PeriodBuilderTest do
            }
   end
 
+  test "a rule from an earlier year can be in effect when a zone line starts", %{map: map} do
+    find_period = fn zone, instant ->
+      calc_periods(map, zone)
+      |> Enum.find(fn p ->
+        p.from.utc != :min and p.until.utc != :max and
+          p.from.utc <= instant and instant < p.until.utc
+      end)
+    end
+
+    # The zone line starting 1944-04-01 uses the US rules, whose last change
+    # was war time (MWT) in 1942. `zdump America/Phoenix` shows MWT from
+    # 1944-04-01 07:01 UTC to 1944-10-01 06:01 UTC.
+    period = find_period.("America/Phoenix", ~G[1944-06-01T00:00:00])
+    assert period.zone_abbr == "MWT"
+    assert period.utc_off + period.std_off == -21600
+    assert period.from.utc == ~G[1944-04-01T07:01:00]
+    assert period.until.utc == ~G[1944-10-01T06:01:00]
+
+    # The zone line starting 1941-04-07 23:00 uses the C-Eur rules, whose
+    # last change was summer time from 1940-04-01. `zdump Europe/Budapest`
+    # shows CEST from 1941-04-07 22:00 UTC to 1942-11-02 01:00 UTC.
+    period = find_period.("Europe/Budapest", ~G[1942-01-01T00:00:00])
+    assert period.zone_abbr == "CEST"
+    assert period.utc_off + period.std_off == 7200
+    assert period.from.utc == ~G[1941-04-07T22:00:00]
+    assert period.until.utc == ~G[1942-11-02T01:00:00]
+  end
+
   test "no zone periods go back in time", %{map: map} do
     invalid_periods =
       for zone <- map.zone_list,
