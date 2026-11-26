@@ -107,6 +107,15 @@ defmodule Tzdata.PeriodBuilder do
     # get rules
     {rules_type, rules_value} = zone_hd_rules
 
+    # A rule from an earlier year can still be in effect when this zone line
+    # starts (e.g. the US war time rule of 1942 for America/Phoenix in 1944).
+    # Start out with that rule's save and letter.
+    {std_off, letter} =
+      case rule_in_effect_before_year(btz_data, zone_hd_rules, from, from_standard_time_year) do
+        nil -> {std_off, letter}
+        rule -> {rule.save, rule.letter}
+      end
+
     calc_rule_periods_h(
       btz_data,
       rules_type,
@@ -119,6 +128,22 @@ defmodule Tzdata.PeriodBuilder do
       letter
     )
   end
+
+  # The last rule of the named rule set that took effect in a year before
+  # `year`, or nil if there is none.
+  defp rule_in_effect_before_year(btz_data, {:named_rules, rules_value}, from, year)
+       when is_integer(from) do
+    {:ok, rules} = get_rules(btz_data, rules_value)
+    first_year = rules |> Enum.map(& &1.from) |> Enum.min()
+
+    if year > first_year do
+      Enum.find_value((year - 1)..first_year//-1, fn y ->
+        rules |> TzUtil.rules_for_year(y) |> sort_rules_by_time(y) |> List.last()
+      end)
+    end
+  end
+
+  defp rule_in_effect_before_year(_btz_data, _zone_rules, _from, _year), do: nil
 
   # Helper function for function calc_periods with no rules
   # When the zone line tail is empty we are at the last zone line.
