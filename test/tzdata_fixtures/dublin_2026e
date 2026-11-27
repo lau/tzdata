@@ -1,0 +1,95 @@
+# GB-Eire and Eire rules and the Europe/Dublin zone extracted verbatim from IANA
+# tzdata 2026f (europe file). Fixture for regression-testing the 2026e change where
+# Ireland fell back on 1925-09-20, using a zone line UNTIL of "1925 Sep Sun>=16 2:00s".
+
+Rule	GB-Eire	1916	only	-	May	21	2:00s	1:00	BST
+Rule	GB-Eire	1916	only	-	Oct	 1	2:00s	0	GMT
+Rule	GB-Eire	1917	only	-	Apr	 8	2:00s	1:00	BST
+Rule	GB-Eire	1917	only	-	Sep	17	2:00s	0	GMT
+Rule	GB-Eire	1918	only	-	Mar	24	2:00s	1:00	BST
+Rule	GB-Eire	1918	only	-	Sep	30	2:00s	0	GMT
+Rule	GB-Eire	1919	only	-	Mar	30	2:00s	1:00	BST
+Rule	GB-Eire	1919	only	-	Sep	29	2:00s	0	GMT
+Rule	GB-Eire	1920	only	-	Mar	28	2:00s	1:00	BST
+Rule	GB-Eire	1920	only	-	Oct	25	2:00s	0	GMT
+Rule	GB-Eire	1921	only	-	Apr	 3	2:00s	1:00	BST
+Rule	GB-Eire	1921	only	-	Oct	 3	2:00s	0	GMT
+Rule	GB-Eire	1922	only	-	Mar	26	2:00s	1:00	BST
+Rule	GB-Eire	1922	only	-	Oct	 8	2:00s	0	GMT
+Rule	GB-Eire	1923	only	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1923	1924	-	Sep	Sun>=16	2:00s	0	GMT
+Rule	GB-Eire	1924	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1925	1926	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1925	1938	-	Oct	Sun>=2	2:00s	0	GMT
+Rule	GB-Eire	1927	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1928	1929	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1930	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1931	1932	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1933	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1934	only	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1935	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1936	1937	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1938	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1939	only	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1939	only	-	Nov	Sun>=16	2:00s	0	GMT
+Rule	GB-Eire	1940	only	-	Feb	Sun>=23	2:00s	1:00	BST
+Rule	GB-Eire	1941	only	-	May	Sun>=2	1:00s	2:00	BDST
+Rule	GB-Eire	1941	1943	-	Aug	Sun>=9	1:00s	1:00	BST
+Rule	GB-Eire	1942	1944	-	Apr	Sun>=2	1:00s	2:00	BDST
+Rule	GB-Eire	1944	only	-	Sep	Sun>=16	1:00s	1:00	BST
+Rule	GB-Eire	1945	only	-	Apr	Mon>=2	1:00s	2:00	BDST
+Rule	GB-Eire	1945	only	-	Jul	Sun>=9	1:00s	1:00	BST
+Rule	GB-Eire	1945	1946	-	Oct	Sun>=2	2:00s	0	GMT
+Rule	GB-Eire	1946	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1947	only	-	Mar	16	2:00s	1:00	BST
+Rule	GB-Eire	1947	only	-	Apr	13	1:00s	2:00	BDST
+Rule	GB-Eire	1947	only	-	Aug	10	1:00s	1:00	BST
+Rule	GB-Eire	1947	only	-	Nov	 2	2:00s	0	GMT
+Rule	GB-Eire	1948	only	-	Mar	14	2:00s	1:00	BST
+Rule	GB-Eire	1948	only	-	Oct	31	2:00s	0	GMT
+Rule	GB-Eire	1949	only	-	Apr	 3	2:00s	1:00	BST
+Rule	GB-Eire	1949	only	-	Oct	30	2:00s	0	GMT
+Rule	GB-Eire	1950	1952	-	Apr	Sun>=14	2:00s	1:00	BST
+Rule	GB-Eire	1950	1952	-	Oct	Sun>=21	2:00s	0	GMT
+Rule	GB-Eire	1953	only	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1953	1960	-	Oct	Sun>=2	2:00s	0	GMT
+Rule	GB-Eire	1954	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1955	1956	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1957	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1958	1959	-	Apr	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1960	only	-	Apr	Sun>=9	2:00s	1:00	BST
+Rule	GB-Eire	1961	1963	-	Mar	lastSun	2:00s	1:00	BST
+Rule	GB-Eire	1961	1968	-	Oct	Sun>=23	2:00s	0	GMT
+Rule	GB-Eire	1964	1967	-	Mar	Sun>=19	2:00s	1:00	BST
+Rule	GB-Eire	1968	only	-	Feb	18	2:00s	1:00	BST
+Rule	GB-Eire	1972	1980	-	Mar	Sun>=16	2:00s	1:00	BST
+Rule	GB-Eire	1972	1980	-	Oct	Sun>=23	2:00s	0	GMT
+Rule	GB-Eire	1981	1995	-	Mar	lastSun	1:00u	1:00	BST
+Rule	GB-Eire 1981	1989	-	Oct	Sun>=23	1:00u	0	GMT
+Rule	GB-Eire 1990	1995	-	Oct	Sun>=22	1:00u	0	GMT
+Rule	Eire	1971	only	-	Oct	31	 2:00u	-1:00	-
+Rule	Eire	1972	1980	-	Mar	Sun>=16	 2:00u	0	-
+Rule	Eire	1972	1980	-	Oct	Sun>=23	 2:00u	-1:00	-
+Rule	Eire	1981	max	-	Mar	lastSun	 1:00u	0	-
+Rule	Eire	1981	1989	-	Oct	Sun>=23	 1:00u	-1:00	-
+Rule	Eire	1990	1995	-	Oct	Sun>=22	 1:00u	-1:00	-
+Rule	Eire	1996	max	-	Oct	lastSun	 1:00u	-1:00	-
+Zone	Europe/Dublin	-0:25:21 -	LMT	1880 Aug  2
+			-0:25:21 -	DMT	1916 May 21  2:00s
+			-0:25:21 1:00	IST	1916 Oct  1  2:00s
+			 0:00	GB-Eire	%s	1921 Dec  6 # independence
+			 0:00	GB-Eire	GMT/IST	1925 Sep Sun>=16 2:00s
+			 0:00	-	GMT	1926
+			 0:00	GB-Eire	GMT/IST	1940 Feb 25  2:00s
+			 0:00	1:00	IST	1946 Oct  6  2:00s
+			 0:00	-	GMT	1947 Mar 16  2:00s
+			 0:00	1:00	IST	1947 Nov  2  2:00s
+			 0:00	-	GMT	1948 Apr 18  2:00s
+			 0:00	GB-Eire	GMT/IST	1968 Oct 27
+# Vanguard section, for zic and other parsers that support negative DST.
+			 1:00	Eire	IST/GMT
+# Rearguard section, for parsers lacking negative DST; see ziguard.awk.
+#			 1:00	-	IST	1971 Oct 31  2:00u
+#			 0:00	GB-Eire	GMT/IST	1996
+#			 0:00	EU	GMT/IST
+# End of rearguard section.

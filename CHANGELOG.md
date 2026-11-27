@@ -2,6 +2,25 @@
 
 ## [Unreleased]
 
+### Removed
+
+- Hackney support (`Tzdata.HTTPClient.Hackney`) has been removed, along with
+  the optional `:hackney` dependency. Tzdata now only uses the `:httpc` client
+  built into Erlang/OTP. If your config sets
+  `config :tzdata, :http_client, Tzdata.HTTPClient.Hackney`, remove that line.
+
+### Changed
+
+- On Erlang/OTP versions where the built-in `:httpc` client cannot verify TLS
+  certificates (Erlang/OTP < 25, or no OS-trusted CA certificates available),
+  Tzdata no longer checks for updates. Instead it logs a warning at startup
+  saying that the Erlang/OTP version is too old and automatic checking is not
+  happening, and recommends Erlang/OTP 27.3.4.19 or newer. The same applies
+  when a configured `:http_client` module is not available.
+- tzdata release version shipped with this library is now 2026f instead of 2026d.
+  This includes Manitoba's move to permanent -05 (2026e) and Cuba staying on
+  -04 through 2027-11-07 (2026f).
+
 ## [1.2.2] - 2026-09-25
 
 ### Fixed

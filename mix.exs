@@ -1,7 +1,7 @@
 defmodule Tzdata.Mixfile do
   use Mix.Project
 
-  @version "1.2.2"
+  @version "1.3.0-dev"
 
   def project do
     [
@@ -27,7 +27,6 @@ defmodule Tzdata.Mixfile do
 
   defp deps do
     [
-      {:hackney, "~> 1.17 or ~> 4.0", optional: true},
       {:ex_doc, "~> 0.21", only: :dev, runtime: false}
     ] ++ test_only_deps()
   end

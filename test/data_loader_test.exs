@@ -9,7 +9,7 @@ if Code.ensure_loaded?(Sham) do
       sham = Sham.start()
       original_client = Application.get_env(:tzdata, :http_client)
 
-      Application.put_env(:tzdata, :http_client, Tzdata.HTTPClient.Hackney)
+      Application.put_env(:tzdata, :http_client, Tzdata.HTTPClient.Httpc)
 
       on_exit(fn ->
         if original_client do

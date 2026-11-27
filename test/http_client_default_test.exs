@@ -1,17 +1,8 @@
 defmodule Tzdata.HTTPClientDefaultTest do
   use ExUnit.Case, async: false
 
-  test "default/0 picks the Httpc client when it can verify certificates" do
-    if Tzdata.HTTPClient.Httpc.safe_to_use?() do
-      assert Tzdata.HTTPClient.default() == Tzdata.HTTPClient.Httpc
-    else
-      expected =
-        if Code.ensure_loaded?(:hackney),
-          do: Tzdata.HTTPClient.Hackney,
-          else: Tzdata.HTTPClient.Httpc
-
-      assert Tzdata.HTTPClient.default() == expected
-    end
+  test "default/0 is the built-in Httpc client" do
+    assert Tzdata.HTTPClient.default() == Tzdata.HTTPClient.Httpc
   end
 
   test "an explicit :http_client config is what Tzdata.DataLoader ends up using" do
@@ -25,6 +16,6 @@ defmodule Tzdata.HTTPClientDefaultTest do
       end
     end)
 
-    assert Application.get_env(:tzdata, :http_client) == :some_custom_client
+    assert Tzdata.DataLoader.http_client() == :some_custom_client
   end
 end
